@@ -10,6 +10,8 @@ import threat_intel
 import dependency_analysis
 import language_analysis
 import report_formats
+import polyglot_ast
+import python_taint
 import base64
 import fnmatch
 import io
@@ -24,7 +26,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -219,7 +221,9 @@ def python_code_only_lines(content: str) -> list[str]:
     return ["".join(line) for line in output]
 
 
-def scan_text(path: str, content: str, political_terms: list[str], allowed_domains: list[str]) -> list[dict[str, Any]]:
+def scan_text(path: str, content: str, political_terms: list[str], allowed_domains: list[str],
+              ast_mode: str = "auto", ast_warnings: list[str] | None = None,
+              ast_stats: dict[str, int] | None = None) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
     lines = content.splitlines()
     suffix = Path(path).suffix.lower()
@@ -277,17 +281,51 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
             output.append(finding("OBF_ENCODING", "obfuscation", "low", path, n, line,
                                   "Возможное сокрытие строк или полезной нагрузки"))
     # Prefer AST control-flow correlation for syntactically valid Python: not line proximity.
-    ast_findings = ast_analysis.scan_python(path, content, allowed_domains)
-    if ast_findings is not None and Path(path).suffix.lower() == ".py":
+    ast_findings = ast_analysis.scan_python(path, content, allowed_domains) if ast_mode != "off" else None
+    if suffix == ".py" and ast_findings is None and ast_mode != "off":
+        if ast_mode == "required":
+            raise ScanError(f"Invalid Python syntax prevents AST analysis: {path}")
+        if ast_stats is not None:
+            ast_stats["degraded"] = ast_stats.get("degraded", 0) + 1
+        if ast_warnings is not None:
+            ast_warnings.append(f"AST diagnostic {path}: invalid Python syntax, pattern-only analysis")
+    if ast_findings is not None and suffix == ".py":
+        taint_findings = python_taint.scan_python_taint(path, content, allowed_domains) or []
+        if ast_stats is not None:
+            ast_stats["parsed"] = ast_stats.get("parsed", 0) + 1
         # AST findings replace line-based duplicates (including multiline calls).
         existing = {(item["rule"], item["line"]): item for item in output}
-        for item in ast_findings:
+        for item in [*ast_findings, *taint_findings]:
+            if item["rule"] == "TAINT_URL":
+                existing.pop(("NET_DYNAMIC", item["line"]), None)
             if item["rule"] in {"NET_EXTERNAL", "NET_GEO_API"}:
                 existing.pop(("NET_DYNAMIC", item["line"]), None)
             if item["rule"] == "OBF_DECODE_EXEC":
                 existing.pop(("OBF_DYNAMIC_EXEC", item["line"]), None)
             existing[(item["rule"], item["line"])] = item
         return list(existing.values())
+    # Polyglot syntax trees replace proximity correlation for supported grammars.
+    tree_findings: list[dict[str, Any]] = []
+    parsed = False
+    if suffix in polyglot_ast.SUPPORTED and ast_mode != "off":
+        tree_findings, diagnostic = polyglot_ast.scan_tree(path, content, allowed_domains)
+        parsed = diagnostic is None or diagnostic.startswith("AST partial syntax recovery")
+        if ast_stats is not None:
+            name = "partial" if diagnostic and parsed else "degraded" if diagnostic else "parsed"
+            ast_stats[name] = ast_stats.get(name, 0) + 1
+        if diagnostic:
+            if ast_mode == "required":
+                raise ScanError(diagnostic)
+            if ast_warnings is not None:
+                # Avoid one missing-grammar warning per file in large repositories.
+                category = suffix if diagnostic.startswith("AST unavailable") else path
+                identifier = f"{category}: {diagnostic.split(': ', 2)[-1]}"
+                if not any(item.startswith(f"AST diagnostic {category}:") for item in ast_warnings):
+                    ast_warnings.append(f"AST diagnostic {category}: {diagnostic}")
+    elif suffix == ".py" and ast_findings is None and ast_mode == "required":
+        raise ScanError(f"Invalid Python syntax prevents AST analysis: {path}")
+    elif suffix in polyglot_ast.SUPPORTED and ast_stats is not None:
+        ast_stats["disabled"] = ast_stats.get("disabled", 0) + 1
     # Targeted language-specific rules complement generic rules without executing source.
     extra = language_analysis.scan_language(path, content, allowed_domains)
     seen = {(item["rule"], item["line"]) for item in output}
@@ -295,6 +333,13 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
         if (item["rule"], item["line"]) not in seen:
             output.append(item)
             seen.add((item["rule"], item["line"]))
+    if parsed:
+        current = {(item["rule"], item["line"]): item for item in output}
+        for item in tree_findings:
+            if item["rule"] in {"TAINT_URL", "AST_NET_EXTERNAL", "AST_NET_DYNAMIC"}:
+                current.pop(("NET_DYNAMIC", item["line"]), None)
+            current[(item["rule"], item["line"])] = item
+        return list(current.values())
     # Fallback for other languages and syntactically incomplete Python.
     # Stronger suspicion only when a geography decision is near an actionable operation.
     targets = [item for item in output if item["rule"] == "GEO_TARGET"]
@@ -314,9 +359,12 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
                  repository: str | None = None, package_repos: list[str] | None = None,
                  dependency_mode: str = "lock", dependency_max_packages: int = 2000,
                  dependency_max_depth: int = 12, dependency_max_requests: int = 300,
-                 explicit_packages: list[str] | None = None) -> dict[str, Any]:
+                 explicit_packages: list[str] | None = None,
+                 ast_mode: str = "auto") -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     scanned = 0
+    ast_stats: dict[str, int] = {"parsed": 0, "partial": 0, "degraded": 0, "disabled": 0}
+    ast_warnings: list[str] = []
     manifests: dict[str, str] = {}
     references: list[tuple[str, str, int, str]] = []
     if repository and watchlists is not None:
@@ -327,7 +375,8 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
             references.append((f"{owner}/{repo}".casefold(), "(package)", 0, name))
     for path, content in files:
         scanned += 1
-        results.extend(scan_text(path, content, political_terms, allowed_domains))
+        results.extend(scan_text(path, content, political_terms, allowed_domains,
+                                 ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats))
         if dependency_mode != "off" and threat_intel.is_manifest(path):
             manifests[path] = content
         if watchlists is not None:
@@ -360,6 +409,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
         results.extend(matches)
         results.extend(threat_intel.match_packages(dependencies["packages"], watchlists))
     results.sort(key=lambda f: (f["file"], f["line"], f["rule"]))
+    warnings.extend(ast_warnings)
     levels = {name: sum(f["severity"] == name for f in results) for name in SEVERITIES}
     technical = [f for f in results if f["severity"] != "info"]
     risk = max((technical_item["severity"] for technical_item in technical),
@@ -369,7 +419,9 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
             "watchlists": watchlists["metadata"] if watchlists else {"mode": "off"},
             "dependencies": {"summary": dependencies["summary"], "packages": dependencies["packages"],
                              "mode": dependencies["mode"]},
-            "warnings": warnings}
+            "warnings": warnings, "ast": {"mode": ast_mode, **ast_stats,
+                                         "complete": ast_stats["degraded"] == 0 and ast_stats["partial"] == 0 and
+                                                     ast_stats["parsed"] > 0 and ast_mode != "off"}}
 
 
 def report_text(report: dict[str, Any]) -> str:
@@ -399,6 +451,8 @@ def main(argv: list[str] | None = None) -> int:
     selector.add_argument("--repo", help="GitHub OWNER/REPO or https://github.com/OWNER/REPO")
     parser.add_argument("--ref", help="GitHub branch, tag, or commit (only with --repo)")
     parser.add_argument("--format", choices=("text", "json", "sarif", "cyclonedx"), default="text")
+    parser.add_argument("--ast-mode", choices=("auto", "required", "off"), default="auto",
+                        help="Auto: AST if parsers available; required: fail on missing/partial AST; off: legacy patterns")
     parser.add_argument("--output", type=Path, help="Write selected report format to this file (default: stdout)")
     parser.add_argument("--fail-on", choices=("low", "medium", "high"), default="high")
     parser.add_argument("--allow-domain", action="append", default=[], help="Trusted domain and subdomains; repeatable")
@@ -458,7 +512,7 @@ def main(argv: list[str] | None = None) -> int:
                               dependency_max_packages=args.dependency_max_packages,
                               dependency_max_depth=args.dependency_max_depth,
                               dependency_max_requests=args.dependency_max_requests,
-                              explicit_packages=args.package)
+                              explicit_packages=args.package, ast_mode=args.ast_mode)
     except (ScanError, threat_intel.WatchlistError, ValueError, OSError, UnicodeError) as err:
         print(f"Error: {err}", file=sys.stderr)
         return 2

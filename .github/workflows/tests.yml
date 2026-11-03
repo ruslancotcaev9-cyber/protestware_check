@@ -12,6 +12,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python -m pip install -r requirements-resolver.txt
-      - run: python -m py_compile protestware_check.py ast_analysis.py threat_intel.py dependency_analysis.py language_analysis.py report_formats.py
-      - run: python -m unittest discover -s tests -v
+      - name: Install AST and resolver dependencies
+        run: python -m pip install -r requirements-resolver.txt -r requirements-ast.txt
+      - name: Download grammar files
+        run: python -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less'])"
+      - name: Python syntax checks
+        run: python -m compileall -q .
+      - name: Regression and parser tests
+        run: python -m unittest discover -s tests -v

@@ -1,0 +1,2 @@
+# Optional multilingual AST backend; prefetch/cache trusted grammar binaries in CI.
+tree-sitter-language-pack==1.22.1
