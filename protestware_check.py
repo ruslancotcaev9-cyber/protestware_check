@@ -7,6 +7,7 @@ import argparse
 
 import ast_analysis
 import threat_intel
+import dependency_analysis
 import base64
 import fnmatch
 import io
@@ -21,7 +22,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -298,9 +299,13 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
 
 def build_report(source: str, files: Iterable[tuple[str, str]], political_terms: list[str],
                  allowed_domains: list[str], warnings: list[str], watchlists: dict | None = None,
-                 repository: str | None = None, package_repos: list[str] | None = None) -> dict[str, Any]:
+                 repository: str | None = None, package_repos: list[str] | None = None,
+                 dependency_mode: str = "lock", dependency_max_packages: int = 2000,
+                 dependency_max_depth: int = 12, dependency_max_requests: int = 300,
+                 explicit_packages: list[str] | None = None) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     scanned = 0
+    manifests: dict[str, str] = {}
     references: list[tuple[str, str, int, str]] = []
     if repository and watchlists is not None:
         references.append((repository.casefold(), "(repository)", 0, repository))
@@ -311,13 +316,37 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
     for path, content in files:
         scanned += 1
         results.extend(scan_text(path, content, political_terms, allowed_domains))
+        if dependency_mode != "off" and threat_intel.is_manifest(path):
+            manifests[path] = content
         if watchlists is not None:
             references.extend((repo, path, line, evidence)
                               for repo, line, evidence in threat_intel.scan_manifests(path, content))
+    dependencies = dependency_analysis.analyze_dependencies(
+        manifests, mode=dependency_mode, max_packages=dependency_max_packages,
+        max_depth=dependency_max_depth, max_requests=dependency_max_requests,
+        explicit_packages=explicit_packages)
+    if any(threat_intel.is_manifest(text.split(": ", 1)[-1]) for text in warnings
+           if text.startswith(("Skipped oversized file:", "Skipped oversized blob:"))):
+        dependencies["summary"]["complete"] = False
+        dependencies["summary"].setdefault("warnings", []).append("Some dependency manifests were skipped due to size limits")
+    if watchlists is not None:
+        references.extend(dependencies["references"])
     code_levels = [item["severity"] for item in results if item["severity"] != "info"]
     code_risk = max(code_levels, key=lambda s: SEVERITIES[s], default="none")
     if watchlists is not None:
-        results.extend(threat_intel.match_repositories(references, watchlists))
+        matches = threat_intel.match_repositories(references, watchlists)
+        by_repo: dict[str, list[dict[str, Any]]] = {}
+        for pkg in dependencies["packages"]:
+            if pkg["repository"]:
+                by_repo.setdefault(pkg["repository"], []).append({
+                    "ecosystem": pkg["ecosystem"], "name": pkg["name"],
+                    "version": pkg["version"], "direct": pkg["direct"],
+                    "via": pkg["via"], "source": pkg["source"]})
+        for match in matches:
+            if match.get("repository") in by_repo:
+                match["matched_packages"] = by_repo[match["repository"]][:20]
+        results.extend(matches)
+        results.extend(threat_intel.match_packages(dependencies["packages"], watchlists))
     results.sort(key=lambda f: (f["file"], f["line"], f["rule"]))
     levels = {name: sum(f["severity"] == name for f in results) for name in SEVERITIES}
     technical = [f for f in results if f["severity"] != "info"]
@@ -326,16 +355,22 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
     return {"tool": "protestware-check", "version": VERSION, "source": source, "files_scanned": scanned,
             "risk": risk, "code_risk": code_risk, "summary": levels, "findings": results,
             "watchlists": watchlists["metadata"] if watchlists else {"mode": "off"},
+            "dependencies": {"summary": dependencies["summary"], "packages": dependencies["packages"],
+                             "mode": dependencies["mode"]},
             "warnings": warnings}
 
 
 def output_text(report: dict[str, Any]) -> None:
     print(f"Source: {report['source']} | files: {report['files_scanned']} | review risk: {report['risk']} (code: {report['code_risk']})")
     print("Findings: " + ", ".join(f"{k}={v}" for k, v in report["summary"].items()))
+    dep = report["dependencies"]
+    if dep["mode"] != "off":
+        print(f"Dependencies: {dep['summary']['count']} | complete: {dep['summary']['complete']} | "
+              f"ecosystems: {dep['summary'].get('ecosystems', {})}")
     for item in report["findings"]:
         print(f"[{item['severity'].upper()}] {item['rule']} {item['file']}:{item['line']} — {item['message']}")
         print(f"    {item['evidence']}")
-    for warning in report["warnings"]:
+    for warning in report["warnings"] + report["dependencies"]["summary"].get("warnings", []):
         print(f"Warning: {warning}", file=sys.stderr)
 
 
@@ -357,11 +392,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--toxic-repos-file", type=Path, help="Local toxic-repos JSON for offline mode")
     parser.add_argument("--package-repo", action="append", default=[],
                         help="Extra GitHub package OWNER/REPO to check; repeatable")
+    parser.add_argument("--dependencies", choices=("off", "lock", "registry"), default="lock",
+                        help="Inventory transitive packages: off/lockfiles/live official registries")
+    parser.add_argument("--package", action="append", default=[],
+                        help="Exact or constrained registry package, e.g. npm:axios@1.7.7 or pypi:requests@2.32.3")
+    parser.add_argument("--dependency-max-packages", type=int, default=2000)
+    parser.add_argument("--dependency-max-depth", type=int, default=12)
+    parser.add_argument("--dependency-max-requests", type=int, default=300)
+    parser.add_argument("--dependency-strict", action="store_true",
+                        help="Exit 2 when dependency analysis is incomplete")
     args = parser.parse_args(argv)
     if args.ref and not args.repo:
         parser.error("--ref requires --repo")
     if args.max_bytes < 1:
         parser.error("--max-bytes must be positive")
+    if args.dependency_max_packages < 1 or args.dependency_max_depth < 1 or args.dependency_max_requests < 1:
+        parser.error("dependency limits must be positive")
+    if args.package and args.dependencies == "off":
+        parser.error("--package requires --dependencies lock or registry")
+    if args.dependency_strict and args.dependencies == "off":
+        parser.error("--dependency-strict requires dependency analysis")
     domains = [x.lower().strip(".") for x in args.allow_domain]
     if any(not re.fullmatch(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+", x) for x in domains):
         parser.error("--allow-domain expects a DNS domain, e.g. api.example.org")
@@ -384,14 +434,21 @@ def main(argv: list[str] | None = None) -> int:
             source = str(args.path.resolve())
         root_repo = "/".join(github_coordinates(args.repo)) if args.repo else None
         report = build_report(source, files, phrases, domains, warnings,
-                              watchlists=watchlists, repository=root_repo, package_repos=packages)
-    except (ScanError, threat_intel.WatchlistError, OSError, UnicodeError) as err:
+                              watchlists=watchlists, repository=root_repo, package_repos=packages,
+                              dependency_mode=args.dependencies,
+                              dependency_max_packages=args.dependency_max_packages,
+                              dependency_max_depth=args.dependency_max_depth,
+                              dependency_max_requests=args.dependency_max_requests,
+                              explicit_packages=args.package)
+    except (ScanError, threat_intel.WatchlistError, ValueError, OSError, UnicodeError) as err:
         print(f"Error: {err}", file=sys.stderr)
         return 2
     if args.format == "json":
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
         output_text(report)
+    if args.dependency_strict and not report["dependencies"]["summary"].get("complete", False):
+        return 2
     return int(SEVERITIES.get(report["risk"], 0) >= SEVERITIES[args.fail_on])
 
 

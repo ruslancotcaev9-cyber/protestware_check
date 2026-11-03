@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from urllib.parse import unquote, urlparse
 
 BLACK_MARK_URL = "https://raw.githubusercontent.com/toxic-repos/black-mark/main/README.md"
 TOXIC_REPOS_URL = "https://raw.githubusercontent.com/toxic-repos/toxic-repos/main/data/json/toxic-repos.json"
@@ -21,6 +22,7 @@ MANIFEST_NAMES = {
     "uv.lock", "pipfile", "pipfile.lock", "requirements.txt", "setup.cfg", "setup.py",
     "cargo.toml", "cargo.lock", "go.mod", "gemfile", "gemfile.lock", ".gitmodules",
     "deno.json", "deno.lock", "mix.exs", "mix.lock", "gopkg.toml", "gopkg.lock",
+    "go.sum", "pylock.toml", "requirements-resolver.txt",
 }
 REQUIREMENTS_NAME = re.compile(r"(?:requirements[-_\w]*\.(?:txt|in)|.*\.requirements\.txt)", re.I)
 GITHUB_REF = re.compile(
@@ -110,6 +112,91 @@ def parse_toxic_repos(text: str) -> dict[str, list[dict]]:
     return output
 
 
+def parse_toxic_packages(text: str) -> dict[tuple[str, str], list[dict]]:
+    """Recognize explicit registry identities from PURL and known registry links.
+
+    No inference from an arbitrary free-text name or a GitHub account is allowed.
+    """
+    try:
+        records = json.loads(text)
+    except (ValueError, TypeError) as err:
+        raise WatchlistError("toxic-repos JSON is malformed") from err
+    if not isinstance(records, list):
+        raise WatchlistError("toxic-repos JSON is not an array")
+    output: dict[tuple[str, str], list[dict]] = {}
+    for row in records:
+        if not isinstance(row, dict):
+            continue
+        ecosystem = name = version = None
+        purl = row.get("PURL")
+        if isinstance(purl, str):
+            m = re.fullmatch(r"pkg:(npm|pypi|cargo|composer|golang|nuget)/([^?#]+)", purl, re.I)
+            if m:
+                ecosystem = {"golang": "go", "nuget": "nuget"}.get(m.group(1).lower(), m.group(1).lower())
+                coordinate = unquote(m.group(2))
+                if "@" in coordinate and not coordinate.startswith("@"):
+                    name, version = coordinate.rsplit("@", 1)
+                elif coordinate.startswith("@") and coordinate.count("@") > 1:
+                    name, version = coordinate.rsplit("@", 1)
+                else:
+                    name = coordinate
+        if not name and isinstance(row.get("PURL-link"), str):
+            url = urlparse(row["PURL-link"])
+            if url.scheme == "https" and url.hostname in {
+                "www.npmjs.com", "pypi.org", "www.nuget.org", "crates.io", "packagist.org"
+            }:
+                path = unquote(url.path.strip("/"))
+                if url.hostname == "www.npmjs.com" and path.startswith("package/"):
+                    ecosystem, name = "npm", path.removeprefix("package/")
+                elif url.hostname == "pypi.org" and path.startswith("project/"):
+                    ecosystem, name = "pypi", path.removeprefix("project/").split("/")[0]
+                elif url.hostname == "www.nuget.org" and path.lower().startswith("packages/"):
+                    ecosystem, name = "nuget", path.split("/")[1]
+                elif url.hostname == "crates.io" and path.startswith("crates/"):
+                    ecosystem, name = "cargo", path.split("/")[1]
+                elif url.hostname == "packagist.org" and path.startswith("packages/"):
+                    ecosystem, name = "composer", path.removeprefix("packages/")
+        if not name or not ecosystem or not re.fullmatch(r"[A-Za-z0-9@._/-]+", name):
+            continue
+        if ecosystem == "pypi":
+            name = re.sub(r"[-_.]+", "-", name.lower())
+        else:
+            name = name.lower()
+        output.setdefault((ecosystem, name), []).append({
+            "id": row.get("id"), "type": str(row.get("problem_type", "unknown")),
+            "version": version, "source": str(row.get("PURL") or row.get("PURL-link") or "")[:500]})
+    return output
+
+
+def match_packages(packages: list[dict], data: dict) -> list[dict]:
+    """Exact ecosystem/name matching; version-qualified PURLs match only that version."""
+    entries = data.get("packages", {})
+    output = []
+    seen = set()
+    for pkg in packages:
+        ecosystem, name = pkg["ecosystem"], pkg["name"].lower()
+        if ecosystem == "pypi":
+            name = re.sub(r"[-_.]+", "-", name)
+        for record in entries.get((ecosystem, name), []):
+            version = record.get("version")
+            if version and version != pkg.get("version"):
+                continue
+            key = (ecosystem, name, pkg.get("version"), pkg["manifest"], record.get("id"))
+            if key in seen:
+                continue
+            seen.add(key)
+            output.append({
+                "rule": "TOXIC_PACKAGE", "category": "watchlist_package",
+                "severity": "info", "file": pkg["manifest"], "line": 0,
+                "evidence": f"{ecosystem}:{pkg['name']}@{pkg['version']}",
+                "message": "Точное совпадение имени пакета и экосистемы с записью toxic-repos; версия и контекст требуют проверки",
+                "package": {"ecosystem": ecosystem, "name": pkg["name"], "version": pkg["version"],
+                            "direct": pkg["direct"], "via": pkg.get("via", [])},
+                "watchlist": "toxic-repos", "record_ids": [str(record["id"])],
+                "record_type": record["type"], "reference": record["source"]})
+    return output
+
+
 def download_public_list(url: str) -> str:
     if url not in {BLACK_MARK_URL, TOXIC_REPOS_URL}:
         raise WatchlistError("Watchlist source is not approved")
@@ -156,10 +243,11 @@ def load_watchlists(mode: str, black_file: Path | None = None, toxic_file: Path 
         raise WatchlistError(f"Unsupported watchlist mode: {mode}")
     black = parse_black_mark(black_text)
     toxic = parse_toxic_repos(toxic_text)
-    return {"black": black, "toxic": toxic, "metadata": {"mode": mode,
+    packages = parse_toxic_packages(toxic_text)
+    return {"black": black, "toxic": toxic, "packages": packages, "metadata": {"mode": mode,
             "retrieved_at_utc": datetime.now(timezone.utc).isoformat(), "sources": source_names,
             "black_mark_accounts": len(black),
-            "toxic_repositories": len(toxic)}}
+            "toxic_repositories": len(toxic), "toxic_packages": len(packages)}}
 
 
 def severity_for_type(problem_type: str) -> str:

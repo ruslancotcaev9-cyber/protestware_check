@@ -1,0 +1,5 @@
+# Optional dependencies for --dependencies registry and pnpm-lock.yaml.
+# Never install requirements from the repository being scanned.
+packaging==25.0
+semantic-version==2.10.0
+PyYAML==6.0.3
