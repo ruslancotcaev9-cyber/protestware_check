@@ -4,6 +4,9 @@
 from __future__ import annotations
 
 import argparse
+
+import ast_analysis
+import threat_intel
 import base64
 import fnmatch
 import io
@@ -18,7 +21,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -108,7 +111,12 @@ def is_scannable(path: str, extra_exclude: list[str]) -> bool:
     if any(part in EXCLUDED_DIRS for part in Path(path).parts):
         return False
     if any(fnmatch.fnmatch(path, p) or fnmatch.fnmatch(Path(path).name, p)
-           for p in EXCLUDED_GLOBS.union(extra_exclude)):
+           for p in extra_exclude):
+        return False
+    if threat_intel.is_manifest(path):
+        return True
+    if any(fnmatch.fnmatch(path, p) or fnmatch.fnmatch(Path(path).name, p)
+           for p in EXCLUDED_GLOBS):
         return False
     return Path(path).suffix.lower() in TEXT_SUFFIXES or Path(path).name in {"Dockerfile", "Makefile"}
 
@@ -262,6 +270,19 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
         elif CHARCODE.search(visible) or LONG_BASE64.search(line):
             output.append(finding("OBF_ENCODING", "obfuscation", "low", path, n, line,
                                   "Возможное сокрытие строк или полезной нагрузки"))
+    # Prefer AST control-flow correlation for syntactically valid Python: not line proximity.
+    ast_findings = ast_analysis.scan_python(path, content, allowed_domains)
+    if ast_findings is not None and Path(path).suffix.lower() == ".py":
+        # AST findings replace line-based duplicates (including multiline calls).
+        existing = {(item["rule"], item["line"]): item for item in output}
+        for item in ast_findings:
+            if item["rule"] in {"NET_EXTERNAL", "NET_GEO_API"}:
+                existing.pop(("NET_DYNAMIC", item["line"]), None)
+            if item["rule"] == "OBF_DECODE_EXEC":
+                existing.pop(("OBF_DYNAMIC_EXEC", item["line"]), None)
+            existing[(item["rule"], item["line"])] = item
+        return list(existing.values())
+    # Fallback for other languages and syntactically incomplete Python.
     # Stronger suspicion only when a geography decision is near an actionable operation.
     targets = [item for item in output if item["rule"] == "GEO_TARGET"]
     actions = [item for item in output if item["rule"] in {"FS_DELETE", "FS_WRITE", "NET_EXTERNAL", "NET_DYNAMIC"}]
@@ -276,23 +297,40 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
 
 
 def build_report(source: str, files: Iterable[tuple[str, str]], political_terms: list[str],
-                 allowed_domains: list[str], warnings: list[str]) -> dict[str, Any]:
+                 allowed_domains: list[str], warnings: list[str], watchlists: dict | None = None,
+                 repository: str | None = None, package_repos: list[str] | None = None) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     scanned = 0
+    references: list[tuple[str, str, int, str]] = []
+    if repository and watchlists is not None:
+        references.append((repository.casefold(), "(repository)", 0, repository))
+    for name in package_repos or []:
+        owner, repo = github_coordinates(name)
+        if watchlists is not None:
+            references.append((f"{owner}/{repo}".casefold(), "(package)", 0, name))
     for path, content in files:
         scanned += 1
         results.extend(scan_text(path, content, political_terms, allowed_domains))
+        if watchlists is not None:
+            references.extend((repo, path, line, evidence)
+                              for repo, line, evidence in threat_intel.scan_manifests(path, content))
+    code_levels = [item["severity"] for item in results if item["severity"] != "info"]
+    code_risk = max(code_levels, key=lambda s: SEVERITIES[s], default="none")
+    if watchlists is not None:
+        results.extend(threat_intel.match_repositories(references, watchlists))
     results.sort(key=lambda f: (f["file"], f["line"], f["rule"]))
     levels = {name: sum(f["severity"] == name for f in results) for name in SEVERITIES}
     technical = [f for f in results if f["severity"] != "info"]
     risk = max((technical_item["severity"] for technical_item in technical),
                key=lambda s: SEVERITIES[s], default="none")
     return {"tool": "protestware-check", "version": VERSION, "source": source, "files_scanned": scanned,
-            "risk": risk, "summary": levels, "findings": results, "warnings": warnings}
+            "risk": risk, "code_risk": code_risk, "summary": levels, "findings": results,
+            "watchlists": watchlists["metadata"] if watchlists else {"mode": "off"},
+            "warnings": warnings}
 
 
 def output_text(report: dict[str, Any]) -> None:
-    print(f"Source: {report['source']} | files: {report['files_scanned']} | technical risk: {report['risk']}")
+    print(f"Source: {report['source']} | files: {report['files_scanned']} | review risk: {report['risk']} (code: {report['code_risk']})")
     print("Findings: " + ", ".join(f"{k}={v}" for k, v in report["summary"].items()))
     for item in report["findings"]:
         print(f"[{item['severity'].upper()}] {item['rule']} {item['file']}:{item['line']} — {item['message']}")
@@ -313,6 +351,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--exclude", action="append", default=[], help="Additional file/directory glob; repeatable")
     parser.add_argument("--political-terms-file", type=Path, help="One extra literal phrase per line (UTF-8)")
     parser.add_argument("--max-bytes", type=int, default=DEFAULT_MAX_BYTES)
+    parser.add_argument("--watchlists", choices=("off", "live", "offline"), default="off",
+                        help="Check toxic-repos and black-mark (off by default)")
+    parser.add_argument("--black-mark-file", type=Path, help="Local black-mark README.md for offline mode")
+    parser.add_argument("--toxic-repos-file", type=Path, help="Local toxic-repos JSON for offline mode")
+    parser.add_argument("--package-repo", action="append", default=[],
+                        help="Extra GitHub package OWNER/REPO to check; repeatable")
     args = parser.parse_args(argv)
     if args.ref and not args.repo:
         parser.error("--ref requires --repo")
@@ -326,6 +370,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.political_terms_file:
             phrases.extend(line.strip().casefold() for line in args.political_terms_file.read_text(encoding="utf-8").splitlines()
                            if line.strip() and not line.lstrip().startswith("#"))
+        watchlists = threat_intel.load_watchlists(args.watchlists, args.black_mark_file, args.toxic_repos_file)
+        packages = []
+        for value in args.package_repo:
+            owner, name = github_coordinates(value)
+            packages.append(f"{owner}/{name}")
         warnings: list[str] = []
         if args.repo:
             files = iter_github(args.repo, args.ref, args.max_bytes, args.exclude, warnings)
@@ -333,8 +382,10 @@ def main(argv: list[str] | None = None) -> int:
         else:
             files = iter_local(args.path, args.max_bytes, args.exclude, warnings)
             source = str(args.path.resolve())
-        report = build_report(source, files, phrases, domains, warnings)
-    except (ScanError, OSError, UnicodeError) as err:
+        root_repo = "/".join(github_coordinates(args.repo)) if args.repo else None
+        report = build_report(source, files, phrases, domains, warnings,
+                              watchlists=watchlists, repository=root_repo, package_repos=packages)
+    except (ScanError, threat_intel.WatchlistError, OSError, UnicodeError) as err:
         print(f"Error: {err}", file=sys.stderr)
         return 2
     if args.format == "json":
