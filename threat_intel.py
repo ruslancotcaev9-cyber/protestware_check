@@ -23,6 +23,7 @@ MANIFEST_NAMES = {
     "cargo.toml", "cargo.lock", "go.mod", "gemfile", "gemfile.lock", ".gitmodules",
     "deno.json", "deno.lock", "mix.exs", "mix.lock", "gopkg.toml", "gopkg.lock",
     "go.sum", "pylock.toml", "requirements-resolver.txt",
+    "packages.lock.json", "directory.packages.props",
 }
 REQUIREMENTS_NAME = re.compile(r"(?:requirements[-_\w]*\.(?:txt|in)|.*\.requirements\.txt)", re.I)
 GITHUB_REF = re.compile(
@@ -58,7 +59,8 @@ def github_refs(text: str) -> set[str]:
 
 def is_manifest(path: str) -> bool:
     name = Path(path).name.lower()
-    return name in MANIFEST_NAMES or bool(REQUIREMENTS_NAME.fullmatch(name))
+    return (name in MANIFEST_NAMES or bool(REQUIREMENTS_NAME.fullmatch(name))
+            or name.endswith((".csproj", ".fsproj", ".vbproj")))
 
 
 def scan_manifests(path: str, content: str) -> list[tuple[str, int, str]]:

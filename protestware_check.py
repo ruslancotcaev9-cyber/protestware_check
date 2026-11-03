@@ -8,6 +8,8 @@ import argparse
 import ast_analysis
 import threat_intel
 import dependency_analysis
+import language_analysis
+import report_formats
 import base64
 import fnmatch
 import io
@@ -22,12 +24,13 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
     ".java", ".kt", ".rb", ".php", ".sh", ".bash", ".ps1", ".cs", ".c",
     ".cc", ".cpp", ".h", ".hpp", ".swift", ".lua", ".pl", ".r",
+    ".sql", ".html", ".htm", ".css", ".sass", ".scss", ".less",
 }
 TEXT_SUFFIXES = CODE_SUFFIXES | {".md", ".mdx", ".rst", ".txt", ".json", ".yaml", ".yml", ".toml", ".xml"}
 EXCLUDED_DIRS = {
@@ -219,7 +222,9 @@ def python_code_only_lines(content: str) -> list[str]:
 def scan_text(path: str, content: str, political_terms: list[str], allowed_domains: list[str]) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
     lines = content.splitlines()
-    code_lines = python_code_only_lines(content) if Path(path).suffix.lower() == ".py" else lines
+    suffix = Path(path).suffix.lower()
+    code_lines = (python_code_only_lines(content) if suffix == ".py"
+                  else language_analysis.mask_comments(content, suffix).splitlines())
     code = Path(path).suffix.lower() in CODE_SUFFIXES or Path(path).name in {"Dockerfile", "Makefile"}
     for i, line in enumerate(lines):
         n = i + 1
@@ -283,6 +288,13 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
                 existing.pop(("OBF_DYNAMIC_EXEC", item["line"]), None)
             existing[(item["rule"], item["line"])] = item
         return list(existing.values())
+    # Targeted language-specific rules complement generic rules without executing source.
+    extra = language_analysis.scan_language(path, content, allowed_domains)
+    seen = {(item["rule"], item["line"]) for item in output}
+    for item in extra:
+        if (item["rule"], item["line"]) not in seen:
+            output.append(item)
+            seen.add((item["rule"], item["line"]))
     # Fallback for other languages and syntactically incomplete Python.
     # Stronger suspicion only when a geography decision is near an actionable operation.
     targets = [item for item in output if item["rule"] == "GEO_TARGET"]
@@ -360,16 +372,22 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
             "warnings": warnings}
 
 
-def output_text(report: dict[str, Any]) -> None:
-    print(f"Source: {report['source']} | files: {report['files_scanned']} | review risk: {report['risk']} (code: {report['code_risk']})")
-    print("Findings: " + ", ".join(f"{k}={v}" for k, v in report["summary"].items()))
+def report_text(report: dict[str, Any]) -> str:
+    lines = [f"Source: {report['source']} | files: {report['files_scanned']} | "
+             f"review risk: {report['risk']} (code: {report['code_risk']})",
+             "Findings: " + ", ".join(f"{k}={v}" for k, v in report["summary"].items())]
     dep = report["dependencies"]
     if dep["mode"] != "off":
-        print(f"Dependencies: {dep['summary']['count']} | complete: {dep['summary']['complete']} | "
-              f"ecosystems: {dep['summary'].get('ecosystems', {})}")
+        lines.append(f"Dependencies: {dep['summary']['count']} | complete: "
+                     f"{dep['summary']['complete']} | ecosystems: {dep['summary'].get('ecosystems', {})}")
     for item in report["findings"]:
-        print(f"[{item['severity'].upper()}] {item['rule']} {item['file']}:{item['line']} — {item['message']}")
-        print(f"    {item['evidence']}")
+        lines.append(f"[{item['severity'].upper()}] {item['rule']} {item['file']}:{item['line']} — {item['message']}")
+        lines.append(f"    {item['evidence']}")
+    return "\n".join(lines) + "\n"
+
+
+def output_text(report: dict[str, Any]) -> None:
+    print(report_text(report), end="")
     for warning in report["warnings"] + report["dependencies"]["summary"].get("warnings", []):
         print(f"Warning: {warning}", file=sys.stderr)
 
@@ -380,7 +398,8 @@ def main(argv: list[str] | None = None) -> int:
     selector.add_argument("--path", type=Path, default=Path("."), help="Local directory (default: current)")
     selector.add_argument("--repo", help="GitHub OWNER/REPO or https://github.com/OWNER/REPO")
     parser.add_argument("--ref", help="GitHub branch, tag, or commit (only with --repo)")
-    parser.add_argument("--format", choices=("text", "json"), default="text")
+    parser.add_argument("--format", choices=("text", "json", "sarif", "cyclonedx"), default="text")
+    parser.add_argument("--output", type=Path, help="Write selected report format to this file (default: stdout)")
     parser.add_argument("--fail-on", choices=("low", "medium", "high"), default="high")
     parser.add_argument("--allow-domain", action="append", default=[], help="Trusted domain and subdomains; repeatable")
     parser.add_argument("--exclude", action="append", default=[], help="Additional file/directory glob; repeatable")
@@ -443,8 +462,23 @@ def main(argv: list[str] | None = None) -> int:
     except (ScanError, threat_intel.WatchlistError, ValueError, OSError, UnicodeError) as err:
         print(f"Error: {err}", file=sys.stderr)
         return 2
-    if args.format == "json":
-        print(json.dumps(report, ensure_ascii=False, indent=2))
+    if args.format == "sarif":
+        rendered = json.dumps(report_formats.sarif(report), ensure_ascii=False, indent=2) + "\n"
+    elif args.format == "cyclonedx":
+        rendered = json.dumps(report_formats.cyclonedx(report), ensure_ascii=False, indent=2) + "\n"
+    elif args.format == "json":
+        rendered = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
+    else:
+        rendered = None
+    if args.output:
+        try:
+            # Avoid rewriting scanned paths by accident; the output is written after scanning.
+            args.output.write_text(rendered if rendered is not None else report_text(report), encoding="utf-8")
+        except OSError as err:
+            print(f"Error: Cannot write report: {type(err).__name__}", file=sys.stderr)
+            return 2
+    elif rendered is not None:
+        print(rendered, end="")
     else:
         output_text(report)
     if args.dependency_strict and not report["dependencies"]["summary"].get("complete", False):

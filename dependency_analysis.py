@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 import json
 import re
 import tomllib
+import xml.etree.ElementTree as ET
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -637,6 +638,103 @@ class Inventory:
                 self.add(Package("go", mod, ver, path, "lockfile", 1 if direct else -1,
                                  direct=direct, repository=repo))
 
+    def nuget_locks(self) -> None:
+        """Read NuGet packages.lock.json (per target framework) and direct .csproj refs.
+
+        NuGet registry resolution is intentionally not attempted; package URLs in
+        untrusted project XML are never fetched. Central versions are read locally.
+        """
+        central: dict[str, dict[str, str]] = {}
+        project_refs: dict[str, dict[str, str]] = {}
+        for path in sorted(self.manifests):
+            name = path.rsplit("/", 1)[-1].lower()
+            if not (name.endswith((".csproj", ".fsproj", ".vbproj")) or name == "directory.packages.props"):
+                continue
+            try:
+                root = ET.fromstring(self.manifests[path])
+            except ET.ParseError as err:
+                self.warn(f"Malformed .NET project XML: {path} ({type(err).__name__})")
+                continue
+            refs: dict[str, str] = {}
+            for element in root.iter():
+                tag = element.tag.rsplit("}", 1)[-1]
+                if tag not in {"PackageReference", "PackageVersion"}:
+                    continue
+                pkg = element.get("Include") or element.get("Update")
+                if not pkg or not NAME_RE.fullmatch(pkg):
+                    continue
+                version = element.get("Version")
+                if version is None:
+                    for child in element:
+                        if child.tag.rsplit("}", 1)[-1] == "Version" and child.text:
+                            version = child.text.strip()
+                            break
+                refs[pkg.lower()] = version or ""
+            self.source_files.add(path)
+            if name == "directory.packages.props":
+                central[manifest_dir(path)] = refs
+            else:
+                project_refs[path] = refs
+        for path, refs in project_refs.items():
+            directory = manifest_dir(path)
+            sources = {**central.get("", {}), **central.get(directory, {}), **refs}
+            for name in refs:
+                if not sources[name]:
+                    sources[name] = central.get(directory, {}).get(name) or central.get("", {}).get(name, "")
+            project_refs[path] = {name: sources[name] for name in refs}
+
+        locked_directories: set[str] = set()
+        for path, _ in roots_for(self.manifests, ("packages.lock.json",)):
+            data = self.read_json(path)
+            if not isinstance(data, dict) or not isinstance(data.get("dependencies"), dict):
+                self.warn(f"Unsupported NuGet lock format: {path}")
+                continue
+            self.source_files.add(path)
+            directory = manifest_dir(path)
+            locked_directories.add(directory)
+            ref_names = {n for proj, refs in project_refs.items()
+                         if manifest_dir(proj) == directory for n in refs}
+            for framework, packages in data["dependencies"].items():
+                if not isinstance(packages, dict):
+                    self.warn(f"Invalid NuGet framework entry in {path}: {framework}")
+                    continue
+                for name, item in packages.items():
+                    if not isinstance(item, dict) or not isinstance(name, str):
+                        continue
+                    version = item.get("resolved")
+                    if not isinstance(version, str) or not version:
+                        self.warn(f"Unresolved NuGet version: {name} in {path}")
+                        continue
+                    direct = item.get("type", "").lower() == "direct" or name.lower() in ref_names
+                    self.add(Package("nuget", name, version, path, "lockfile", 1 if direct else -1,
+                                     direct=direct, requested=str(item.get("requested") or "")))
+            for framework, packages in data["dependencies"].items():
+                if not isinstance(packages, dict):
+                    continue
+                for parent_name, item in packages.items():
+                    if not isinstance(item, dict):
+                        continue
+                    parent_ver = item.get("resolved")
+                    for child_name in (item.get("dependencies") or {}):
+                        if not isinstance(child_name, str):
+                            continue
+                        for pkg in self.packages.values():
+                            if (pkg.ecosystem == "nuget" and pkg.manifest == path and
+                                pkg.name.lower() == child_name.lower()):
+                                pkg.via.add(f"{parent_name}@{parent_ver}")
+                                if pkg.depth < 0:
+                                    pkg.depth = 2
+        for path, refs in project_refs.items():
+            if manifest_dir(path) in locked_directories:
+                continue
+            for name, version in refs.items():
+                if not version or not re.fullmatch(r"[0-9]+(?:\.[0-9A-Za-z-]+)*", version):
+                    self.warn(f"Unpinned .NET dependency {name} in {path}; packages.lock.json required")
+                self.add(Package("nuget", name, version if re.fullmatch(r"[0-9]+(?:\.[0-9A-Za-z-]+)*", version) else "",
+                                 path, "manifest", 1, True, requested=version))
+            if refs:
+                self.warn(f"No NuGet packages.lock.json near {path}; transitives unavailable")
+
     def registry_get(self, ecosystem: str, name: str, version: str) -> dict:
         key = (ecosystem, normalize(ecosystem, name), version)
         if key in self.cache:
@@ -861,6 +959,7 @@ class Inventory:
         self.pnpm_locks()
         self.python_locks()
         self.other_locks()
+        self.nuget_locks()
         # Do not silently call unsupported lock formats complete.
         for path in self.manifests:
             if path.rsplit("/", 1)[-1].lower() in {"yarn.lock", "pipfile.lock", "gemfile.lock"}:
@@ -868,6 +967,8 @@ class Inventory:
         self.add_explicit(explicit_packages or [])
         if self.mode == "registry":
             self.registry_expand()
+        if not self.source_files:
+            self.warn("No supported dependency manifests found; inventory completeness is unknown")
         packages = sorted(self.packages.values(), key=lambda p: (p.ecosystem, p.name, p.version, p.manifest))
         references: list[tuple[str, str, int, str]] = []
         for pkg in packages:

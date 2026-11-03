@@ -1,0 +1,29 @@
+# Optional workflow example. Copy into .github/workflows/ when GitHub Code Scanning
+# and security-events:write are available for your repository.
+name: Protestware Code Scanning
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Scan checkout without executing its dependencies
+        run: |
+          python3 protestware_check.py --path . --dependencies lock \
+            --watchlists off --format sarif --output protestware.sarif --fail-on high
+      - name: Upload SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: protestware.sarif
+          category: protestware-check
