@@ -1,0 +1,31 @@
+name: Pinned three-repository protestware audit
+on:
+  push:
+    branches:
+      - audit/three-repos-20261104
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install only trusted scanner dependencies
+        run: python -m pip install -r requirements-resolver.txt -r requirements-ast.txt
+      - name: Download trusted syntax grammar resources
+        run: python -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less'])"
+      - name: Static scans of immutable commit SHAs (never execute scanned code)
+        run: python audit/run_audit_20261104.py
+      - name: Upload reproducible raw and readable audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: protestware-three-repository-audit-20261104
+          path: audit-reports/
+          if-no-files-found: error
+          retention-days: 30
