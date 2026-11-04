@@ -26,7 +26,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
-VERSION = "0.5.0"
+VERSION = "0.6.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",

@@ -128,6 +128,28 @@ def sarif(report: dict[str, Any]) -> dict[str, Any]:
                 result["locations"] = [{"physicalLocation": {
                     "artifactLocation": {"uri": quote(normalized, safe="/@+-.~_")},
                     "region": {"startLine": number}}}]
+        # SARIF 2.1 codeFlows provide the analyst with bounded source-to-sink
+        # provenance. Do not allow source-provided paths to escape the project.
+        hops = item.get("dataflow")
+        if isinstance(hops, list) and hops and len(hops) <= 25:
+            thread = []
+            for i, hop in enumerate(hops):
+                if not isinstance(hop, dict):
+                    continue
+                hop_path = str(hop.get("file") or path).replace("\\", "/")
+                hop_line = hop.get("line")
+                if (not hop_path or hop_path.startswith("/") or
+                        ".." in PurePosixPath(hop_path).parts or
+                        not isinstance(hop_line, int) or hop_line <= 0):
+                    continue
+                thread.append({"location": {"physicalLocation": {
+                    "artifactLocation": {"uri": quote(hop_path, safe="/@+-.~_")},
+                    "region": {"startLine": hop_line}},
+                    "message": {"text": str(hop.get("kind", "step")) + ": " +
+                                     str(hop.get("message", ""))[:180]}},
+                    "executionOrder": i})
+            if thread:
+                result["codeFlows"] = [{"threadFlows": [{"locations": thread}]}]
         fingerprint = "\x00".join([rule, path, str(item.get("evidence", "")).strip()])
         result["partialFingerprints"] = {"primaryLocationLineHash": sha256(fingerprint.encode()).hexdigest()[:32]}
         results.append(result)
