@@ -26,12 +26,12 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
-VERSION = "0.6.0"
+VERSION = "0.7.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
     ".java", ".kt", ".rb", ".php", ".sh", ".bash", ".ps1", ".cs", ".c",
-    ".cc", ".cpp", ".h", ".hpp", ".swift", ".lua", ".pl", ".r",
+    ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx", ".swift", ".lua", ".pl", ".r",
     ".sql", ".html", ".htm", ".css", ".sass", ".scss", ".less",
 }
 TEXT_SUFFIXES = CODE_SUFFIXES | {".md", ".mdx", ".rst", ".txt", ".json", ".yaml", ".yml", ".toml", ".xml"}

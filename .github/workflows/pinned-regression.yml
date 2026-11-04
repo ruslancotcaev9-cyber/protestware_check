@@ -1,0 +1,37 @@
+name: Pinned behavioral regression (static-only)
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/cpp-flood-obfuscation-20261104
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install trusted parser dependencies
+        run: python -m pip install -r requirements-ast.txt -r requirements-resolver.txt
+      - name: Install C/C++ and JavaScript/TypeScript grammars
+        run: python -c "from tree_sitter_language_pack import download; download(['c','cpp','javascript','typescript','tsx'])"
+      - name: Check out pinned untrusted projects as data only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/static-checkouts
+          fetch_pinned() {
+            local repo="$1" name="$2" commit="$3"
+            git -c protocol.file.allow=never clone --no-checkout --filter=blob:none \
+              "https://github.com/$repo.git" "/tmp/static-checkouts/$name"
+            git -C "/tmp/static-checkouts/$name" -c core.hooksPath=/dev/null checkout --detach "$commit"
+          }
+          fetch_pinned fmtlib/fmt fmt 4ed3535092a96ac9f56fab80df83416d51bcc78e
+          fetch_pinned Neargye/magic_enum magic_enum 7f7c70473857c47c6eb88261771c4ab3dc7616d4
+          fetch_pinned Anti-Prop/antiprop_basic antiprop_basic 5df3875efa40082167b1c11012b7f4b2ad2f045a
+      - name: Validate behavior and benign baselines without execution
+        run: python tests/pinned_repository_regressions.py /tmp/static-checkouts

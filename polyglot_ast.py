@@ -8,7 +8,9 @@ from pathlib import Path
 from urllib.parse import urlsplit
 import re
 
-GRAMMARS = {'.go': 'go', '.cs': 'csharp', '.js': 'javascript', '.jsx': 'javascript',
+GRAMMARS = {'.c': 'c', '.cc': 'cpp', '.cpp': 'cpp', '.cxx': 'cpp',
+            '.h': 'cpp', '.hh': 'cpp', '.hpp': 'cpp', '.hxx': 'cpp',
+            '.go': 'go', '.cs': 'csharp', '.js': 'javascript', '.jsx': 'javascript',
             '.mjs': 'javascript', '.cjs': 'javascript', '.ts': 'typescript',
             '.tsx': 'tsx', '.sql': 'sql', '.html': 'html', '.htm': 'html',
             '.css': 'css', '.scss': 'scss', '.less': 'less'}
@@ -353,9 +355,17 @@ def scan_tree(path, content, allow):
         tree = _parser(GRAMMARS[ext]).parse(content.encode('utf-8'))
         if tree is None:
             return [], f'AST parser returned no tree for {path}'
+        if ext in {'.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx'}:
+            from cpp_ast import scan_cpp
+            cpp_findings = scan_cpp(path, content, tree.root_node, allow)
+            diag = f'AST partial syntax recovery: {path}' if tree.root_node.has_error else None
+            return cpp_findings, diag
         analyzer = TreeAnalyzer(path, content, allow)
         analyzer.index_functions(tree.root_node)
         analyzer.walk(tree.root_node, {})
+        if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
+            from js_behavior import scan_js_behavior
+            analyzer.findings.extend(scan_js_behavior(path, content, tree.root_node))
         if ext in {'.html', '.htm'}:
             # Embedded languages have their own syntax trees; byte offsets matter for Unicode.
             raw_data = content.encode('utf-8')

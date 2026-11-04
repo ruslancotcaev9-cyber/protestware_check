@@ -15,7 +15,7 @@ jobs:
       - name: Install AST and resolver dependencies
         run: python -m pip install -r requirements-resolver.txt -r requirements-ast.txt
       - name: Download grammar files
-        run: python -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less'])"
+        run: python -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less','c','cpp'])"
       - name: Python syntax checks
         run: python -m compileall -q .
       - name: Regression and parser tests

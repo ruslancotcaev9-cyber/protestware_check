@@ -1,12 +1,33 @@
 # protestware-check
 
+## Версия 0.7.0: C/C++ AST, NETWORK_FLOOD, OBFUSCATED_JS
+
+Добавлены три проверяемых статических правила по итогам аудита `fmtlib/fmt`, `Neargye/magic_enum`, `Anti-Prop/antiprop_basic`:
+
+- **C/C++ Tree-sitter (`c`, `cpp`):** грамматики для `.c`, `.cc`, `.cpp`, `.cxx`, `.h`, `.hh`, `.hpp`, `.hxx`. Вызовы удаления (`std::filesystem::remove_all`, `unlink` и др.), записи через `fopen` с режимом записи или `std::ofstream`, сетевые API и запуск процессов привязываются к узлам вызовов; для операции под условием по стране (`if (country_code == "RU") ...`) выдаётся `CPP_GEO_ACTION` с трассой `condition → sink`. `std::remove` алгоритмов STL **не** считается удалением файла. Поддерживаются только известные API и локальные синтаксические ветви, без межфайлового C++ CFG и разбора препроцессорных макросов.
+- **`NETWORK_FLOOD` (`high`):** Tree-sitter проверяет синтаксически неограниченные `while(true)`/`for(;;)` в JS/TS, а также прямые `fetch` и вызовы именованных помощников (ограниченный call graph). Это **признак потенциального DoS**, а не доказательство успешной атаки; ограниченные циклы и обычная пакетная загрузка сами по себе не получают данное правило.
+- **`OBFUSCATED_JS` (`medium`, иногда `high`):** сочетание большого строкового словаря, перестановки массива (`push(shift())`), многочисленных обращений через hex-индексы и плотного однострочного представления. Одна минификация не является достаточным основанием; срабатывание требует ручного ревью, не приравнивается к вредоносности.
+
+**Контрольные примеры:** в `tests/test_cpp_js_behavior.py` есть позитивные и негативные тесты, включая сценарии массовых запросов и отсутствие ложного удаления от `std::remove`. Дополнительный workflow `.github/workflows/pinned-regression.yml` (ручной или для специальной feature-ветки) безопасно скачивает только исходники по зафиксированным commit SHA трёх проектов и проверяет: у Anti-Prop обнаруживаются `NETWORK_FLOOD` и `OBFUSCATED_JS`, в основных каталогах `fmt` и `magic_enum` не появляется критических срабатываний. Сборка, установка, запуск библиотек и их скриптов **не выполняются**.
+
+```bash
+python3 -m pip install -r requirements-ast.txt -r requirements-resolver.txt
+python3 -c 'from tree_sitter_language_pack import download; download(["c", "cpp", "javascript", "typescript", "tsx"])'
+python3 protestware_check.py --path ./project --ast-mode required --format sarif --output report.sarif
+python3 -m unittest discover -s tests -v
+```
+
+При `--ast-mode required` отсутствие грамматики, превышение бюджета узлов или синтаксическая ошибка являются ошибкой анализа; `auto` явно регистрирует снижение полноты. Операции над пользовательскими данными требуют анализа назначения, прав и фактической достижимости ветвей. **Не** используйте политические индикаторы и сторонние списки как самостоятельное основание блокировки программ или авторов.
+
+---
+
 ## Версия 0.6.0: межпроцедурный taint-analysis и трассировки SARIF
 
 **Новое:** анализатор отслеживает ограниченные потоки данных внутри одного файла через именованные функции: аргумент вызова → параметр → присваивания/простые строковые преобразования → `return` → URL-параметр сетевого вызова. Для Python используется `ast`, для **Go, C#, JavaScript и TypeScript/TSX** — существующий Tree-sitter-движок. Динамические URL, полученные из геолокации, переменных среды и входных HTTP-параметров, создают `TAINT_URL` с полем `dataflow` (шаги `source`, `assignment`, `call`, `parameter`, `return`, `call-result`, `sink`). В SARIF эти шаги сериализуются как `codeFlows/threadFlows/locations` для просмотра маршрута в GitHub Code Scanning.
 
 ```bash
 python3 -m pip install -r requirements-ast.txt -r requirements-resolver.txt
-python3 -c 'from tree_sitter_language_pack import download; download(["go", "csharp", "javascript", "typescript", "tsx", "sql", "html", "css", "scss", "less"])'
+python3 -c 'from tree_sitter_language_pack import download; download(["go", "csharp", "javascript", "typescript", "tsx", "sql", "html", "css", "scss", "less", "c", "cpp"])'
 python3 protestware_check.py --path ./project --ast-mode required --format sarif --output findings.sarif
 ```
 
@@ -29,7 +50,7 @@ python3 protestware_check.py --path ./project --ast-mode required --format sarif
 
 ```bash
 python3 -m pip install -r requirements-ast.txt
-python3 -c 'from tree_sitter_language_pack import download; download(["go", "csharp", "javascript", "typescript", "tsx", "sql", "html", "css", "scss", "less"])'
+python3 -c 'from tree_sitter_language_pack import download; download(["go", "csharp", "javascript", "typescript", "tsx", "sql", "html", "css", "scss", "less", "c", "cpp"])'
 ```
 
 Грамматики Tree-sitter являются нативными бинарными компонентами, скачиваемыми на первом использовании. Для CI предзагружайте их в доверенной среде и кэшируйте; для изолированного/offline-процесса подготовьте их до отключения сети. Для **неполного или недоступного парсинга** используется `warnings` и JSON-поле `ast`:
@@ -144,7 +165,7 @@ python3 protestware_check.py --path ../my-project \
 - **`GEO_ACTION` для валидного Python** выдаётся, только когда операция находится в исполняемой ветви соответствующего `if` (или `else`), а не просто рядом на соседних строках. Объявления вложенных функций/классов не считаются немедленным выполнением.
 - Результаты AST содержат поле `"analysis": "ast"`. Если идентичная пара `правило+строка` уже найдена текстовыми эвристиками, AST-результат имеет приоритет.
 
-Для остальных языков используется специализированный текстовый анализ, а не AST; для Python с ошибками синтаксиса остаётся текстовый fallback. Анализатор **не является** полноценным taint/data-flow, межпроцедурным анализом или средой динамического выполнения: алиасы через присваивания, рефлексия, динамический импорт и пути через внешние API могут остаться незамеченными.
+Эта секция описывает исходные правила версии 0.2.0. В актуальной версии C/C++, Go, C#, JS/TS и ряд неисполняемых форматов также проверяются через Tree-sitter, а Python и Go/C#/JS/TS имеют ограниченный taint-анализ. Препроцессор, сложные объекты, рефлексия, динамический импорт и пути через внешние API могут остаться незамеченными.
 
 ## Правила обнаружения
 
@@ -161,12 +182,17 @@ python3 protestware_check.py --path ../my-project \
 | `OBF_DECODE_EXEC` | исполнение декодируемых данных | `high` |
 | `OBF_DYNAMIC_EXEC` | `eval`, `exec` | `medium` |
 | `OBF_ENCODING` | признаки закодированных строк | `low` |
-| `GEO_ACTION` | операция под географическим условием (Python AST) / близость в других языках | `high` при AST-удалении; для других случаев по правилам ниже |
+| `GEO_ACTION` | контекст географического условия (Python AST либо ограниченная эвристика) | `high` |
+| `CPP_FS_DELETE` / `CPP_FS_WRITE` | файловые операции C/C++ по AST | `medium` / `low` |
+| `CPP_PROCESS` / `CPP_NETWORK` | запуск процесса или сетевой API C/C++ по AST | `medium` / `low` |
+| `CPP_GEO_TARGET` / `CPP_GEO_ACTION` | географическое ветвление C/C++ и чувствительная операция внутри ветви | `medium` / `high` |
+| `NETWORK_FLOOD` | неограниченный JS/TS-цикл с прямым или делегированным сетевым вызовом | `high` |
+| `OBFUSCATED_JS` | несколько независимых техник обфускации JS/TS | `medium` / `high` |
 | `BLACK_MARK_OWNER` | владелец проекта упомянут в `black-mark` | `info` |
 | `TOXIC_REPO` | репозиторий явно присутствует в `toxic-repos` | `info`–`medium` |
 | `TOXIC_PACKAGE` | идентичность пакета подтверждена PURL / ссылкой на реестр из базы | `info` |
 
-**Внимание:** проверка внешних доменов `NET_EXTERNAL` фиксирует неизвестные хосты, но не проверяет их репутацию. Для других языков `GEO_ACTION` по-прежнему опирается на близость строк (до 15) и оценивается как `high`; это не доказательство реального control-flow. Технический факт нахождения операции в ветви по стране тоже не доказывает злонамеренность без анализа назначения и параметров.
+**Внимание:** проверка внешних доменов `NET_EXTERNAL` фиксирует неизвестные хосты, но не проверяет их репутацию. Для языков без специализированной ветвевой проверки `GEO_ACTION` по-прежнему может опираться на близость строк (до 15) и оценивается как `high`; это не доказательство реального control-flow. Технический факт нахождения операции в ветви по стране тоже не доказывает злонамеренность без анализа назначения и параметров.
 
 ## Параметры CLI
 
@@ -251,23 +277,24 @@ SARIF описывает обнаруженные индикаторы с уро
 | Язык | Расширения | Покрытие и ограничения |
 |---|---|---|
 | Python | `.py` | `ast.parse` для условий географии, вызовов сети/FS/динамического исполнения; fallback на шаблоны при некорректном AST |
-| Go | `.go` | HTTP-клиент, `os.Remove/RemoveAll`, запись, `exec.Command`, Base64; regex-эвристики, **не AST Go** |
-| C# | `.cs` | `HttpClient`, `File.Delete`, `Directory.Delete`, операции записи, динамическая загрузка; NuGet lock для зависимостей; **не Roslyn** |
-| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | `fetch`, `axios`, `fs`, `eval`, декодирование, внешние URL; комментарии маскируются; **не JS AST** |
-| TypeScript | `.ts`, `.tsx` | Те же правила, что для JS; типы, decorators, динамические импорты и type-flow отдельно не разрешаются |
-| SQL | `.sql` | `DROP`, `TRUNCATE`, `DELETE`, `UPDATE`, `xp_cmdshell`; это эвристический поиск, не SQL-диалектный парсер и не поиск инъекций |
+| Go | `.go` | Tree-sitter AST, поток сетевого URL, ограниченные межпроцедурные вызовы; шаблоны FS/процессов |
+| C# | `.cs` | Tree-sitter AST, ограниченный taint URL, шаблоны `File`/`Directory`/процессов, NuGet; не Roslyn |
+| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | Tree-sitter AST, межпроцедурный URL-taint, `NETWORK_FLOOD`, `OBFUSCATED_JS`, FS и eval |
+| TypeScript | `.ts`, `.tsx` | Tree-sitter AST и те же признаки, что для JS; нет полноценной проверки type-flow, decorators и динамических импортов |
+| C/C++ | `.c`, `.cc`, `.cpp`, `.cxx`, `.h`, `.hh`, `.hpp`, `.hxx` | Tree-sitter C/C++ AST; известные вызовы сети, FS, процессов; `CPP_GEO_ACTION`, но без препроцессорного и межмодульного CFG |
+| SQL | `.sql` | Tree-sitter AST + эвристики SQL-инструкций; не полноценный анализ всех диалектов и инъекций |
 | HTML | `.html`, `.htm` | внешние `<script>`, `<iframe>`, `<link rel=stylesheet>`, редирект через meta, встроенный JavaScript/CSS |
 | CSS | `.css` | внешние `@import`, `url()`, подозрительно экранированные URL |
 | Sass | `.sass`, `.scss` | аналогичные CSS-правила; Sass-макросы, переменные и сборка не исполняются |
 | Less | `.less` | аналогичные CSS-правила; Less-переменные и импорты не разрешаются |
 
-Для Go/C#/JS/TS шаблоны комментариев маскируются, а политические фразы в документации остаются информационным контекстом. **Полноценного AST/CFG для этих языков нет**, поэтому `GEO_ACTION` вне Python остаётся эвристикой близости строк и может давать ложноположительные результаты. Шаблоны не обещают находить операции через любые алиасы, обфускацию, сборочные макросы или динамические ссылки.
+Для Go/C#/JS/TS шаблоны комментариев маскируются, а политические фразы в документации остаются информационным контекстом. **Tree-sitter даёт синтаксическое дерево, но не полноценный CFG/SSA.** Для языков, не имеющих отдельной проверки ветвей, старое правило `GEO_ACTION` может оставаться эвристикой близости строк. Шаблоны не обещают находить операции через любые алиасы, обфускацию, сборочные макросы или динамические ссылки.
 
 Проверки совместимости запускаются командами:
 
 ```bash
 python3 -m py_compile protestware_check.py ast_analysis.py language_analysis.py \
-  dependency_analysis.py threat_intel.py report_formats.py
+  dependency_analysis.py threat_intel.py report_formats.py cpp_ast.py js_behavior.py
 python3 -m unittest discover -s tests -v
 ```
 
