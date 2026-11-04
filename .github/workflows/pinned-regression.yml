@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/cpp-flood-obfuscation-20261104
+      - feature/cpp-reachability-20261104
 jobs:
   regression:
     runs-on: ubuntu-latest

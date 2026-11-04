@@ -1,5 +1,27 @@
 # protestware-check
 
+## Версия 0.8.0: межфункциональная достижимость C/C++
+
+Добавлен **ограниченный внут­рифайловый граф вызовов C/C++** (Tree-sitter). Анализ выполняется в два прохода: индексирование именованных `function_definition`, затем поиск географических ветвлений и потенциальных сетевых, файловых и процессных действий, достигаемых через именованные функции в том же исходном файле. При разрешении вызова учитывается число аргументов; неоднозначные перегрузки и одноимённые функции разных пространств имён **не** связываются произвольно. Рекурсия обрывается; глубина цепочки не больше 6, число расширений не больше 150 на файл, действует общий бюджет AST-узлов. Эти лимиты снижают риск отказа в обслуживании при анализе недоверенного кода.
+
+**Пример обнаруживаемого пути:**
+
+```cpp
+void erase(const char* filename) { std::filesystem::remove_all(filename); }
+void action(const char* filename) { erase(filename); }
+void process(const char* country_code, const char* filename) {
+    if (country_code == "RU") action(filename);
+}
+```
+
+Правило `CPP_GEO_ACTION` (`high`) включает `dataflow` с узлами `condition → call → function → call → function → sink`, а также `reachability` (`scope: single-file`, `status: potentially-reachable`, `call_depth`, `path_sensitive: false`). В SARIF эта цепочка отображается в `codeFlows`. Для однофайловых булевых проверок вида `bool is_ru(region) { return region == "RU"; }` при вызове из условия реализована **ограниченная сводка return-выражения**. Это не выполнение программы и не доказательство фактической достижимости в конкретной сборке.
+
+**Ограничения:** не поддерживаются межфайловое разрешение символов, полноценная типизация C++, виртуальные вызовы, указатели на функции, макросы препроцессора, overload resolution по типам, CFG/SSA, исключения и path-sensitive моделирование. Совпадение по одной ветви следует проверять вручную с учётом препроцессорных флагов и реально вызываемых entry points. Если вызываемая функция определена в другом файле, её тело не будет связано с текущей ветвью; отрицательный результат нельзя считать гарантией отсутствия опасного пути.
+
+**Проверка:** `python -m unittest discover -s tests -v`. Тесты `tests/test_cpp_interproc.py` проверяют прямые и многоступенчатые вызовы, C и C++, сетевые/файловые/process sinks, географические boolean helpers, неоднозначные перегрузки, рекурсию, отрицательные случаи и экспорт SARIF. Дополнительная регрессия на фиксированных SHA `fmtlib/fmt`, `Neargye/magic_enum`, `Anti-Prop/antiprop_basic` не запускает проверяемые программы.
+
+---
+
 ## Версия 0.7.0: C/C++ AST, NETWORK_FLOOD, OBFUSCATED_JS
 
 Добавлены три проверяемых статических правила по итогам аудита `fmtlib/fmt`, `Neargye/magic_enum`, `Anti-Prop/antiprop_basic`:
@@ -281,7 +303,7 @@ SARIF описывает обнаруженные индикаторы с уро
 | C# | `.cs` | Tree-sitter AST, ограниченный taint URL, шаблоны `File`/`Directory`/процессов, NuGet; не Roslyn |
 | JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | Tree-sitter AST, межпроцедурный URL-taint, `NETWORK_FLOOD`, `OBFUSCATED_JS`, FS и eval |
 | TypeScript | `.ts`, `.tsx` | Tree-sitter AST и те же признаки, что для JS; нет полноценной проверки type-flow, decorators и динамических импортов |
-| C/C++ | `.c`, `.cc`, `.cpp`, `.cxx`, `.h`, `.hh`, `.hpp`, `.hxx` | Tree-sitter C/C++ AST; известные вызовы сети, FS, процессов; `CPP_GEO_ACTION`, но без препроцессорного и межмодульного CFG |
+| C/C++ | `.c`, `.cc`, `.cpp`, `.cxx`, `.h`, `.hh`, `.hpp`, `.hxx` | Tree-sitter C/C++ AST; известные вызовы сети, FS, процессов; `CPP_GEO_ACTION`, и ограниченный граф вызовов внутри файла, но без препроцессорного и межмодульного CFG |
 | SQL | `.sql` | Tree-sitter AST + эвристики SQL-инструкций; не полноценный анализ всех диалектов и инъекций |
 | HTML | `.html`, `.htm` | внешние `<script>`, `<iframe>`, `<link rel=stylesheet>`, редирект через meta, встроенный JavaScript/CSS |
 | CSS | `.css` | внешние `@import`, `url()`, подозрительно экранированные URL |
