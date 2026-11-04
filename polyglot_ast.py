@@ -206,15 +206,15 @@ class TreeAnalyzer:
             return Flow(literal=literal(text))
         if node.type in {'identifier', 'name', 'simple_identifier', 'variable_name'}:
             return state.get(text, Flow())
-        if node.type in SOURCE_NODES:
-            origin = source_trace(text[:300], node.start_point[0] + 1)
-            if origin:
-                return Flow(origin, trace=(('source', node.start_point[0] + 1, text[:120]),))
         if node.type in CALL_NODES:
             call_text = text[:160]
             m = re.match(r'^([A-Za-z_$][\w$]*)\s*\(', call_text)
             if m and m.group(1) in self.functions:
                 return self.evaluate_function(m.group(1), node, state)
+        if node.type in SOURCE_NODES:
+            origin = source_trace(text[:300], node.start_point[0] + 1)
+            if origin:
+                return Flow(origin, trace=(('source', node.start_point[0] + 1, text[:120]),))
         parts = [self.value(child, state, level + 1) for child in children(node)]
         sources = tuple(sorted(set(src for part in parts for src in part.sources)))
         if node.type in {'binary_expression', 'additive_expression', 'template_string',
