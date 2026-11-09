@@ -336,10 +336,12 @@ class TreeAnalyzer:
 
 def _parser(language):
     try:
-        from tree_sitter_language_pack import get_parser
+        from tree_sitter_language_pack import get_parser, downloaded_languages
     except ImportError as exc:
         raise RuntimeError('install requirements-ast.txt') from exc
     try:
+        if language not in downloaded_languages():
+            raise RuntimeError(f"grammar {language} is not cached; prefetch it before scanning")
         return get_parser(language)
     except Exception as exc:
         raise RuntimeError(f'grammar {language}: {type(exc).__name__}: {exc}') from exc

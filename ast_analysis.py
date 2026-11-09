@@ -182,7 +182,10 @@ class Analyzer(ast.NodeVisitor):
                 if item.arg in {"url", "uri"}:
                     address = literal(item.value)
             if address:
-                host = (urlparse(address).hostname or "").lower()
+                try:
+                    host = (urlparse(address).hostname or "").lower()
+                except ValueError:
+                    host = ""
                 if host and any(host == d or host.endswith("." + d) for d in GEO_HOSTS):
                     return "NET_GEO_API", "geolocation", "medium", "Сетевой вызов к сервису IP-геолокации"
                 if host and not any(host == d or host.endswith("." + d) for d in self.allowed):

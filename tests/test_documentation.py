@@ -33,7 +33,7 @@ class DocumentationTests(unittest.TestCase):
     def test_security_policy_contains_workflow(self):
         p = (ROOT / 'SECURITY.md').read_text(encoding='utf-8')
         for word in ('Supported versions', 'Reporting a vulnerability privately', 'Triage',
-                     'Coordinated disclosure', 'before making this repository public'):
+                     'Coordinated disclosure', 'maintainer security configuration'):
             self.assertIn(word.lower(), p.lower())
         self.assertIn('reporting has been enabled', p)
 

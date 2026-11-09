@@ -1,7 +1,6 @@
 # Contributing to protestware-check
 
-Contributions are welcome after the repository is made public. In the
-meantime, access and participation follow the repository owner's permissions.
+Contributions follow the repository owner's permissions and the review process below.
 
 ## Before contributing
 

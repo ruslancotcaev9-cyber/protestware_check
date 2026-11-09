@@ -21,6 +21,6 @@ curl --fail --location --silent --show-error --retry 7 --retry-delay 3 --retry-a
   --output "$archive" \
   "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz"
 printf '%s  %s\n' "$EXPECTED_SHA256" "$archive" | sha256sum --check --status
-tar -xzf "$archive" -C "$destination" gitleaks
+tar --no-same-owner -xzf "$archive" -C "$destination" gitleaks
 chmod 0755 "$destination/gitleaks"
 echo "Gitleaks v${VERSION}: verified archive SHA-256"

@@ -4,6 +4,17 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Security and reliability review — 2026-11-09 (unreleased)
+
+- Bound local/remote reads and aggregate source budgets; reject special files and redirects.
+- Preserve incomplete-scan status in exit codes, text reports and SARIF.
+- Write reports atomically without following output symlinks or overwriting source files.
+- Handle malformed dependency data, malformed source URLs and excessive analysis nesting.
+- Keep version constraints out of exact-version advisory queries; resolve explicit ranges in registry mode.
+- Preserve per-manifest registry enrichment and case-sensitive Go advisory identities.
+- Use pre-cached AST grammars only during scans.
+- Pin CI actions and run pinned behavioral regressions on main and pull requests.
+
 ## [1.1.0] — additional opt-in malware intelligence (unreleased)
 
 - Query version-specific OpenSSF malicious-package records via the OSV API, and GitHub Advisory Database records with `type=malware`.

@@ -158,4 +158,9 @@ def sarif(report: dict[str, Any]) -> dict[str, Any]:
                                         "informationUri": "https://github.com/ruslancotcaev9-cyber/protestware_check",
                                         "rules": definitions}},
                       "automationDetails": {"id": "protestware-check/static-analysis"},
+                      "invocations": [{"executionSuccessful": report.get("scan", {}).get("complete", True),
+                                       "toolExecutionNotifications": [
+                                           {"level": "warning", "message": {"text": str(warning)}}
+                                           for warning in report.get("warnings", []) +
+                                           report.get("dependencies", {}).get("summary", {}).get("warnings", [])]}],
                       "results": results}]}

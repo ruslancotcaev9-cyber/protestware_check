@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import safe_io
+import tempfile
 
 import ast_analysis
 import threat_intel
@@ -25,7 +27,7 @@ import tokenize
 from typing import Any, Iterable
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 VERSION = "1.1.0"
 DEFAULT_MAX_BYTES = 1_000_000
@@ -102,15 +104,25 @@ def github_coordinates(value: str) -> tuple[str, str]:
 
 
 def api_json(url: str, token: str | None) -> dict[str, Any]:
+    parts = urlparse(url)
+    if (parts.scheme != "https" or parts.hostname != "api.github.com"
+            or parts.port not in (None, 443) or parts.username or parts.password):
+        raise ScanError("Unapproved GitHub API URL")
     headers = {"Accept": "application/vnd.github+json", "User-Agent": "protestware-check/0.1"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
     try:
-        with urlopen(Request(url, headers=headers), timeout=20) as response:
-            return json.load(response)
+        with safe_io.open_https(Request(url, headers=headers), timeout=20) as response:
+            raw = response.read(16_000_001)
+        if len(raw) > 16_000_000:
+            raise ScanError("GitHub API response exceeds size limit")
+        result = json.loads(raw)
+        if not isinstance(result, dict):
+            raise ScanError("GitHub API response is not an object")
+        return result
     except HTTPError as err:
         raise ScanError(f"GitHub API returned HTTP {err.code}; check access, rate limit or ref") from err
-    except (URLError, OSError, ValueError, json.JSONDecodeError) as err:
+    except (URLError, OSError, ValueError, RecursionError) as err:
         raise ScanError(f"GitHub API request failed: {type(err).__name__}") from err
 
 
@@ -131,7 +143,14 @@ def is_scannable(path: str, extra_exclude: list[str]) -> bool:
 def iter_local(root: Path, max_bytes: int, exclude: list[str], warnings: list[str]) -> Iterable[tuple[str, str]]:
     if not root.is_dir() or root.is_symlink():
         raise ScanError("--path must point to a real directory (not a symlink)")
-    for base, dirs, files in os.walk(root, followlinks=False):
+    def walk_error(error):
+        raise ScanError(f"Cannot traverse source directory: {type(error).__name__}")
+    if os.name == "posix":
+        walk = os.fwalk(root, follow_symlinks=False, onerror=walk_error)
+    else:
+        walk = ((base, dirs, files, None) for base, dirs, files in
+                os.walk(root, followlinks=False, onerror=walk_error))
+    for base, dirs, files, directory_fd in walk:
         dirs[:] = sorted(d for d in dirs if not (Path(base, d).is_symlink()
                          or d in EXCLUDED_DIRS
                          or any(fnmatch.fnmatch(d, p) for p in exclude)))
@@ -141,10 +160,11 @@ def iter_local(root: Path, max_bytes: int, exclude: list[str], warnings: list[st
             if actual.is_symlink() or not is_scannable(relative, exclude):
                 continue
             try:
-                if actual.stat().st_size > max_bytes:
-                    warnings.append(f"Skipped oversized file: {relative}")
-                    continue
-                content = actual.read_bytes()
+                content = safe_io.read_regular(filename if directory_fd is not None else actual,
+                                               max_bytes, dir_fd=directory_fd)
+            except ValueError:
+                warnings.append(f"Skipped oversized file: {relative}")
+                continue
             except OSError as err:
                 warnings.append(f"Could not read {relative}: {type(err).__name__}")
                 continue
@@ -253,9 +273,12 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
         if NETWORK.search(visible):
             hosts: set[str] = set()
             for address in URL.findall(" ".join(lines[i:i + 2])):
-                parsed = urlparse(address.rstrip(".,;"))
-                if parsed.hostname:
-                    hosts.add(parsed.hostname.lower())
+                try:
+                    parsed = urlparse(address.rstrip(".,;"))
+                    if parsed.hostname:
+                        hosts.add(parsed.hostname.lower())
+                except ValueError:
+                    continue
             unexpected = sorted(h for h in hosts if not domain_allowed(h, allowed_domains))
             if unexpected:
                 output.append(finding("NET_EXTERNAL", "network", "medium", path, n, line,
@@ -362,9 +385,11 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
                  dependency_max_depth: int = 12, dependency_max_requests: int = 300,
                  explicit_packages: list[str] | None = None,
                  ast_mode: str = "auto", malware_mode: str = "off",
-                 malware_max_packages: int = 100, malware_max_requests: int = 120) -> dict[str, Any]:
+                 malware_max_packages: int = 100, malware_max_requests: int = 120,
+                 max_files: int = 10000, max_total_bytes: int = 100_000_000) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     scanned = 0
+    total_bytes = 0
     ast_stats: dict[str, int] = {"parsed": 0, "partial": 0, "degraded": 0, "disabled": 0}
     ast_warnings: list[str] = []
     manifests: dict[str, str] = {}
@@ -377,21 +402,27 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
             references.append((f"{owner}/{repo}".casefold(), "(package)", 0, name))
     for path, content in files:
         scanned += 1
-        results.extend(scan_text(path, content, political_terms, allowed_domains,
-                                 ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats))
+        total_bytes += len(content.encode("utf-8"))
+        if scanned > max_files or total_bytes > max_total_bytes:
+            raise ScanError("Total source file/byte budget exceeded; scan is incomplete")
+        try:
+            results.extend(scan_text(path, content, political_terms, allowed_domains,
+                                     ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats))
+        except RecursionError as error:
+            raise ScanError(f"Analysis nesting limit exceeded: {path}") from error
         if dependency_mode != "off" and threat_intel.is_manifest(path):
             manifests[path] = content
         if watchlists is not None:
             references.extend((repo, path, line, evidence)
                               for repo, line, evidence in threat_intel.scan_manifests(path, content))
+    ingestion_complete = not warnings
     dependencies = dependency_analysis.analyze_dependencies(
         manifests, mode=dependency_mode, max_packages=dependency_max_packages,
         max_depth=dependency_max_depth, max_requests=dependency_max_requests,
         explicit_packages=explicit_packages)
-    if any(threat_intel.is_manifest(text.split(": ", 1)[-1]) for text in warnings
-           if text.startswith(("Skipped oversized file:", "Skipped oversized blob:"))):
+    if not ingestion_complete:
         dependencies["summary"]["complete"] = False
-        dependencies["summary"].setdefault("warnings", []).append("Some dependency manifests were skipped due to size limits")
+        dependencies["summary"].setdefault("warnings", []).append("Source files were skipped or unreadable; dependency coverage is unknown")
     if watchlists is not None:
         references.extend(dependencies["references"])
     code_levels = [item["severity"] for item in results if item["severity"] != "info"]
@@ -423,6 +454,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
     risk = max((technical_item["severity"] for technical_item in technical),
                key=lambda s: SEVERITIES[s], default="none")
     return {"tool": "protestware-check", "version": VERSION, "source": source, "files_scanned": scanned,
+            "scan": {"complete": ingestion_complete},
             "risk": risk, "code_risk": code_risk, "summary": levels, "findings": results,
             "watchlists": watchlists["metadata"] if watchlists else {"mode": "off"},
             "malware_intel": advisory_check["metadata"],
@@ -448,13 +480,13 @@ def report_text(report: dict[str, Any]) -> str:
     for item in report["findings"]:
         lines.append(f"[{item['severity'].upper()}] {item['rule']} {item['file']}:{item['line']} — {item['message']}")
         lines.append(f"    {item['evidence']}")
+    for warning in report.get("warnings", []) + dep["summary"].get("warnings", []):
+        lines.append(f"Warning: {warning}")
     return "\n".join(lines) + "\n"
 
 
 def output_text(report: dict[str, Any]) -> None:
     print(report_text(report), end="")
-    for warning in report["warnings"] + report["dependencies"]["summary"].get("warnings", []):
-        print(f"Warning: {warning}", file=sys.stderr)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -472,6 +504,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--exclude", action="append", default=[], help="Additional file/directory glob; repeatable")
     parser.add_argument("--political-terms-file", type=Path, help="One extra literal phrase per line (UTF-8)")
     parser.add_argument("--max-bytes", type=int, default=DEFAULT_MAX_BYTES)
+    parser.add_argument("--max-files", type=int, default=10000)
+    parser.add_argument("--max-total-bytes", type=int, default=100_000_000)
     parser.add_argument("--watchlists", choices=("off", "live", "offline"), default="off",
                         help="Check toxic-repos and black-mark (off by default)")
     parser.add_argument("--black-mark-file", type=Path, help="Local black-mark README.md for offline mode")
@@ -498,8 +532,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.ref and not args.repo:
         parser.error("--ref requires --repo")
-    if args.max_bytes < 1:
-        parser.error("--max-bytes must be positive")
+    if min(args.max_bytes, args.max_files, args.max_total_bytes) < 1:
+        parser.error("source file/byte limits must be positive")
     if args.dependency_max_packages < 1 or args.dependency_max_depth < 1 or args.dependency_max_requests < 1:
         parser.error("dependency limits must be positive")
     if args.package and args.dependencies == "off":
@@ -542,7 +576,8 @@ def main(argv: list[str] | None = None) -> int:
                               explicit_packages=args.package, ast_mode=args.ast_mode,
                               malware_mode=args.malware_intel,
                               malware_max_packages=args.malware_max_packages,
-                              malware_max_requests=args.malware_max_requests)
+                              malware_max_requests=args.malware_max_requests,
+                              max_files=args.max_files, max_total_bytes=args.max_total_bytes)
     except (ScanError, threat_intel.WatchlistError, ValueError, OSError, UnicodeError) as err:
         print(f"Error: {err}", file=sys.stderr)
         return 2
@@ -556,8 +591,21 @@ def main(argv: list[str] | None = None) -> int:
         rendered = None
     if args.output:
         try:
-            # Avoid rewriting scanned paths by accident; the output is written after scanning.
-            args.output.write_text(rendered if rendered is not None else report_text(report), encoding="utf-8")
+            # Replace the directory entry atomically, never follow an output symlink.
+            if args.output.is_symlink():
+                raise OSError("Output must not be a symlink")
+            if not args.repo and args.output.exists() and args.output.resolve().is_relative_to(args.path.resolve()):
+                raise OSError("Refusing to overwrite an existing file inside the scanned source")
+            temporary = None
+            try:
+                with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=args.output.parent,
+                                                 prefix=".protestware-report-", delete=False) as stream:
+                    temporary = Path(stream.name)
+                    stream.write(rendered if rendered is not None else report_text(report))
+                os.replace(temporary, args.output)
+            finally:
+                if temporary is not None:
+                    temporary.unlink(missing_ok=True)
         except OSError as err:
             print(f"Error: Cannot write report: {type(err).__name__}", file=sys.stderr)
             return 2
@@ -565,6 +613,8 @@ def main(argv: list[str] | None = None) -> int:
         print(rendered, end="")
     else:
         output_text(report)
+    if not report["scan"]["complete"]:
+        return 2
     if args.dependency_strict and not report["dependencies"]["summary"].get("complete", False):
         return 2
     if args.malware_strict and (not report["malware_intel"].get("complete", False) or

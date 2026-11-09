@@ -230,7 +230,7 @@ class Analyzer:
 
 
 def scan_python_taint(path: str, content: str, allowed_domains: list[str]) -> list[dict] | None:
-    if Path(path).suffix != '.py':
+    if Path(path).suffix.lower() != '.py':
         return []
     try:
         tree = ast.parse(content, filename=path)

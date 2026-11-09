@@ -9,7 +9,8 @@ import json
 from pathlib import Path
 import re
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request
+import safe_io
 from urllib.parse import unquote, urlparse
 
 BLACK_MARK_URL = "https://raw.githubusercontent.com/toxic-repos/black-mark/main/README.md"
@@ -84,7 +85,7 @@ def parse_black_mark(text: str) -> set[str]:
 def parse_toxic_repos(text: str) -> dict[str, list[dict]]:
     try:
         records = json.loads(text)
-    except (ValueError, TypeError) as err:
+    except (ValueError, TypeError, RecursionError) as err:
         raise WatchlistError("toxic-repos JSON is malformed") from err
     if not isinstance(records, list) or not records:
         raise WatchlistError("toxic-repos must contain a nonempty JSON array")
@@ -121,7 +122,7 @@ def parse_toxic_packages(text: str) -> dict[tuple[str, str], list[dict]]:
     """
     try:
         records = json.loads(text)
-    except (ValueError, TypeError) as err:
+    except (ValueError, TypeError, RecursionError) as err:
         raise WatchlistError("toxic-repos JSON is malformed") from err
     if not isinstance(records, list):
         raise WatchlistError("toxic-repos JSON is not an array")
@@ -162,7 +163,7 @@ def parse_toxic_packages(text: str) -> dict[tuple[str, str], list[dict]]:
             continue
         if ecosystem == "pypi":
             name = re.sub(r"[-_.]+", "-", name.lower())
-        else:
+        elif ecosystem != "go":
             name = name.lower()
         output.setdefault((ecosystem, name), []).append({
             "id": row.get("id"), "type": str(row.get("problem_type", "unknown")),
@@ -176,7 +177,9 @@ def match_packages(packages: list[dict], data: dict) -> list[dict]:
     output = []
     seen = set()
     for pkg in packages:
-        ecosystem, name = pkg["ecosystem"], pkg["name"].lower()
+        ecosystem, name = pkg["ecosystem"], pkg["name"]
+        if ecosystem != "go":
+            name = name.lower()
         if ecosystem == "pypi":
             name = re.sub(r"[-_.]+", "-", name)
         for record in entries.get((ecosystem, name), []):
@@ -204,7 +207,7 @@ def download_public_list(url: str) -> str:
         raise WatchlistError("Watchlist source is not approved")
     req = Request(url, headers={"User-Agent": "protestware-check/0.2", "Accept": "text/plain,application/json"})
     try:
-        with urlopen(req, timeout=20) as response:
+        with safe_io.open_https(req, timeout=20) as response:
             data = response.read(MAX_WATCHLIST_BYTES + 1)
     except (HTTPError, URLError, OSError, TimeoutError) as err:
         raise WatchlistError(f"Could not retrieve {url}: {type(err).__name__}") from err
@@ -220,8 +223,8 @@ def read_local_list(path: Path) -> str:
     try:
         if not path.is_file() or path.is_symlink() or path.stat().st_size > MAX_WATCHLIST_BYTES:
             raise WatchlistError(f"Invalid watchlist file or excessive size: {path}")
-        return path.read_text(encoding="utf-8-sig")
-    except (OSError, UnicodeError) as err:
+        return safe_io.read_regular(path, MAX_WATCHLIST_BYTES).decode("utf-8-sig")
+    except (OSError, UnicodeError, ValueError) as err:
         raise WatchlistError(f"Could not read watchlist file: {path}") from err
 
 

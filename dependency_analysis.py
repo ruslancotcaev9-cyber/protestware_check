@@ -79,12 +79,25 @@ def official_json(url: str) -> dict[str, Any]:
             if not isinstance(obj, dict):
                 raise RegistryError("Registry metadata is not a JSON object")
             return obj
-    except (HTTPError, URLError, OSError, TimeoutError, ValueError) as err:
+    except (HTTPError, URLError, OSError, TimeoutError, ValueError, RecursionError) as err:
         raise RegistryError(f"Registry metadata unavailable: {type(err).__name__}") from err
 
 
+def is_exact_version(ecosystem: str, version: str) -> bool:
+    """Conservative syntax check: constraints/tags/URLs are not pinned identities."""
+    if not isinstance(version, str) or not version:
+        return False
+    if ecosystem == "pypi":
+        return bool(re.fullmatch(r"[0-9][A-Za-z0-9.!+_-]*", version))
+    if ecosystem in {"npm", "cargo", "composer", "go"}:
+        return bool(re.fullmatch(r"v?[0-9]+(?:\.[0-9]+){0,2}(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?", version))
+    if ecosystem == "nuget":
+        return bool(re.fullmatch(r"[0-9]+(?:\.[0-9]+){0,3}(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?", version))
+    return False
+
+
 def normalize(ecosystem: str, name: str) -> str:
-    return PYPI_NORMALIZE.sub("-", name).lower() if ecosystem == "pypi" else name.lower()
+    return PYPI_NORMALIZE.sub("-", name).lower() if ecosystem == "pypi" else name if ecosystem == "go" else name.lower()
 
 
 def repo_from_value(value: Any) -> str | None:
@@ -137,6 +150,10 @@ class Inventory:
             self.warnings.append(text)
 
     def add(self, pkg: Package) -> Package | None:
+        if pkg.version and not is_exact_version(pkg.ecosystem, pkg.version):
+            self.warn(f"Non-exact version for {pkg.ecosystem}:{pkg.name} in {pkg.manifest}")
+            pkg.requested = pkg.requested or pkg.version
+            pkg.version = ""
         key = (pkg.ecosystem, normalize(pkg.ecosystem, pkg.name), pkg.version, pkg.manifest)
         if key in self.packages:
             old = self.packages[key]
@@ -157,15 +174,19 @@ class Inventory:
 
     def read_json(self, path: str) -> Any:
         try:
-            return json.loads(self.manifests[path])
-        except (ValueError, TypeError) as err:
+            obj = json.loads(self.manifests[path])
+            if not isinstance(obj, dict):
+                self.warn(f"Expected a JSON object: {path}")
+                return None
+            return obj
+        except (ValueError, TypeError, RecursionError) as err:
             self.warn(f"Malformed JSON: {path} ({type(err).__name__})")
             return None
 
     def read_toml(self, path: str) -> Any:
         try:
             return tomllib.loads(self.manifests[path])
-        except (ValueError, TypeError) as err:
+        except (ValueError, TypeError, RecursionError) as err:
             self.warn(f"Malformed TOML: {path} ({type(err).__name__})")
             return None
 
@@ -275,6 +296,8 @@ class Inventory:
                 continue
             name = str(info.get("name") or npm_name(location))
             version = info.get("version")
+            if not isinstance(version, str):
+                continue
             key = ("npm", normalize("npm", name), version, manifest)
             if key in self.packages:
                 indexed[location] = self.packages[key]
@@ -782,7 +805,7 @@ class Inventory:
                 found = [v for v in versions if criterion.match(v)]
                 if found:
                     return str(max(found))
-            except (ValueError, TypeError) as err:
+            except (ValueError, TypeError, RecursionError) as err:
                 raise RegistryError(f"Unsupported npm version range {spec!r}") from err
             raise RegistryError(f"No npm version matches {spec!r}")
         if ecosystem == "pypi":
@@ -814,7 +837,7 @@ class Inventory:
                         candidates.append(ver)
                 if candidates:
                     return str(max(candidates))
-            except (ValueError, TypeError) as err:
+            except (ValueError, TypeError, RecursionError) as err:
                 raise RegistryError(f"Unsupported PyPI version specifier {spec!r}") from err
             raise RegistryError(f"No PyPI version matches {spec!r}")
         raise RegistryError("Unsupported ecosystem")
@@ -823,7 +846,7 @@ class Inventory:
         """Enrich pinned packages and expand unlocked graphs; no install/build scripts."""
         queue = deque((key, pkg.depth if pkg.depth >= 0 else 0)
                       for key, pkg in self.packages.items())
-        visited: set[tuple[str, str, str, tuple[str, ...]]] = set()
+        visited: set[tuple] = set()
         while queue:
             key, depth = queue.popleft()
             pkg = self.packages.get(key)
@@ -837,10 +860,14 @@ class Inventory:
                 try:
                     pkg.version = self.choose_version(pkg.ecosystem, pkg.name, pkg.requested)
                     pkg.source = "registry-selected"
-                except RegistryError as err:
+                    del self.packages[key]
+                    pkg = self.add(pkg)
+                    if pkg is None:
+                        continue
+                except (RegistryError, AttributeError, TypeError, KeyError, ValueError, RecursionError) as err:
                     self.warn(f"Cannot resolve {pkg.ecosystem}:{pkg.name}: {err}")
                     continue
-            unique = (pkg.ecosystem, normalize(pkg.ecosystem, pkg.name), pkg.version)
+            unique = (pkg.ecosystem, normalize(pkg.ecosystem, pkg.name), pkg.version, pkg.manifest)
             if (*unique, tuple(sorted(pkg.qualifiers))) in visited:
                 continue
             visited.add((*unique, tuple(sorted(pkg.qualifiers))))
@@ -905,7 +932,7 @@ class Inventory:
                                     self.warn(f"Non-index Python requirement URL for {requirement.name} cannot be resolved")
                                 continue
                             child_specs.append((requirement.name, str(requirement.specifier), list(requirement.extras)))
-                        except (ValueError, TypeError) as err:
+                        except (ValueError, TypeError, RecursionError) as err:
                             self.warn(f"Invalid Requires-Dist for {pkg.name}: {type(err).__name__}")
                 for name, spec, extras in child_specs:
                     if not name or not isinstance(spec, str):
@@ -946,24 +973,31 @@ class Inventory:
                 raise ValueError(f"Malformed --package name: {name}")
             if requested and not re.fullmatch(r"[A-Za-z0-9.^~*<>=!|+ _,-]+", requested):
                 raise ValueError(f"Malformed --package version constraint: {requested}")
-            self.add(Package(eco, name, requested or "", "(package)",
-                             "manifest" if not requested else "explicit", 0, True,
+            pinned = requested if is_exact_version(eco, requested or "") else ""
+            self.add(Package(eco, name, pinned, "(package)",
+                             "explicit" if pinned else "manifest", 0, True,
                              requested=requested or ""))
-            if not requested and self.mode == "lock":
+            if not pinned and self.mode == "lock":
                 self.warn(f"Unpinned explicit package {spec}: registry mode required")
 
     def analyze(self, explicit_packages: list[str] | None = None) -> dict:
         if self.mode == "off":
             return {"mode": "off", "packages": [], "references": [], "summary": {"count": 0, "complete": False}}
-        self.npm_locks()
-        self.pnpm_locks()
-        self.python_locks()
-        self.other_locks()
-        self.nuget_locks()
+        for parse in (self.npm_locks, self.pnpm_locks, self.python_locks,
+                      self.other_locks, self.nuget_locks):
+            try:
+                parse()
+            except (TypeError, AttributeError, KeyError, ValueError, RecursionError) as error:
+                self.warn(f"Invalid or excessively nested dependency data ({parse.__name__}: {type(error).__name__})")
         # Do not silently call unsupported lock formats complete.
         for path in self.manifests:
-            if path.rsplit("/", 1)[-1].lower() in {"yarn.lock", "pipfile.lock", "gemfile.lock"}:
-                self.warn(f"Lock format not yet resolved into package graph: {path}")
+            if path not in self.source_files and threat_intel.is_manifest(path):
+                # package.json is consumed alongside npm-family lockfiles.
+                if path.rsplit("/", 1)[-1].lower() == "package.json" and any(
+                        sibling(path, name) in self.source_files
+                        for name in ("package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml")):
+                    continue
+                self.warn(f"Dependency manifest not resolved into package graph: {path}")
         self.add_explicit(explicit_packages or [])
         if self.mode == "registry":
             self.registry_expand()

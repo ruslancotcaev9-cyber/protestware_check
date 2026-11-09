@@ -8,14 +8,14 @@ This policy is informed by the coordinated disclosure workflow used in Google's 
 
 | Version | Security fixes |
 | --- | --- |
-| Current `main` / latest maintained release (currently 0.8.x) | Supported on a best-effort basis |
+| Current `main` / latest maintained release (current development line: 1.1.x) | Supported on a best-effort basis |
 | Older versions | No guaranteed backports; please upgrade |
 
 The maintainers may change the supported release line as new versions are published. This is a community-maintained project; there is no contractual service-level agreement.
 
 ## Reporting a vulnerability privately
 
-1. **Once the repository becomes public and private vulnerability reporting has been enabled**, open **[Security → Report a vulnerability](https://github.com/ruslancotcaev9-cyber/protestware_check/security/advisories/new)**. GitHub's private reporting feature must be *explicitly enabled* by repository administrators; the presence of this link or this file alone does not enable it.
+1. **If private vulnerability reporting has been enabled**, open **[Security → Report a vulnerability](https://github.com/ruslancotcaev9-cyber/protestware_check/security/advisories/new)**. GitHub's private reporting feature must be *explicitly enabled* by repository administrators; the presence of this link or this file alone does not enable it.
 2. **Until then, or if the reporting form is unavailable**, ask the maintainers for a private security contact through their GitHub profile or a minimal GitHub issue containing **no vulnerability details, exploit, payload, sensitive path or secret**. Move the report to a mutually agreed private channel before sharing details. For private repository collaborators, a maintainer can initiate a **draft GitHub Security Advisory**.
 3. Do **not** open a public issue or pull request containing actionable exploitation details. Do not test vulnerabilities against systems or accounts you do not own or have authorization to assess.
 
@@ -45,7 +45,7 @@ Ordinary inaccuracies in heuristic scores, contentious classifications in third-
 
 The tool is a **static triage analyzer, not a malware sandbox**. It does not run code from scanned repositories. It may connect to explicitly selected GitHub and registry endpoints; use offline modes when required. Keep tokens in secret stores, do not publish reports of private code, and verify external threat-intelligence matches independently.
 
-## Before making this repository public (maintainer action)
+## Maintainer security configuration
 
 - Enable **Private vulnerability reporting** under GitHub repository Security settings, and verify the reporting form from a non-maintainer account.
 - Configure a monitored, private backup contact channel if the form cannot be enabled; replace the fallback wording above with that real channel.
