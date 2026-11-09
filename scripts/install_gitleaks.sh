@@ -17,7 +17,7 @@ destination="$1"
 mkdir -p "$destination"
 archive="$(mktemp)"
 trap 'rm -f "$archive"' EXIT
-curl --fail --location --silent --show-error --retry 3 --proto '=https' --tlsv1.2 \
+curl --fail --location --silent --show-error --retry 7 --retry-delay 3 --retry-all-errors --proto '=https' --tlsv1.2 \
   --output "$archive" \
   "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz"
 printf '%s  %s\n' "$EXPECTED_SHA256" "$archive" | sha256sum --check --status

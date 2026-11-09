@@ -3,6 +3,17 @@ on:
   push:
   pull_request:
 jobs:
+  malware-regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test malware-advisory integrations without external downloads
+        run: python -m unittest discover -s tests -p 'test_malware_intel.py' -v
   test:
     runs-on: ubuntu-latest
     permissions:
@@ -14,8 +25,16 @@ jobs:
           python-version: '3.11'
       - name: Install AST and resolver dependencies
         run: python -m pip install -r requirements-resolver.txt -r requirements-ast.txt
-      - name: Download grammar files
-        run: python -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less','c','cpp'])"
+      - name: Download grammar files (retry transient upstream errors)
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if python -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less','c','cpp'])"; then
+              exit 0
+            fi
+            echo "Grammar download unavailable; retry ${attempt}/6" >&2
+            sleep $((attempt * 5))
+          done
+          exit 1
       - name: Python syntax checks
         run: python -m compileall -q .
       - name: Regression and parser tests
