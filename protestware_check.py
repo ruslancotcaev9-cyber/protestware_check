@@ -10,6 +10,7 @@ import threat_intel
 import dependency_analysis
 import language_analysis
 import report_formats
+import malware_intel
 import polyglot_ast
 import python_taint
 import base64
@@ -26,7 +27,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -360,7 +361,8 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
                  dependency_mode: str = "lock", dependency_max_packages: int = 2000,
                  dependency_max_depth: int = 12, dependency_max_requests: int = 300,
                  explicit_packages: list[str] | None = None,
-                 ast_mode: str = "auto") -> dict[str, Any]:
+                 ast_mode: str = "auto", malware_mode: str = "off",
+                 malware_max_packages: int = 100, malware_max_requests: int = 120) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     scanned = 0
     ast_stats: dict[str, int] = {"parsed": 0, "partial": 0, "degraded": 0, "disabled": 0}
@@ -408,6 +410,12 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
                 match["matched_packages"] = by_repo[match["repository"]][:20]
         results.extend(matches)
         results.extend(threat_intel.match_packages(dependencies["packages"], watchlists))
+    advisory_check = malware_intel.check_packages(
+        dependencies["packages"], mode=malware_mode,
+        max_packages=malware_max_packages, max_requests=malware_max_requests,
+        inventory_complete=dependencies["summary"].get("complete", False))
+    results.extend(advisory_check["findings"])
+    warnings.extend(advisory_check["warnings"])
     results.sort(key=lambda f: (f["file"], f["line"], f["rule"]))
     warnings.extend(ast_warnings)
     levels = {name: sum(f["severity"] == name for f in results) for name in SEVERITIES}
@@ -417,6 +425,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
     return {"tool": "protestware-check", "version": VERSION, "source": source, "files_scanned": scanned,
             "risk": risk, "code_risk": code_risk, "summary": levels, "findings": results,
             "watchlists": watchlists["metadata"] if watchlists else {"mode": "off"},
+            "malware_intel": advisory_check["metadata"],
             "dependencies": {"summary": dependencies["summary"], "packages": dependencies["packages"],
                              "mode": dependencies["mode"]},
             "warnings": warnings, "ast": {"mode": ast_mode, **ast_stats,
@@ -432,6 +441,10 @@ def report_text(report: dict[str, Any]) -> str:
     if dep["mode"] != "off":
         lines.append(f"Dependencies: {dep['summary']['count']} | complete: "
                      f"{dep['summary']['complete']} | ecosystems: {dep['summary'].get('ecosystems', {})}")
+    intel = report.get("malware_intel", {})
+    if intel.get("mode") != "off":
+        lines.append(f"Malware advisories: {intel.get('mode')} | queried: {intel.get('checked_packages')} | "
+                     f"complete: {intel.get('complete')} | inventory complete: {intel.get('inventory_complete')}")
     for item in report["findings"]:
         lines.append(f"[{item['severity'].upper()}] {item['rule']} {item['file']}:{item['line']} — {item['message']}")
         lines.append(f"    {item['evidence']}")
@@ -474,6 +487,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dependency-max-requests", type=int, default=300)
     parser.add_argument("--dependency-strict", action="store_true",
                         help="Exit 2 when dependency analysis is incomplete")
+    parser.add_argument("--malware-intel", choices=("off", "osv", "github", "both"), default="off",
+                        help="Opt-in version-specific malware advisories (OSV/OpenSSF and GitHub)")
+    parser.add_argument("--malware-max-packages", type=int, default=100,
+                        help="Maximum distinct pinned packages queried against malware advisories")
+    parser.add_argument("--malware-max-requests", type=int, default=120,
+                        help="Maximum public advisory API requests")
+    parser.add_argument("--malware-strict", action="store_true",
+                        help="Exit 2 if advisory checks or the dependency inventory are incomplete")
     args = parser.parse_args(argv)
     if args.ref and not args.repo:
         parser.error("--ref requires --repo")
@@ -485,6 +506,12 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--package requires --dependencies lock or registry")
     if args.dependency_strict and args.dependencies == "off":
         parser.error("--dependency-strict requires dependency analysis")
+    if args.malware_max_packages < 1 or args.malware_max_requests < 1:
+        parser.error("malware-intel limits must be positive")
+    if args.malware_intel != "off" and args.dependencies == "off":
+        parser.error("--malware-intel requires --dependencies lock or registry")
+    if args.malware_strict and args.malware_intel == "off":
+        parser.error("--malware-strict requires --malware-intel osv, github or both")
     domains = [x.lower().strip(".") for x in args.allow_domain]
     if any(not re.fullmatch(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+", x) for x in domains):
         parser.error("--allow-domain expects a DNS domain, e.g. api.example.org")
@@ -512,7 +539,10 @@ def main(argv: list[str] | None = None) -> int:
                               dependency_max_packages=args.dependency_max_packages,
                               dependency_max_depth=args.dependency_max_depth,
                               dependency_max_requests=args.dependency_max_requests,
-                              explicit_packages=args.package, ast_mode=args.ast_mode)
+                              explicit_packages=args.package, ast_mode=args.ast_mode,
+                              malware_mode=args.malware_intel,
+                              malware_max_packages=args.malware_max_packages,
+                              malware_max_requests=args.malware_max_requests)
     except (ScanError, threat_intel.WatchlistError, ValueError, OSError, UnicodeError) as err:
         print(f"Error: {err}", file=sys.stderr)
         return 2
@@ -536,6 +566,9 @@ def main(argv: list[str] | None = None) -> int:
     else:
         output_text(report)
     if args.dependency_strict and not report["dependencies"]["summary"].get("complete", False):
+        return 2
+    if args.malware_strict and (not report["malware_intel"].get("complete", False) or
+                                not report["malware_intel"].get("inventory_complete", False)):
         return 2
     return int(SEVERITIES.get(report["risk"], 0) >= SEVERITIES[args.fail_on])
 

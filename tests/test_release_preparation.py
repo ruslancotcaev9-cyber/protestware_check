@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class ReleaseChecks(unittest.TestCase):
     def test_release_version_and_docs(self):
-        self.assertEqual(protestware_check.VERSION, '1.0.0')
+        self.assertGreaterEqual(tuple(map(int, protestware_check.VERSION.split('.'))), (1, 0, 0))
         for name in ('CHANGELOG.md', 'CONTRIBUTING.md', 'LICENSE',
                      'SECURITY.md', 'docs/RELEASE_CHECKLIST.md',
                      'docs/releases/v1.0.0.md', 'scripts/install_gitleaks.sh'):

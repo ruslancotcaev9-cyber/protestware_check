@@ -106,7 +106,7 @@ def sarif(report: dict[str, Any]) -> dict[str, Any]:
     rules = sorted({str(f["rule"]) for f in findings})
     first = {rule: next(f for f in findings if f["rule"] == rule) for rule in rules}
     tags = {"context": "context", "watchlist_context": "context", "watchlist_repository": "supply-chain",
-            "watchlist_package": "supply-chain"}
+            "watchlist_package": "supply-chain", "malware_advisory": "supply-chain"}
     definitions = [{"id": rule, "shortDescription": {"text": rule.replace("_", " ").capitalize()},
                     "fullDescription": {"text": first[rule].get("message") or rule},
                     "properties": {"tags": [tags.get(first[rule].get("category"), "security")]}}

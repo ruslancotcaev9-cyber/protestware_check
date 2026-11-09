@@ -16,7 +16,7 @@
 | Обфускация | Кодирование и характерные сочетания техник JS/TS (`OBFUSCATED_JS`) |
 | AST / taint | Python; Tree-sitter для Go, C#, JS/TS, C/C++, SQL, HTML, CSS, SCSS, Less; ограниченный структурный разбор `.sass` |
 | Зависимости | Lock-файлы npm, Python, Cargo, Composer, Go, NuGet; при необходимости — метаданные официальных реестров |
-| Внешние источники | Опциональная сверка с `toxic-repos/toxic-repos` и `toxic-repos/black-mark` (контекст, **не вердикт**) |
+| Внешние источники | `toxic-repos` / `black-mark` (контекст), дополнительные отчёты [OpenSSF/OSV и GitHub malware advisories](docs/MALWARE_INTELLIGENCE.md) по **точным версиям пакетов** |
 | Отчётность | Текст, JSON, SARIF 2.1.0, CycloneDX JSON 1.6 |
 
 **Область применимости:** синтаксический разбор не означает полноценный CFG/SSA. Межфункциональный анализ ограничен одним файлом; не охватывает все перегрузки, макросы, динамические вызовы, контекст сборки и пути через сторонние компоненты. Для C/C++ применяется ограниченный внут­рифайловый граф вызовов. Отрицательный результат — **не гарантия безопасности**.
@@ -52,8 +52,19 @@ python protestware_check.py --path ../my-project --dependencies lock \
 
 **Коды выхода:** `0` — завершено ниже порога, `1` — достигнут `--fail-on`, `2` — ошибка или неполный анализ при `--dependency-strict`. По умолчанию `--fail-on high`, `--watchlists off`, `--dependencies lock`, `--ast-mode auto`. Степень полноты AST и зависимостей смотрите в отчёте — не по одному коду выхода.
 
+## Новые источники сведений о вредоносных пакетах (v1.1.0)
+
+```bash
+# Только явный opt-in: запросы к OSV.dev и GitHub Advisory Database
+python protestware_check.py --path ../my-project --dependencies lock \
+  --malware-intel both --malware-strict --format json --output findings.json
+```
+
+OSV/OpenSSF и GitHub частично дублируют записи; единый `MALWARE_ADVISORY` включает ID, ссылки и происхождение. Без точной версии или при недоступности API охват будет частичным. Параметр `--malware-strict` завершает такую проверку с кодом 2. Исходный код проверяемых проектов не выполняется. См. [подробную методологию и безопасность интеграций](docs/MALWARE_INTELLIGENCE.md).
+
 ## Документация
 
+- [Новые malware advisory источники](docs/MALWARE_INTELLIGENCE.md) — OpenSSF/OSV, GitHub, версии, лимиты и семантика.
 - [Руководство пользователя](docs/USER_GUIDE.md) — установка, полный справочник CLI, сценарии, отчёты, CI, устранение ошибок и требования перед публикацией.
 - [Правила, архитектура и ограничения](docs/TECHNICAL_REFERENCE.md) — источники, приоритеты, языки, границы AST/taint и история развития.
 - [Changelog](CHANGELOG.md) — история версий и содержание предлагаемого `v1.0.0`.

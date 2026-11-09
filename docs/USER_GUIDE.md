@@ -1,6 +1,6 @@
 # Руководство пользователя protestware-check
 
-Актуально для **v0.8.0**. [На главную](../README.md) · [Политика безопасности](../SECURITY.md) · [Технический справочник](TECHNICAL_REFERENCE.md).
+Актуально для **v1.1.0**. [На главную](../README.md) · [Политика безопасности](../SECURITY.md) · [Технический справочник](TECHNICAL_REFERENCE.md).
 
 ## 1. Назначение и модель угроз
 
@@ -202,3 +202,19 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 - [Лицензия Apache-2.0](../LICENSE) — условия использования.
 - [Пример GitHub Code Scanning](../examples/github-code-scanning.yml).
 - [Технический справочник](TECHNICAL_REFERENCE.md).
+
+
+## Дополнительные источники о вредоносных пакетах (v1.1.0)
+
+После чтения lock-файлов сканер может по явному запросу проверить точные версии пакетов по OpenSSF Malicious Packages / OSV и GitHub Advisory Database (`type=malware`):
+
+```bash
+python protestware_check.py --path ../application --dependencies lock \
+  --malware-intel both --malware-strict \
+  --malware-max-packages 200 --malware-max-requests 250 \
+  --format sarif --output malware-findings.sarif
+```
+
+`--malware-intel` принимает `off` (по умолчанию), `osv`, `github`, `both`; `--malware-strict` включает код выхода 2 при неполноте источников или инвентаризации. Проверка имён и версий передаёт эти координаты внешним API и потому требует отдельного решения при анализе частных зависимостей. `--watchlists` продолжает независимо проверять `toxic-repos` / `black-mark`.
+
+Точные схемы сопоставления, обработка отозванных записей, лимиты и отдельные источники описаны в [справочнике](MALWARE_INTELLIGENCE.md). Обычные CVE не считаются protestware.

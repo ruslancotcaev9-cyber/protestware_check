@@ -4,6 +4,13 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — additional opt-in malware intelligence (unreleased)
+
+- Query version-specific OpenSSF malicious-package records via the OSV API, and GitHub Advisory Database records with `type=malware`.
+- Deduplicate OSV/GHSA aliases and preserve advisory provenance, affected package, locked version and dependency context.
+- Do not treat political statements or external records as proof of malicious behavior; keep `code_risk` separate.
+- Add bounded HTTPS requests, `--malware-strict`, transparency on partial checks, inert regression tests, and a manual public API smoke workflow.
+
 ## [1.0.0] — release candidate (unpublished)
 
 First proposed public release. The scanner remains a **static triage tool**, not
