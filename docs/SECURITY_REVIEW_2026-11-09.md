@@ -64,3 +64,14 @@ POSIX-защита дескрипторов не переносится полн
 Отчёты могут содержать фрагменты исходников и должны храниться соответственно.
 Отсутствие записей в OSV и Gitleaks не является доказательством отсутствия
 неизвестных уязвимостей или всех разновидностей секретов.
+
+
+## Публикация и CI
+
+Исправления опубликованы в `main` коммитом
+[`a18916689c0d93a510fcc3edb2b71c6d521bd020`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/a18916689c0d93a510fcc3edb2b71c6d521bd020).
+При проверке 09.11.2026 все три workflow этого коммита завершились успешно:
+[Unit tests](https://github.com/ruslancotcaev9-cyber/protestware_check/actions/runs/42588877199),
+[Git history secret scan](https://github.com/ruslancotcaev9-cyber/protestware_check/actions/runs/42588877201),
+[Pinned behavioral regression](https://github.com/ruslancotcaev9-cyber/protestware_check/actions/runs/42588877227).
+Публикация коммита не создала GitHub Release.

@@ -28,6 +28,10 @@ python -m compileall -q .
 python -m unittest discover -s tests -v
 ```
 
+Scanning never downloads missing grammars automatically. Prefetch them during trusted
+environment preparation; optional dependencies are necessary for the full test suite.
+A passing run with skipped parser classes does not validate multilingual AST coverage.
+
 On Windows, activate `.venv\Scripts\Activate.ps1` instead.
 
 ## What a good pull request contains
@@ -71,3 +75,17 @@ distinguishing a mention of a repository from malicious activity.
 Report vulnerabilities in *this analyzer* through the private channel in
 [SECURITY.md](SECURITY.md). For vulnerabilities in third-party packages,
 contact those package maintainers through their private reporting channel.
+
+
+## CI checks and documentation
+
+`tests.yml` runs unit tests on pushes and pull requests. `pinned-regression.yml`
+runs on main pushes, pull requests and manual dispatch; it checks the pinned
+third-party sources as data only. `secret-history-scan.yml` checks fetched Git
+history. `malware-advisory-smoke.yml` is manual and uses public API metadata.
+See [release checklist](docs/RELEASE_CHECKLIST.md) for tag/release behavior.
+
+For documentation changes, compare flags and defaults with `--help`, verify
+relative Markdown links, and run the existing documentation/release checks.
+Mark historical review results with their date and commit rather than implying
+that they certify later versions.

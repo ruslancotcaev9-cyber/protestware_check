@@ -1,5 +1,6 @@
-# Optional workflow example. Copy into .github/workflows/ when GitHub Code Scanning
-# and security-events:write are available for your repository.
+# Copy into the TARGET repository's .github/workflows/ after reviewing permissions.
+# Requires GitHub Code Scanning availability. Only the trusted scanner is executed.
+# Replace the scanner SHA only after reviewing/testing the intended scanner version.
 name: Protestware Code Scanning
 on:
   workflow_dispatch:
@@ -12,18 +13,45 @@ permissions:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out target as data
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          path: target
+          persist-credentials: false
+      - name: Check out reviewed scanner separately
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          repository: ruslancotcaev9-cyber/protestware_check
+          ref: a18916689c0d93a510fcc3edb2b71c6d521bd020
+          path: scanner
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
-      - name: Scan checkout without executing its dependencies
+      - name: Prepare trusted scanner dependencies and grammar cache
+        working-directory: scanner
         run: |
-          python3 protestware_check.py --path . --dependencies lock \
-            --watchlists off --format sarif --output protestware.sarif --fail-on high
-      - name: Upload SARIF results
-        if: always()
+          python -m pip install -r requirements-ast.txt -r requirements-resolver.txt
+          python -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less','c','cpp'])"
+      - name: Scan target without executing its dependencies
+        id: scan
+        working-directory: target
+        shell: bash
+        run: |
+          status=0
+          python ../scanner/protestware_check.py --path . --dependencies lock \
+            --watchlists off --malware-intel off --ast-mode required \
+            --format sarif --output "$RUNNER_TEMP/protestware.sarif" --fail-on high || status=$?
+          if [[ -f "$RUNNER_TEMP/protestware.sarif" ]]; then
+            echo 'report_ready=true' >> "$GITHUB_OUTPUT"
+          fi
+          exit "$status"
+      - name: Upload available SARIF while preserving scan failure
+        if: always() && steps.scan.outputs.report_ready == 'true'
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: protestware.sarif
+          sarif_file: ${{ runner.temp }}/protestware.sarif
+          checkout_path: ${{ github.workspace }}/target
           category: protestware-check

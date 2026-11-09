@@ -4,6 +4,13 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Documentation alignment — 2026-11-09 (unreleased)
+
+- Align README and release procedure with public repository status and 1.1.0 code.
+- Complete CLI defaults, exit-code/completeness semantics, output safety and offline setup.
+- Document advisory thresholds, limits and unexhausted pagination separately from inventory coverage.
+- Refresh architecture, CI example prerequisites and historical release-note labeling.
+
 ## Security and reliability review — 2026-11-09 (unreleased)
 
 - Bound local/remote reads and aggregate source budgets; reject special files and redirects.

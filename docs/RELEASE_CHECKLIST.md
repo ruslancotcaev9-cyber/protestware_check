@@ -1,60 +1,68 @@
-# Pre-publication and release checklist
+# Release checklist
 
-**Status:** `v1.0.0` candidate; creating a tag does not automatically make a
-private repository public. The release workflow creates a **draft** GitHub
-Release, not a publicly published release.
+**Status on 2026-11-09:** the repository is public, the code in `main`
+reports `1.1.0`, and no GitHub Releases were returned by the release listing.
+Repository visibility, the version constant, a Git tag and a published GitHub
+Release are distinct. `release.yml` creates a **draft** only; it does not change
+repository visibility. `docs/releases/v1.0.0.md` is a historical candidate note,
+not evidence of a published release.
 
-## Before the first public release
+## Before each release
 
-- [ ] Confirm permissions to open-source every source file, test fixture,
-      third-party extract and authored document under Apache-2.0.
-- [ ] Assign an actual security contact/triage owner. Enable and test GitHub
-      **Private vulnerability reporting** before making the repo public.
-- [ ] Review repository and GitHub Actions permissions, branch protection,
-      workflow dependencies and any external credentials.
-- [ ] Run the **entire reachable Git history** secret scan, including all
-      fetched branches/tags (Gitleaks `git --log-opts=--all`). Review failures
-      privately; rotate and revoke **exposed** credentials before publishing.
-      Merely deleting a secret from the working tree does not remove history.
-- [ ] If sensitive data exists in history, coordinate rotation and Git history
-      rewriting with affected collaborators; re-scan after cleanup.
-- [ ] Inspect issue/PR history, releases, files, screenshots and past workflow
-      artifacts for private data: **Git scanning alone does not cover them.**
-- [ ] Complete tests, parser integration, both watchlists (as applicable) and
-      negative control tests on pinned test repositories.
-- [ ] Validate README, user guide, caveats, license, changelog, release notes,
-      version number and `SECURITY.md` for public-facing accuracy.
-- [ ] Decide and document which GitHub repository URL and default branch
-      will be used after publication. Check for unrelated private commits.
+- [ ] Confirm redistribution rights and licenses for code, fixtures and documents.
+- [ ] Verify the monitored security contact/triage owner and the availability of
+      GitHub Private vulnerability reporting; the policy link alone does not enable it.
+- [ ] Review repository permissions, branch protection, workflows and credentials.
+- [ ] Run the entire reachable Git history secret scan, including fetched branches
+      and tags. Review failures privately; revoke/rotate exposed credentials.
+      Deleting a file does not remove it from Git history.
+- [ ] Check issue/PR content, previous artifacts and releases separately: Git
+      history scanning does not cover them.
+- [ ] Run unit tests with resolver dependencies and pre-cached AST grammars;
+      verify no unexpected skips. Run the pinned behavioral regression and the
+      optional live malware-advisory smoke test when applicable.
+- [ ] Review README, CLI reference, changelog, version and release-specific notes.
+- [ ] Confirm that the exact release commit passed the required checks.
 
 ## Release procedure
 
-1. Merge the release-prep branch after green CI and secret-history scan.
-2. Ensure the CLI and changelog version are `1.0.0` and current `main` is
-   the reviewed source. Manually check `git status` and `git log`.
-3. Review tag and main commit; create an annotated tag from a trusted local
-   checkout using `git tag -a v1.0.0 -m 'protestware-check v1.0.0'`, then
-   `git push origin v1.0.0`. **Do not create the tag if any gate remains open.**
-4. GitHub Actions `release.yml` runs release gating, prepares a zip and
-   `SHA256SUMS`, then creates a **draft** release using that pre-existing tag.
-5. Verify archive checksum, notes, artifacts and source commit. Then manually
-   make the repository public (only after the checklist is complete) and
-   publish the GitHub Release from the UI. Publishing is a maintainer action.
-6. Monitor private vulnerability submissions and user issues after publication.
+1. Integrate reviewed changes into `main` and wait for CI. Preserve unrelated work.
+2. Choose the intended release version. Match the literal `VERSION` in
+   `protestware_check.py`, the changelog and the release notes to that version.
+   Do not tag current 1.1.0 code as v1.0.0.
+3. From a trusted clean checkout of the reviewed commit, create an annotated
+   tag in `vMAJOR.MINOR.PATCH` form. For example, **only when 1.1.0 is approved**:
+
+   ```bash
+   git tag -a v1.1.0 -m 'protestware-check v1.1.0'
+   git push origin v1.1.0
+   ```
+
+   Do not move an existing release tag or tag a commit with outstanding gates.
+4. A tag push starts `release.yml`. It verifies that the commit belongs to
+   `main`, checks tag/version equality, runs tests and secret scanning, then
+   builds the source ZIP and SHA256SUMS and creates a draft release.
+   A manual workflow run performs verification only; it does not create a release.
+5. Review archive, checksum, source SHA and notes in the draft. The workflow
+   uses `docs/releases/v1.0.0.md` only for tag v1.0.0; for other tags it generates
+   notes automatically. Edit the draft to include version-specific behavior
+   changes and limitations before manually publishing it.
+6. Monitor private vulnerability reports and issues after publication.
 
 ## History scanning on developer workstations
 
-The CI workflow pins Gitleaks **v8.30.1** and verifies SHA-256 of the Linux
-binary. CI suppresses Gitleaks logs and fails closed; investigate detailed findings
-privately on an authorized workstation. For a locally installed trusted Gitleaks binary use:
+The CI installer pins Gitleaks v8.30.1 and checks the Linux x86_64 archive's
+SHA-256. On that platform:
 
 ```bash
+bash scripts/install_gitleaks.sh /tmp/protestware-security-bin
 git fetch --all --tags --prune
-gitleaks git --redact --log-opts='--all' --report-format=json \
-  --report-path=local-gitleaks-private.json .
+/tmp/protestware-security-bin/gitleaks git --redact --log-opts='--all' \
+  --report-format=json --report-path=/secure/reports/gitleaks-private.json .
 ```
 
-Treat the private JSON report as sensitive. Review it locally and do not
-upload it to public issues or unprotected artifacts. The workflow suppresses
-raw findings and only emits a sanitized count; a clean scan is not proof
+Create a private report directory first and adapt the paths. On other platforms
+use an independently verified Gitleaks installation. The bootstrap does not
+support Windows/macOS. Keep detailed logs and JSON private. CI emits only
+PASS or REVIEW REQUIRED and suppresses raw findings; a clean scan is not proof
 that no secrets exist.
