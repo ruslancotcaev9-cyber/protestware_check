@@ -19,8 +19,10 @@ import protestware_check as scanner
 def find_rules(root: Path, rel: str) -> list[dict]:
     source = (root / rel).read_text(encoding='utf-8', errors='replace')
     findings, diagnostic = polyglot_ast.scan_tree(rel, source, [])
-    if diagnostic and not diagnostic.startswith('AST partial syntax recovery'):
+    if diagnostic and not diagnostic.startswith('AST partial '):
         raise AssertionError(f'{rel} AST unavailable: {diagnostic}')
+    if diagnostic:
+        print(f'PARTIAL_ANALYSIS={diagnostic}')
     return findings
 
 

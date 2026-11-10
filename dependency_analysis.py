@@ -18,6 +18,8 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 from typing import Any
 
 import threat_intel
+from package_identity import (advisory_origin_matches, npm_origin, origin, origin_key,
+                              public_origin, python_origin)
 
 MAX_RESPONSE_BYTES = 1_500_000
 NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
@@ -52,6 +54,11 @@ class Package:
     via: set[str] = field(default_factory=set)
     dependents: dict[str, str] = field(default_factory=dict)
     qualifiers: list[str] = field(default_factory=list)
+    origin: dict[str, Any] = field(default_factory=lambda: {"kind": "unknown", "basis": "unspecified"})
+
+    def key(self) -> tuple[str, str, str, str, str]:
+        return (self.ecosystem, normalize(self.ecosystem, self.name), self.version,
+                self.manifest, origin_key(self.origin))
 
     def as_dict(self) -> dict[str, Any]:
         return {"ecosystem": self.ecosystem, "name": self.name,
@@ -59,7 +66,7 @@ class Package:
                 "source": self.source, "depth": self.depth if self.depth >= 0 else None,
                 "direct": self.direct, "repository": self.repository,
                 "requested": self.requested, "via": sorted(self.via)[:12],
-                "qualifiers": self.qualifiers}
+                "qualifiers": self.qualifiers, "origin": self.origin}
 
 
 class RegistryError(Exception):
@@ -102,7 +109,9 @@ def is_exact_version(ecosystem: str, version: str) -> bool:
         return NPM_EXACT_VERSION.fullmatch(version) is not None
     if ecosystem == "pypi":
         return bool(re.fullmatch(r"[0-9][A-Za-z0-9.!+_-]*", version))
-    if ecosystem in {"cargo", "composer", "go"}:
+    if ecosystem == "go":
+        return version.startswith("v") and NPM_EXACT_VERSION.fullmatch(version) is not None
+    if ecosystem in {"cargo", "composer"}:
         return bool(re.fullmatch(r"v?[0-9]+(?:\.[0-9]+){0,2}(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?", version))
     if ecosystem == "nuget":
         return bool(re.fullmatch(r"[0-9]+(?:\.[0-9]+){0,3}(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?", version))
@@ -149,13 +158,14 @@ class Inventory:
         self.max_packages = max_packages
         self.max_depth = max_depth
         self.max_requests = max_requests
-        self.packages: dict[tuple[str, str, str, str], Package] = {}
+        self.packages: dict[tuple[str, str, str, str, str], Package] = {}
         self.warnings: list[str] = []
         self.partial = False
         self.requests = 0
         self.cache: dict[tuple[str, str, str], dict] = {}
         self.source_files: set[str] = set()
         self.unlocked_specs: dict[tuple[str, str, str], str] = {}
+        self.go_unselected_checksums = 0
 
     def warn(self, text: str) -> None:
         self.partial = True
@@ -167,7 +177,7 @@ class Inventory:
             self.warn(f"Non-exact version for {pkg.ecosystem}:{pkg.name} in {pkg.manifest}")
             pkg.requested = pkg.requested or pkg.version
             pkg.version = ""
-        key = (pkg.ecosystem, normalize(pkg.ecosystem, pkg.name), pkg.version, pkg.manifest)
+        key = pkg.key()
         if key in self.packages:
             old = self.packages[key]
             old.direct |= pkg.direct
@@ -250,7 +260,8 @@ class Inventory:
                     raw_repo = value.get("repository") or value.get("resolved")
                     pkg = Package("npm", name, version, path, "lockfile",
                                   direct=name in declared and location == "node_modules/" + name,
-                                  requested=declared.get(name, ""), repository=repo_from_value(raw_repo))
+                                  requested=declared.get(name, ""), repository=repo_from_value(raw_repo),
+                                  origin=npm_origin(value))
                     # Optional and peer dependencies may legitimately be absent in a platform-specific install.
                     if isinstance(value.get("dependencies"), dict):
                         pkg.dependents.update(value["dependencies"])
@@ -272,7 +283,7 @@ class Inventory:
                                      direct=not parent and name in declared,
                                      requested=declared.get(name, ""),
                                      repository=repo_from_value(value.get("resolved")),
-                                     via={parent} if parent else set()))
+                                     via={parent} if parent else set(), origin=npm_origin(value)))
                         if record is None:
                             continue
                         nested = value.get("dependencies")
@@ -294,11 +305,13 @@ class Inventory:
                     continue
                 repo = repo_from_value(spec)
                 if repo:
-                    self.add(Package("npm", name, "", path, "manifest", 0, True, repo, spec))
+                    self.add(Package("npm", name, "", path, "manifest", 0, True, repo, spec,
+                                     origin=origin("npm", spec)))
                 else:
                     self.unlocked_specs[("npm", name, path)] = spec
                     if self.mode == "registry":
-                        self.add(Package("npm", name, "", path, "manifest", 0, True, requested=spec))
+                        self.add(Package("npm", name, "", path, "manifest", 0, True, requested=spec,
+                                         origin=origin("npm", spec)))
                     else:
                         self.warn(f"No npm lockfile for {path}; dependency {name} cannot be enumerated")
 
@@ -311,7 +324,7 @@ class Inventory:
             version = info.get("version")
             if not isinstance(version, str):
                 continue
-            key = ("npm", normalize("npm", name), version, manifest)
+            key = ("npm", normalize("npm", name), version, manifest, origin_key(npm_origin(info)))
             if key in self.packages:
                 indexed[location] = self.packages[key]
 
@@ -401,7 +414,9 @@ class Inventory:
                 res = info.get("resolution", {})
                 if not repository and isinstance(res, dict):
                     repository = repo_from_value(res.get("tarball"))
-                pkg = self.add(Package("npm", name, version, path, "lockfile", repository=repository))
+                pkg = self.add(Package("npm", name, version, path, "lockfile", repository=repository,
+                                       origin=origin("npm", res.get("tarball"), integrity=res.get("integrity"))
+                                       if isinstance(res, dict) else origin("npm")))
                 if pkg:
                     indexed[(name, version)] = pkg
             # pnpm snapshots include resolved dependency references, even with peer suffixes.
@@ -483,7 +498,8 @@ class Inventory:
                     raw_repo = vcs.get("url") if isinstance(vcs, dict) else None
                 pkg = Package("pypi", name, str(version or ""), path, "lockfile", 0 if normalize("pypi", name) in direct else -1,
                               direct=normalize("pypi", name) in direct,
-                              repository=repo_from_value(raw_repo), requested=direct.get(normalize("pypi", name), ""))
+                              repository=repo_from_value(raw_repo), requested=direct.get(normalize("pypi", name), ""),
+                              origin=python_origin(item))
                 if version is None and not raw_repo:
                     self.warn(f"Unknown version for Python lock package {name} in {path}")
                 self.add(pkg)
@@ -501,7 +517,13 @@ class Inventory:
             if not threat_intel.REQUIREMENTS_NAME.fullmatch(path.rsplit("/", 1)[-1]):
                 continue
             self.source_files.add(path)
-            for line in self.manifests[path].splitlines():
+            lines = self.manifests[path].splitlines()
+            indexes = [match.group(1) for line in lines if (match := re.match(
+                r'^\s*(?:--(?:extra-)?index-url|-i)(?:\s+|=)(\S+)', line))]
+            provenance = origin("pypi", indexes[0], kind="registry", basis="requirements-index") if len(indexes) == 1 else origin("pypi")
+            if len(indexes) > 1 or any(re.match(r'^\s*(?:--extra-index-url|--no-index|--find-links|-f)(?:\s|=|$)', line) for line in lines):
+                provenance = {"kind": "unknown", "basis": "multiple-or-local-indexes", "ambiguous": True}
+            for line in lines:
                 if not line.strip() or line.lstrip().startswith("#"):
                     continue
                 if line.lstrip().startswith("-"):
@@ -511,7 +533,7 @@ class Inventory:
                 match = PIN_RE.match(line)
                 if match:
                     self.add(Package("pypi", match.group(1), match.group(2), path,
-                                     "requirements", 0, requested=f"=={match.group(2)}"))
+                                     "requirements", 0, requested=f"=={match.group(2)}", origin=provenance.copy()))
                 elif "github.com" not in line and line.strip():
                     self.add_python_requirement(None, line.strip(), path, direct=False)
 
@@ -523,7 +545,7 @@ class Inventory:
             if not isinstance(item, dict) or not isinstance(item.get("name"), str):
                 continue
             normalized = normalize("pypi", item["name"])
-            key = ("pypi", normalized, str(item.get("version") or ""), manifest)
+            key = ("pypi", normalized, str(item.get("version") or ""), manifest, origin_key(python_origin(item)))
             pkg = self.packages.get(key)
             if pkg is None:
                 continue
@@ -602,7 +624,8 @@ class Inventory:
         pinned = PIN_RE.match(raw)
         version = pinned.group(2) if pinned else ""
         pkg = Package("pypi", package_name, version, path,
-                      "manifest", 0 if direct else -1, direct, repo, requested)
+                      "manifest", 0 if direct else -1, direct, repo, requested,
+                      origin=origin("pypi", raw.split(" @ ", 1)[-1]))
         if found and found.group(2):
             pkg.qualifiers = [s.strip() for s in found.group(2).split(",")]
         self.add(pkg)
@@ -621,7 +644,8 @@ class Inventory:
                 source = str(pkg.get("source", ""))
                 repo = repo_from_value(source) if source.startswith("git+") else None
                 self.add(Package("cargo", pkg["name"], str(pkg.get("version", "")), path,
-                                 "lockfile", repository=repo))
+                                 "lockfile", repository=repo,
+                                 origin=origin("cargo", source, integrity=pkg.get("checksum"))))
         for path, _ in roots_for(self.manifests, ("composer.lock",)):
             obj = self.read_json(path)
             if not isinstance(obj, dict):
@@ -633,46 +657,130 @@ class Inventory:
                         continue
                     source = pkg.get("source", {})
                     self.add(Package("composer", pkg["name"], str(pkg.get("version", "")),
-                                     path, "lockfile", repository=repo_from_value(source)))
-        go_direct: dict[str, set[str]] = {}
-        for go_path, text in roots_for(self.manifests, ("go.mod",)):
-            root = manifest_dir(go_path)
-            direct = set()
-            block = False
-            for line in text.splitlines():
-                line = line.split("//", 1)[0].strip()
-                if line == "require (":
-                    block = True
-                    continue
-                if line == ")" and block:
-                    block = False
-                    continue
-                if block or line.startswith("require "):
-                    fields = line.removeprefix("require ").split()
-                    if len(fields) >= 2 and fields[1].startswith("v"):
-                        direct.add(fields[0])
-            go_direct[root] = direct
-            self.source_files.add(go_path)
-            if sibling(go_path, "go.sum") not in self.manifests:
-                self.warn(f"go.mod {go_path} has no go.sum; full transitive module list unavailable")
-                for name in direct:
-                    matched = GO_MODULE.match(name)
-                    repo = f"{matched.group(1)}/{matched.group(2)}".lower() if matched else None
-                    self.add(Package("go", name, "", go_path, "manifest", 1, True, repo))
-        for path, text in self.manifests.items():
-            if path.rsplit("/", 1)[-1] != "go.sum":
-                continue
+                                     path, "lockfile", repository=repo_from_value(source),
+                                     origin=origin("composer", source.get("url"), kind=source.get("type"),
+                                                   revision=source.get("reference")) if isinstance(source, dict)
+                                     else origin("composer")))
+
+    def go_modules(self) -> None:
+        """Read declared requirements; checksums alone never prove the build list."""
+        sums: dict[str, dict[tuple[str, str], dict[str, str]]] = {}
+        for path, text in roots_for(self.manifests, ("go.sum",)):
             self.source_files.add(path)
-            for line in text.splitlines():
+            records = sums.setdefault(path, {})
+            for number, line in enumerate(text.splitlines(), 1):
                 fields = line.split()
-                if len(fields) < 2 or not fields[1].startswith("v"):
+                if not fields:
                     continue
-                mod, ver = fields[0], fields[1].removesuffix("/go.mod")
-                repo_match = GO_MODULE.match(mod)
-                repo = (f"{repo_match.group(1)}/{repo_match.group(2)}".lower() if repo_match else None)
-                direct = mod in go_direct.get(manifest_dir(path), set())
-                self.add(Package("go", mod, ver, path, "lockfile", 1 if direct else -1,
-                                 direct=direct, repository=repo))
+                if len(fields) != 3 or not is_exact_version("go", fields[1].removesuffix("/go.mod")):
+                    self.warn(f"Malformed go.sum entry: {path}:{number}")
+                    continue
+                name, version, checksum = fields
+                if not re.fullmatch(r'h1:[A-Za-z0-9+/]{43}=', checksum):
+                    self.warn(f"Invalid or unsupported Go checksum: {path}:{number}")
+                    continue
+                kind = "go.mod" if version.endswith("/go.mod") else "module"
+                value = records.setdefault((name, version.removesuffix("/go.mod")), {})
+                if kind in value and value[kind] != checksum:
+                    self.warn(f"Conflicting Go checksums: {path}:{number}")
+                value[kind] = checksum
+        consumed = set()
+        for path, text in roots_for(self.manifests, ("go.mod",)):
+            self.source_files.add(path)
+            sum_path = sibling(path, "go.sum")
+            consumed.add(sum_path)
+            records = sums.get(sum_path, {})
+            requirements: dict[str, tuple[str, bool]] = {}
+            replacements: dict[tuple[str, str], tuple[str, str]] = {}
+            block = None
+            for number, line in enumerate(text.splitlines(), 1):
+                # go.mod allows quoted paths and // comments, including // indirect.
+                tokens = re.findall(r'"(?:\\.|[^"\\])*"|`[^`]*`|//.*$|=>|[()]|[^\s()]+', line)
+                comment = next((token[2:] for token in tokens if token.startswith("//")), "")
+                tokens = [token for token in tokens if not token.startswith("//")]
+                if not tokens:
+                    continue
+                if tokens == [")"]:
+                    if block is None:
+                        self.warn(f"Unexpected go.mod block end: {path}:{number}")
+                    block = None
+                    continue
+                directive, fields = (block, tokens) if block else (tokens[0], tokens[1:])
+                if fields == ["("]:
+                    block = directive
+                    continue
+                if directive not in {"require", "replace"}:
+                    if directive == "exclude":
+                        self.warn(f"Go exclude requires build-list resolution: {path}:{number}")
+                    elif directive not in {"module", "go", "toolchain", "retract", "godebug", "tool"}:
+                        self.warn(f"Unsupported go.mod directive: {path}:{number}")
+                    continue
+                try:
+                    fields = [json.loads(token) if token.startswith('"') else token.strip('`') for token in fields]
+                    if directive == "require":
+                        if len(fields) != 2 or not is_exact_version("go", fields[1]):
+                            raise ValueError("require")
+                        if fields[0] in requirements:
+                            self.warn(f"Duplicate Go requirement: {path}:{number}")
+                        requirements[fields[0]] = (fields[1], bool(re.search(r'\bindirect\b', comment)))
+                    else:
+                        split = fields.index("=>")
+                        left, right = fields[:split], fields[split + 1:]
+                        if len(left) not in (1, 2) or len(right) not in (1, 2):
+                            raise ValueError("replace")
+                        if len(left) == 2 and not is_exact_version("go", left[1]):
+                            raise ValueError("replace version")
+                        if len(right) == 2 and not is_exact_version("go", right[1]):
+                            raise ValueError("replacement version")
+                        if len(right) == 1 and not right[0].startswith(("./", "../", "/", "\\\\")) and not re.match(r'^[A-Za-z]:[\\/]', right[0]):
+                            raise ValueError("replacement directory")
+                        key = (left[0], left[1] if len(left) == 2 else "")
+                        if key in replacements:
+                            self.warn(f"Duplicate Go replacement: {path}:{number}")
+                        replacements[key] = (right[0], right[1] if len(right) == 2 else "")
+                except (ValueError, IndexError):
+                    self.warn(f"Malformed Go {directive}: {path}:{number}")
+            if block:
+                self.warn(f"Unclosed go.mod block: {path}")
+            if requirements:
+                self.warn(f"Go build list is unverified in {path}: go.mod/go.sum do not establish the full selected transitive graph")
+            used = set()
+            for required, (requested_version, indirect) in requirements.items():
+                replacement = replacements.get((required, requested_version), replacements.get((required, "")))
+                name, version = replacement or (required, requested_version)
+                qualifiers = ["go.mod-requirement", "go-build-list-unverified"]
+                if indirect:
+                    qualifiers.append("go-indirect")
+                provenance = {"kind": "module", "module": name, "basis": "go.mod"}
+                if replacement:
+                    qualifiers.append("go-replacement")
+                    if not version:
+                        provenance = origin("go", name, kind="local", basis="go.mod-replace")
+                        name = required
+                    provenance["replaces"] = {"module": required, "version": requested_version}
+                checksums = records.get((name, version), {})
+                used.add((name, version))
+                if checksums:
+                    provenance["checksums"] = checksums.copy()
+                if version and "module" not in checksums:
+                    self.warn(f"Go requirement has no module archive checksum: {path}: {name}@{version}")
+                    qualifiers.append("missing-module-checksum")
+                matched = GO_MODULE.match(name)
+                repository = f"{matched.group(1)}/{matched.group(2)}".lower() if matched and version else None
+                self.add(Package("go", name, version, path, "go.mod+go.sum" if checksums else "manifest",
+                                 1 if not indirect else -1, not indirect, repository,
+                                 requested=f"{required}@{requested_version}", qualifiers=qualifiers, origin=provenance))
+            self.go_unselected_checksums += len(set(records) - used)
+        for path, records in sums.items():
+            if path in consumed:
+                continue
+            self.warn(f"Go checksum records have no go.mod; selected modules are unknown: {path}")
+            for (name, version), checksums in records.items():
+                matched = GO_MODULE.match(name)
+                repository = f"{matched.group(1)}/{matched.group(2)}".lower() if matched else None
+                self.add(Package("go", name, version, path, "checksum", repository=repository,
+                                 qualifiers=["go.sum-only", "go-build-list-unverified"],
+                                 origin={"kind": "unknown", "basis": "go.sum-only", "checksums": checksums}))
 
     def nuget_locks(self) -> None:
         """Read NuGet packages.lock.json (per target framework) and direct .csproj refs.
@@ -743,7 +851,8 @@ class Inventory:
                         continue
                     direct = item.get("type", "").lower() == "direct" or name.lower() in ref_names
                     self.add(Package("nuget", name, version, path, "lockfile", 1 if direct else -1,
-                                     direct=direct, requested=str(item.get("requested") or "")))
+                                     direct=direct, requested=str(item.get("requested") or ""),
+                                     origin=origin("nuget", integrity=item.get("contentHash"))))
             for framework, packages in data["dependencies"].items():
                 if not isinstance(packages, dict):
                     continue
@@ -867,12 +976,16 @@ class Inventory:
                 continue
             if pkg.ecosystem not in {"npm", "pypi", "cargo", "composer"}:
                 continue
+            if not advisory_origin_matches(pkg.as_dict()) and (pkg.version or pkg.origin.get("kind") != "unknown"):
+                self.warn(f"Registry enrichment skipped for {pkg.ecosystem}:{pkg.name}: public origin not established")
+                continue
             if not pkg.version and pkg.repository:
                 continue  # Git dependency identity, without registry version
             if not pkg.version:
                 try:
                     pkg.version = self.choose_version(pkg.ecosystem, pkg.name, pkg.requested)
                     pkg.source = "registry-selected"
+                    pkg.origin = public_origin(pkg.ecosystem, basis="registry-selected")
                     del self.packages[key]
                     pkg = self.add(pkg)
                     if pkg is None:
@@ -952,13 +1065,18 @@ class Inventory:
                         continue
                     child = Package(pkg.ecosystem, name, "", pkg.manifest,
                                     "registry-selected", depth + 1, requested=spec,
-                                    via={f"{pkg.name}@{pkg.version}"}, qualifiers=extras)
+                                    via={f"{pkg.name}@{pkg.version}"}, qualifiers=extras,
+                                    origin=origin(pkg.ecosystem, spec))
                     # Resolve immediately to prevent mutation of dictionary key / duplicates.
                     try:
                         if repo := repo_from_value(spec):
                             child.repository = repo
+                        elif child.origin.get("kind") != "unknown":
+                            self.warn(f"Non-registry child {name} of {pkg.name} not resolved")
+                            continue
                         else:
                             child.version = self.choose_version(child.ecosystem, child.name, child.requested)
+                            child.origin = public_origin(child.ecosystem, basis="registry-selected")
                     except RegistryError as err:
                         self.warn(f"Unresolved child {name} of {pkg.name}: {err}")
                         continue
@@ -989,7 +1107,7 @@ class Inventory:
             pinned = requested if is_exact_version(eco, requested or "") else ""
             self.add(Package(eco, name, pinned, "(package)",
                              "explicit" if pinned else "manifest", 0, True,
-                             requested=requested or ""))
+                             requested=requested or "", origin=public_origin(eco)))
             if not pinned and self.mode == "lock":
                 self.warn(f"Unpinned explicit package {spec}: registry mode required")
 
@@ -997,7 +1115,7 @@ class Inventory:
         if self.mode == "off":
             return {"mode": "off", "packages": [], "references": [], "summary": {"count": 0, "complete": False}}
         for parse in (self.npm_locks, self.pnpm_locks, self.python_locks,
-                      self.other_locks, self.nuget_locks):
+                      self.other_locks, self.go_modules, self.nuget_locks):
             try:
                 parse()
             except (TypeError, AttributeError, KeyError, ValueError, RecursionError) as error:
@@ -1032,6 +1150,7 @@ class Inventory:
                 "references": references,
                 "summary": {"count": len(packages), "ecosystems": dict(sorted(counts.items())),
                             "identified_repositories": len(references), "registry_requests": self.requests,
+                            "go_unselected_checksums": self.go_unselected_checksums,
                             "complete": not self.partial, "manifests": sorted(self.source_files),
                             "warnings": self.warnings}}
 

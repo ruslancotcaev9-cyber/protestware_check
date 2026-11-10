@@ -33,27 +33,6 @@ def literal(node: ast.AST | None) -> str | None:
     return None
 
 
-def direct_nodes(nodes: list[ast.stmt]):
-    """Explore a suite but don't treat uncalled nested functions/classes as actions."""
-    for statement in nodes:
-        if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            continue
-        yield statement
-        for child in ast.iter_child_nodes(statement):
-            if isinstance(child, (ast.stmt, ast.expr)):
-                # Recursion also includes expression subtrees for nested calls.
-                yield child
-                yield from sub_nodes(child)
-
-
-def sub_nodes(node: ast.AST):
-    for child in ast.iter_child_nodes(node):
-        if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
-            continue
-        yield child
-        yield from sub_nodes(child)
-
-
 class Analyzer(ast.NodeVisitor):
     def __init__(self, path: str, content: str, allowed_domains: list[str]):
         self.path = path
@@ -62,6 +41,8 @@ class Analyzer(ast.NodeVisitor):
         self.allowed = allowed_domains
         self.aliases: dict[str, str] = {}
         self.geo_flags: set[str] = set()
+        self.constants: dict[str, bool] = {}
+        self.geo_conditions: list[int] = []
         self.findings: list[dict] = []
         self._seen: set[tuple[str, int]] = set()
 
@@ -85,22 +66,22 @@ class Analyzer(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node: ast.FunctionDef):
         # Local Boolean aliases/imports must not contaminate unrelated functions.
-        aliases, flags = self.aliases, self.geo_flags
-        self.aliases, self.geo_flags = aliases.copy(), set()
+        aliases, flags, constants, conditions = self.aliases, self.geo_flags, self.constants, self.geo_conditions
+        self.aliases, self.geo_flags, self.constants, self.geo_conditions = aliases.copy(), set(), {}, []
         try:
             self.generic_visit(node)
         finally:
-            self.aliases, self.geo_flags = aliases, flags
+            self.aliases, self.geo_flags, self.constants, self.geo_conditions = aliases, flags, constants, conditions
 
     visit_AsyncFunctionDef = visit_FunctionDef
 
     def visit_ClassDef(self, node: ast.ClassDef):
-        aliases, flags = self.aliases, self.geo_flags
-        self.aliases, self.geo_flags = aliases.copy(), set()
+        aliases, flags, constants, conditions = self.aliases, self.geo_flags, self.constants, self.geo_conditions
+        self.aliases, self.geo_flags, self.constants, self.geo_conditions = aliases.copy(), set(), {}, []
         try:
             self.generic_visit(node)
         finally:
-            self.aliases, self.geo_flags = aliases, flags
+            self.aliases, self.geo_flags, self.constants, self.geo_conditions = aliases, flags, constants, conditions
 
     def visit_Import(self, node: ast.Import):
         for item in node.names:
@@ -117,14 +98,72 @@ class Analyzer(ast.NodeVisitor):
             if item.name != "*":
                 self.aliases[item.asname or item.name] = f"{module}.{item.name}"
 
+    def truth(self, node: ast.AST) -> bool | None:
+        """Only fold literal truth values and their Boolean aliases; never eval."""
+        if isinstance(node, ast.Constant):
+            return bool(node.value)
+        if isinstance(node, ast.Name):
+            return self.constants.get(node.id)
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+            value = self.truth(node.operand)
+            return not value if value is not None else None
+        if isinstance(node, ast.BoolOp):
+            values = [self.truth(value) for value in node.values]
+            absorbing = isinstance(node.op, ast.Or)
+            if absorbing in values:
+                return absorbing
+            if all(value is not None for value in values):
+                return not absorbing
+        return None
+
+    def bindings(self, target: ast.AST, value: ast.AST | None):
+        if isinstance(target, ast.Name):
+            yield target.id, (self.is_geo_condition(value) if value is not None else False), (
+                self.truth(value) if value is not None else None)
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            values = value.elts if isinstance(value, (ast.Tuple, ast.List)) and len(value.elts) == len(target.elts) else [None] * len(target.elts)
+            for child, assigned in zip(target.elts, values):
+                yield from self.bindings(child, assigned)
+        elif isinstance(target, ast.Starred):
+            yield from self.bindings(target.value, None)
+
+    def assign(self, targets: list[ast.AST], value: ast.AST | None):
+        # Snapshot all RHS facts before assignment (including a, b = b, a).
+        bindings = [binding for target in targets for binding in self.bindings(target, value)]
+        if value is not None:
+            self.visit(value)
+        for name, geographic, constant in bindings:
+            self.geo_flags.discard(name)
+            self.constants.pop(name, None)
+            self.aliases.pop(name, None)
+            if geographic:
+                self.geo_flags.add(name)
+            if constant is not None:
+                self.constants[name] = constant
+
     def visit_Assign(self, node: ast.Assign):
-        if self.is_geo_condition(node.value):
-            for target in node.targets:
-                if isinstance(target, ast.Name):
-                    self.geo_flags.add(target.id)
-        self.generic_visit(node)
+        self.assign(node.targets, node.value)
+
+    def visit_AnnAssign(self, node: ast.AnnAssign):
+        if node.value is not None:
+            self.assign([node.target], node.value)
+
+    def visit_NamedExpr(self, node: ast.NamedExpr):
+        self.assign([node.target], node.value)
+
+    def visit_AugAssign(self, node: ast.AugAssign):
+        self.visit(node.value)
+        if isinstance(node.target, ast.Name):
+            self.constants.pop(node.target.id, None)
+            if self.is_geo_condition(node.value):
+                self.geo_flags.add(node.target.id)
+
+    def visit_Delete(self, node: ast.Delete):
+        self.assign(node.targets, None)
 
     def is_geo_condition(self, test: ast.AST) -> bool:
+        if self.truth(test) is not None:
+            return False
         if isinstance(test, ast.Name) and test.id in self.geo_flags:
             return True
         if isinstance(test, ast.UnaryOp) and isinstance(test.op, ast.Not):
@@ -197,21 +236,40 @@ class Analyzer(ast.NodeVisitor):
         classified = self.classify(node)
         if classified:
             self.add(*classified[:3], node, classified[3])
+            if self.geo_conditions and classified[0] in {"FS_DELETE", "FS_WRITE", "NET_EXTERNAL", "NET_DYNAMIC", "NET_GEO_API"}:
+                severity = "high" if classified[0] == "FS_DELETE" else "medium"
+                self.add("GEO_ACTION", "correlation", severity, node,
+                         f"AST: {classified[0]} находится в ветви географического условия (строка {self.geo_conditions[-1]})")
         self.generic_visit(node)
 
     def visit_If(self, node: ast.If):
-        if self.is_geo_condition(node.test):
+        self.visit(node.test)
+        known = self.truth(node.test)
+        if known is not None:
+            for statement in node.body if known else node.orelse:
+                self.visit(statement)
+            return
+        geographic = self.is_geo_condition(node.test)
+        if geographic:
             self.add("GEO_TARGET", "geolocation", "medium", node,
                      "AST: условное ветвление по географическому признаку RU/BY")
-            for called in direct_nodes([*node.body, *node.orelse]):
-                if not isinstance(called, ast.Call):
-                    continue
-                action = self.classify(called)
-                if action and action[0] in {"FS_DELETE", "FS_WRITE", "NET_EXTERNAL", "NET_DYNAMIC", "NET_GEO_API"}:
-                    severity = "high" if action[0] == "FS_DELETE" else "medium"
-                    self.add("GEO_ACTION", "correlation", severity, called,
-                             f"AST: {action[0]} находится в ветви географического условия (строка {node.lineno})")
-        self.generic_visit(node)
+        original = self.aliases.copy(), self.geo_flags.copy(), self.constants.copy()
+        branches = []
+        for suite in (node.body, node.orelse):
+            self.aliases, self.geo_flags, self.constants = (value.copy() for value in original)
+            if geographic:
+                self.geo_conditions.append(node.lineno)
+            try:
+                for statement in suite:
+                    self.visit(statement)
+                branches.append((self.aliases, self.geo_flags, self.constants))
+            finally:
+                if geographic:
+                    self.geo_conditions.pop()
+        left, right = branches
+        self.aliases = {key: value for key, value in left[0].items() if right[0].get(key) == value}
+        self.geo_flags = left[1] | right[1]
+        self.constants = {key: value for key, value in left[2].items() if key in right[2] and right[2][key] == value}
 
 
 def scan_python(path: str, content: str, allowed_domains: list[str]) -> list[dict] | None:

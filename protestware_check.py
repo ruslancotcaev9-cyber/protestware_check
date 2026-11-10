@@ -314,9 +314,17 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
         if ast_warnings is not None:
             ast_warnings.append(f"AST diagnostic {path}: invalid Python syntax, pattern-only analysis")
     if ast_findings is not None and suffix == ".py":
-        taint_findings = python_taint.scan_python_taint(path, content, allowed_domains) or []
+        diagnostics: list[str] = []
+        taint_findings = python_taint.scan_python_taint(path, content, allowed_domains, diagnostics) or []
+        if diagnostics:
+            diagnostic = f"AST partial analysis: {path}: {'; '.join(diagnostics)}"
+            if ast_mode == "required":
+                raise ScanError(diagnostic)
+            if ast_warnings is not None:
+                ast_warnings.append(diagnostic)
         if ast_stats is not None:
-            ast_stats["parsed"] = ast_stats.get("parsed", 0) + 1
+            name = "partial" if diagnostics else "parsed"
+            ast_stats[name] = ast_stats.get(name, 0) + 1
         # AST findings replace line-based duplicates (including multiline calls).
         existing = {(item["rule"], item["line"]): item for item in output}
         for item in [*ast_findings, *taint_findings]:
@@ -333,7 +341,7 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
     parsed = False
     if suffix in polyglot_ast.SUPPORTED and ast_mode != "off":
         tree_findings, diagnostic = polyglot_ast.scan_tree(path, content, allowed_domains)
-        parsed = diagnostic is None or diagnostic.startswith("AST partial syntax recovery")
+        parsed = diagnostic is None or diagnostic.startswith("AST partial ")
         if ast_stats is not None:
             name = "partial" if diagnostic and parsed else "degraded" if diagnostic else "parsed"
             ast_stats[name] = ast_stats.get(name, 0) + 1

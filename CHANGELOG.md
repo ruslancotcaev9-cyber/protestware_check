@@ -4,6 +4,26 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Analysis integrity fixes — 2026-11-10 (unreleased)
+
+- Report bounded Python/Tree-sitter taint, C/C++ helper and JavaScript network-path
+  exhaustion as partial analysis; required AST mode fails with exit code 2.
+- Invalidate reassigned Python geographic flags, fold literal Boolean conditions,
+  and merge branch states without carrying unreachable geographic actions forward.
+- Read Go requirements, indirect markers and replacements from go.mod. Keep
+  missing requirements visible, distinguish module/archive checksums, and count
+  unselected go.sum versions separately. A selected Go build list is not inferred.
+- Preserve declared package origins, Git revisions and available checksums;
+  distinguish equal coordinates from different sources in inventory and CycloneDX.
+  Skip public advisory/enrichment queries for unverified, private, local and Git
+  origins. Explicit public coordinates remain available through --package.
+- Preserve package identity, advisory IDs, sources, references and matching basis
+  in SARIF; attach manifest locations without inventing line numbers and expose
+  incomplete enabled analyses in invocation coverage.
+- Add regression fixtures for these cases and update documentation and API smoke
+  inputs. Pinned detection regressions retain partial-analysis diagnostics while
+  continuing to require the expected behavioral findings.
+
 ## Version-boundary and documentation fixes — 2026-11-10 (unreleased)
 
 - Treat npm partial versions (`1`, `1.2`) as ranges, never as exact advisory

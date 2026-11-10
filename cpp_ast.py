@@ -84,6 +84,7 @@ class CppAnalyzer:
         self.count = 0
         self.function_index: dict[str, list[Function]] = defaultdict(list)
         self.expansions = 0
+        self.diagnostics: set[str] = set()
         self.max_nodes = MAX_NODES
 
     def raw(self, node) -> str:
@@ -349,11 +350,16 @@ class CppAnalyzer:
             self.check_call(node, geographic, route)
             # Only expand callees within a specific geo-conditioned call path.
             # All function definitions get their own ordinary scan independently.
-            if geographic is not None and len(route) // 2 < MAX_CALL_DEPTH and self.expansions < MAX_HELPER_EXPANSIONS:
+            if geographic is not None:
                 callee = self._callee(node)
                 args = self._args(node)
                 fn = self.resolve(callee, len(args))
-                if fn is not None and fn.name not in active:
+                if fn is not None and (fn.name in active or len(route) // 2 >= MAX_CALL_DEPTH or
+                                       self.expansions >= MAX_HELPER_EXPANSIONS):
+                    reason = ('recursive call' if fn.name in active else
+                              'call depth limit' if len(route) // 2 >= MAX_CALL_DEPTH else 'helper expansion budget')
+                    self.diagnostics.add(f'C/C++ {reason} reached')
+                elif fn is not None:
                     self.expansions += 1
                     bridge = (
                         ('call', _line(node), f'call {callee}(' + ', '.join(self.raw(a)[:48] for a in args) + ')'),
@@ -366,8 +372,11 @@ class CppAnalyzer:
             self.walk(child, geographic, route, active)
 
 
-def scan_cpp(path: str, content: str, root, allowed_domains: list[str]) -> list[dict]:
+def scan_cpp(path: str, content: str, root, allowed_domains: list[str],
+             diagnostics: list[str] | None = None) -> list[dict]:
     analyzer = CppAnalyzer(path, content, allowed_domains)
     analyzer.index_functions(root)
     analyzer.walk(root)
+    if diagnostics is not None:
+        diagnostics.extend(sorted(analyzer.diagnostics))
     return analyzer.findings

@@ -39,6 +39,7 @@ class Analyzer:
         self.active: list[str] = []
         self.return_stack: list[list[Flow]] = []
         self.invocations = 0
+        self.diagnostics: set[str] = set()
 
     def resolve(self, name: str) -> str:
         parts = name.split('.')
@@ -68,6 +69,10 @@ class Analyzer:
     def evaluate_function(self, name: str, call: ast.Call, env: dict[str, Flow]) -> Flow:
         fn = self.functions.get(name)
         if not fn or name in self.active or len(self.active) >= MAX_CALL_DEPTH or self.invocations >= MAX_INVOCATIONS:
+            if fn:
+                reason = ('recursive call' if name in self.active else
+                          'call depth limit' if len(self.active) >= MAX_CALL_DEPTH else 'invocation budget')
+                self.diagnostics.add(f'Python taint {reason} reached')
             # Do not infer cleanliness from an unanalyzable recursive/complex call.
             vals = [self.expr(arg, env) for arg in call.args]
             vals += [self.expr(kw.value, env) for kw in call.keywords]
@@ -229,7 +234,8 @@ class Analyzer:
                     self.call(x, env)
 
 
-def scan_python_taint(path: str, content: str, allowed_domains: list[str]) -> list[dict] | None:
+def scan_python_taint(path: str, content: str, allowed_domains: list[str],
+                      diagnostics: list[str] | None = None) -> list[dict] | None:
     if Path(path).suffix.lower() != '.py':
         return []
     try:
@@ -243,4 +249,6 @@ def scan_python_taint(path: str, content: str, allowed_domains: list[str]) -> li
         empty = ast.Call(func=ast.Name(id=name, ctx=ast.Load()), args=[], keywords=[])
         empty.lineno = fn.lineno
         analyzer.evaluate_function(name, empty, {})
+    if diagnostics is not None:
+        diagnostics.extend(sorted(analyzer.diagnostics))
     return analyzer.findings

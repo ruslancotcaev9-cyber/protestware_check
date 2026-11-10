@@ -140,7 +140,8 @@ class SecurityBoundaries(unittest.TestCase):
     def test_registry_enriches_each_manifest_occurrence(self):
         manifests = {name + '/package-lock.json': json.dumps({
             'packages': {'': {'dependencies': {'parent': '1.0.0'}},
-                         'node_modules/parent': {'version': '1.0.0'}}}) for name in ('a', 'b')}
+                         'node_modules/parent': {'version': '1.0.0',
+                                                 'resolved': 'https://registry.npmjs.org/parent/-/parent-1.0.0.tgz'}}}) for name in ('a', 'b')}
         with patch.object(dependencies, 'official_json', return_value={
                 'repository': 'https://github.com/example/parent', 'dependencies': {}}):
             result = dependencies.analyze_dependencies(manifests, mode='registry')

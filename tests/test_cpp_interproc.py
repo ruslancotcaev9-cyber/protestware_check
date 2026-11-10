@@ -155,7 +155,9 @@ class CppCallGraphParserTests(unittest.TestCase):
     def test_recursive_helper_terminates(self):
         code = '''void bounce(const char* value) { bounce(value); }
         void start(const char* country) { if (country == "RU") bounce(country); }'''
-        self.assertFalse(self.geo(self.scan(code)))
+        findings, diagnostic = polyglot_ast.scan_tree('code.cpp', code, [])
+        self.assertFalse(self.geo(findings))
+        self.assertIn('recursive call', diagnostic)
 
     def test_sarif_renders_c_cpp_call_path(self):
         code = '''#include <filesystem>

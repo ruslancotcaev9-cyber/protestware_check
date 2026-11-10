@@ -10,6 +10,7 @@ from unittest.mock import patch
 import dependency_analysis as dep
 import malware_intel as mi
 import protestware_check as scanner
+from package_identity import public_origin
 
 
 class NpmVersionBoundaryTests(unittest.TestCase):
@@ -22,7 +23,7 @@ class NpmVersionBoundaryTests(unittest.TestCase):
         versions = ('0.0.0', '1.2.3', 'v1.2.3', '1.2.3-rc.1',
                     '1.2.3-0', '1.2.3-01alpha', '1.2.3+build.001',
                     '1.2.3-beta.2+build.007')
-        packages = [{'ecosystem': 'npm', 'name': 'example', 'version': v}
+        packages = [{'ecosystem': 'npm', 'name': 'example', 'version': v, 'origin': public_origin('npm')}
                     for v in versions]
         with patch.object(mi, 'fetch_json', return_value={
                 'results': [{} for _ in versions]}) as fetch:

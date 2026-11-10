@@ -6,9 +6,11 @@ any scanned material is performed. Watchlist matches are NOT SBOM vulnerabilitie
 from __future__ import annotations
 
 from hashlib import sha256
+import json
 from pathlib import PurePosixPath
 from urllib.parse import quote
 from typing import Any
+from package_identity import origin_key
 
 SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
 CYCLONEDX_SCHEMA = "https://cyclonedx.org/schema/bom-1.6.schema.json"
@@ -41,14 +43,15 @@ def cyclonedx(report: dict[str, Any]) -> dict[str, Any]:
     summary = dependencies.get("summary", {})
     items = dependencies.get("packages", [])
     root_ref = "project:" + sha256(report["source"].encode()).hexdigest()[:20]
-    refs: dict[tuple[str, str, str, str], str] = {}
+    refs: dict[tuple[str, str, str, str, str], str] = {}
     components = []
     for pkg in items:
-        key = (pkg["ecosystem"], pkg["name"], pkg.get("version", ""), pkg.get("manifest", ""))
+        key = (pkg["ecosystem"], pkg["name"], pkg.get("version", ""), pkg.get("manifest", ""), origin_key(pkg.get("origin", {})))
         ref = "package:" + sha256("\x00".join(key).encode()).hexdigest()[:24]
         refs[key] = ref
         properties = [{"name": "protestware-check:origin", "value": str(pkg.get("source", ""))},
                       {"name": "protestware-check:manifest", "value": str(pkg.get("manifest", ""))},
+                      {"name": "protestware-check:package-origin", "value": origin_key(pkg.get("origin", {}))},
                       {"name": "protestware-check:direct", "value": str(bool(pkg.get("direct", False))).lower()}]
         if pkg.get("depth") is not None:
             properties.append({"name": "protestware-check:depth", "value": str(pkg["depth"])})
@@ -63,12 +66,12 @@ def cyclonedx(report: dict[str, Any]) -> dict[str, Any]:
 
     root_children = set()
     edges: dict[str, set[str]] = {ref: set() for ref in refs.values()}
-    index: dict[tuple[str, str], list[tuple[tuple[str, str, str, str], str]]] = {}
+    index: dict[tuple[str, str], list[tuple[tuple[str, str, str, str, str], str]]] = {}
     for key, ref in refs.items():
         index.setdefault((key[0], key[1].lower()), []).append((key, ref))
 
     for pkg in items:
-        key = (pkg["ecosystem"], pkg["name"], pkg.get("version", ""), pkg.get("manifest", ""))
+        key = (pkg["ecosystem"], pkg["name"], pkg.get("version", ""), pkg.get("manifest", ""), origin_key(pkg.get("origin", {})))
         child_ref = refs[key]
         if pkg.get("direct"):
             root_children.add(child_ref)
@@ -117,17 +120,31 @@ def sarif(report: dict[str, Any]) -> dict[str, Any]:
         path, number = str(item.get("file", "")), item.get("line")
         rule = str(item["rule"])
         message = str(item.get("message") or rule)
+        package = item.get("package")
+        if isinstance(package, dict):
+            identity = f"{package.get('ecosystem', '')}:{package.get('name', '')}@{package.get('version', '')}"
+            message += f" [{identity}]"
+        if item.get("advisory_ids"):
+            message += " [" + ", ".join(item["advisory_ids"]) + "]"
         result: dict[str, Any] = {"ruleId": rule, "level": levels.get(item.get("severity"), "note"),
                                   "message": {"text": message},
                                   "properties": {"category": item.get("category", "unknown"),
                                                  "severity": item.get("severity", "info")}}
-        if isinstance(number, int) and number > 0 and path and not path.startswith("("):
+        for field in ("package", "matched_packages", "advisory_ids", "sources", "references", "version_match",
+                      "origin_match", "analysis", "repository", "evidence"):
+            if field in item:
+                result["properties"][field] = item[field]
+        if isinstance(package, dict) and (uri := purl(package)):
+            result["properties"]["purl"] = uri
+        if path and not path.startswith("("):
             normalized = path.replace("\\", "/")
             # No escaping repository boundaries; SARIF may carry source-provided paths.
-            if not normalized.startswith("/") and ".." not in PurePosixPath(normalized).parts:
-                result["locations"] = [{"physicalLocation": {
-                    "artifactLocation": {"uri": quote(normalized, safe="/@+-.~_")},
-                    "region": {"startLine": number}}}]
+            if (not normalized.startswith("/") and ":" not in normalized and
+                    ".." not in PurePosixPath(normalized).parts):
+                location = {"artifactLocation": {"uri": quote(normalized, safe="/@+-.~_")}}
+                if isinstance(number, int) and number > 0:
+                    location["region"] = {"startLine": number}
+                result["locations"] = [{"physicalLocation": location}]
         # SARIF 2.1 codeFlows provide the analyst with bounded source-to-sink
         # provenance. Do not allow source-provided paths to escape the project.
         hops = item.get("dataflow")
@@ -139,6 +156,7 @@ def sarif(report: dict[str, Any]) -> dict[str, Any]:
                 hop_path = str(hop.get("file") or path).replace("\\", "/")
                 hop_line = hop.get("line")
                 if (not hop_path or hop_path.startswith("/") or
+                        ":" in hop_path or
                         ".." in PurePosixPath(hop_path).parts or
                         not isinstance(hop_line, int) or hop_line <= 0):
                     continue
@@ -151,14 +169,26 @@ def sarif(report: dict[str, Any]) -> dict[str, Any]:
             if thread:
                 result["codeFlows"] = [{"threadFlows": [{"locations": thread}]}]
         fingerprint = "\x00".join([rule, path, str(item.get("evidence", "")).strip()])
+        if isinstance(package, dict):
+            fingerprint += "\x00" + json.dumps({"package": package, "ids": sorted(item.get("advisory_ids", []))}, sort_keys=True)
         result["partialFingerprints"] = {"primaryLocationLineHash": sha256(fingerprint.encode()).hexdigest()[:32]}
         results.append(result)
+    ast = report.get("ast", {})
+    dependencies = report.get("dependencies", {})
+    intelligence = report.get("malware_intel", {})
+    ast_attempted = any(ast.get(key, 0) for key in ("parsed", "partial", "degraded"))
+    coverage = {"source": report.get("scan", {}).get("complete", True),
+                "ast": not (ast.get("partial") or ast.get("degraded")) if ast_attempted else None,
+                "dependencies": dependencies.get("summary", {}).get("complete", False) if dependencies.get("mode", "off") != "off" else None,
+                "malware_intel": bool(intelligence.get("complete") and intelligence.get("inventory_complete"))
+                                 if intelligence.get("mode", "off") != "off" else None}
     return {"$schema": SARIF_SCHEMA, "version": "2.1.0",
             "runs": [{"tool": {"driver": {"name": report["tool"], "version": report["version"],
                                         "informationUri": "https://github.com/ruslancotcaev9-cyber/protestware_check",
                                         "rules": definitions}},
                       "automationDetails": {"id": "protestware-check/static-analysis"},
-                      "invocations": [{"executionSuccessful": report.get("scan", {}).get("complete", True),
+                      "invocations": [{"executionSuccessful": all(value is not False for value in coverage.values()),
+                                       "properties": {"analysisCoverage": coverage},
                                        "toolExecutionNotifications": [
                                            {"level": "warning", "message": {"text": str(warning)}}
                                            for warning in report.get("warnings", []) +

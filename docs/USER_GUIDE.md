@@ -70,6 +70,12 @@ python protestware_check.py --path ../application \
 
 `lock` читает зафиксированный состав из поддерживаемых манифестов. Если lock-файл отсутствует или неподдерживаемый формат не позволяет получить полный граф, `--dependency-strict` может завершиться с кодом 2. При отсутствии поддерживаемых манифестов нельзя делать вывод «зависимостей нет».
 
+Для Go учитываются объявленные версии из `go.mod`, `// indirect` и `replace`.
+`go.sum` используется для контрольных сумм, включая различие между архивом и
+`/go.mod`; старые версии не выдаются за текущие требования. Полный выбранный граф
+сборки не вычисляется, поэтому Go-модуль с требованиями получает
+`dependencies.summary.complete=false`. Подробнее — [ограничения Go](TECHNICAL_REFERENCE.md#особенности-go).
+
 ```bash
 python protestware_check.py --path ../application \
   --dependencies registry --dependency-max-packages 1000 \
@@ -160,19 +166,19 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 
 **JSON:** `source`, `files_scanned`, `risk`, `code_risk`, `summary`, `findings`, `watchlists`, `dependencies`, `malware_intel`, `scan`, `ast`, `warnings`. В каждой находке проверяйте `rule`, `severity`, `file`, `line`, `message`, `evidence`; для отдельных AST/taint-правил предусмотрены `dataflow` и `reachability`.
 
-**SARIF:** результаты с привязкой к файлам/строкам, а при наличии трассировок — `codeFlows`. Сигналы уровня репозитория без файла могут не отображаться в интерфейсе Code Scanning; сохраняйте также JSON. **CycloneDX:** список компонентов и предполагаемых связей, с индикатором `protestware-check:dependency-analysis-complete`. Совпадение с `black-mark` не становится CVE/SBOM-vulnerability.
+**SARIF:** результаты с привязкой к файлам/строкам, а при наличии трассировок — `codeFlows`. Для advisory сохраняются пакет, версия, происхождение, ID и ссылки в `properties`; неизвестный номер строки не подменяется фиктивным. Сигналы уровня репозитория без файла могут не отображаться в интерфейсе Code Scanning; сохраняйте также JSON. **CycloneDX:** список компонентов и предполагаемых связей, с индикатором `protestware-check:dependency-analysis-complete` и свойством `protestware-check:package-origin`. Совпадение с `black-mark` не становится CVE/SBOM-vulnerability.
 
 **Выходные коды:** `0` — риск ниже `--fail-on` и нет ошибки, требующей кода 2; `1` — достигнут порог; `2` — ошибка ввода/вывода, неполное чтение, превышение суммарного бюджета, отсутствие/неполнота AST для поддерживаемого парсером языка при `required` или неполнота при `--dependency-strict` / `--malware-strict`. Код 2 имеет приоритет перед кодом 1. Ошибка до построения отчёта может оставить только сообщение в stderr: наличие выходного файла не гарантировано.
 
 | Поле | Как трактовать |
 | --- | --- |
 | `scan.complete` | Полнота чтения выбранных исходных файлов; исключённые пути, неподдерживаемые расширения и отфильтрованные бинарные файлы не входят в область проверки |
-| `ast.complete` | Есть хотя бы один разобранный AST, нет деградации/частичного разбора, режим не `off`; это не покрытие всех языков и файлов |
+| `ast.complete` | Есть хотя бы один разобранный AST, нет деградации/частичного разбора или остановки по внутренним лимитам, режим не `off`; это не покрытие всех языков и файлов |
 | `dependencies.summary.complete` | Нет зарегистрированных ошибок/пропусков инвентаризации; не доказательство полного воспроизводимого разрешения установки |
 | `malware_intel.complete` | Полнота выбранных advisory-запросов; при `off` значение `true` означает отсутствие запрошенной проверки |
 | `malware_intel.inventory_complete` | Отдельный признак полноты входной инвентаризации |
 
-В `auto` и без строгих флагов код 0 возможен при неполном AST, зависимостях или advisories. Проверяйте режимы, поля полноты и предупреждения вместе. SARIF сохраняет предупреждения в `invocations.toolExecutionNotifications`, а `executionSuccessful=false` отражает неполное чтение исходников; этот флаг не заменяет проверку кода завершения и остальных полей.
+В `auto` и без строгих флагов код 0 возможен при неполном AST, зависимостях или advisories. Проверяйте режимы, поля полноты и предупреждения вместе. SARIF сохраняет предупреждения в `invocations.toolExecutionNotifications`. `executionSuccessful=false` отражает зарегистрированную неполноту чтения или включённых анализов; `invocations.properties.analysisCoverage` показывает соответствующие этапы (`null` — этап не применялся). Этот флаг не заменяет проверку кода завершения и остальных полей.
 
 `--ast-mode required` не означает AST-покрытие всех языков и не требует хотя бы одного разобранного AST. Если каталог содержит только Rust (`.rs`), документацию или пуст, код 0 возможен при `ast.parsed=0` и `ast.complete=false`. Для `.rs` остаются базовые эвристики; AST-парсер Rust не реализован. В смешанном проекте `ast.complete=true` также не означает AST-разбор каждого файла: оценивайте состав проекта и таблицу поддерживаемых форматов.
 
@@ -190,7 +196,7 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 | SQL, HTML, CSS, SCSS, Less | Tree-sitter и специализированные статические правила |
 | Sass `.sass` | Частичный структурный разбор по отступам |
 
-Зависимости: npm (`package-lock.json` v1–v3, `npm-shrinkwrap.json`, `pnpm-lock.yaml` v6–v9), Python (`uv.lock`, `poetry.lock`, `pylock.toml`, `requirements*.txt`, `pyproject.toml`), Cargo (`Cargo.lock`), Composer (`composer.lock`), Go (`go.sum`), NuGet (`packages.lock.json`, проекты и `Directory.Packages.props`). Не поддерживаются как полный lock-граф `yarn.lock`, `Pipfile.lock`, `Gemfile.lock` и некоторые динамически вычисляемые манифесты. Подробнее см. [технический справочник](TECHNICAL_REFERENCE.md).
+Зависимости: npm (`package-lock.json` v1–v3, `npm-shrinkwrap.json`, `pnpm-lock.yaml` v6–v9), Python (`uv.lock`, `poetry.lock`, `pylock.toml`, `requirements*.txt`, `pyproject.toml`), Cargo (`Cargo.lock`), Composer (`composer.lock`), Go (`go.mod` и `go.sum`, без полного выбранного графа сборки), NuGet (`packages.lock.json`, проекты и `Directory.Packages.props`). Не поддерживаются как полный lock-граф `yarn.lock`, `Pipfile.lock`, `Gemfile.lock` и некоторые динамически вычисляемые манифесты. Подробнее см. [технический справочник](TECHNICAL_REFERENCE.md).
 
 ## 7. Типовые проблемы
 
@@ -206,7 +212,7 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 | Проблема с записью отчёта | Проверить существование родительского каталога, права, отсутствие конечной ссылки; выбрать путь вне исходников |
 | Код 2 при пропуске большого/нечитаемого файла | Проверить `warnings`; восстановить доступ или обоснованно изменить лимиты/область анализа |
 | `Total source file/byte budget exceeded` | Сканировать меньшие независимые части или обоснованно увеличить `--max-files` / `--max-total-bytes` |
-| `--malware-strict` даёт код 2 | Проверить точные версии, полноту инвентаризации, API и лимиты запросов |
+| `--malware-strict` даёт код 2 | Проверить точные версии, происхождение (`skipped_unverified_origin`), полноту инвентаризации, API и лимиты запросов |
 | HTTP 3xx от GitHub/списков | Перенаправления запрещены; использовать актуальный источник |
 
 ## Перед публичным релизом
@@ -239,7 +245,7 @@ python protestware_check.py --path ../application --dependencies lock \
   --format sarif --output malware-findings.sarif
 ```
 
-`--malware-intel` принимает `off` (по умолчанию), `osv`, `github`, `both`; `--malware-strict` включает код выхода 2 при неполноте источников или инвентаризации. Проверка имён и версий передаёт эти координаты внешним API и потому требует отдельного решения при анализе частных зависимостей. `--watchlists` продолжает независимо проверять `toxic-repos` / `black-mark`.
+`--malware-intel` принимает `off` (по умолчанию), `osv`, `github`, `both`; `--malware-strict` включает код выхода 2 при неполноте источников или инвентаризации. Пакеты из известных частных, Git, локальных и неопределённых источников пропускаются, что отражается в `skipped_unverified_origin` и `complete=false`. Допущенные имена и версии передаются внешним API; `--package` задаёт публичные координаты явно. Go проверяется по объявленному полному пути модуля, без установления публичности репозитория. `--watchlists` продолжает независимо проверять `toxic-repos` / `black-mark`.
 
 Точные схемы сопоставления, обработка отозванных записей, лимиты и отдельные источники описаны в [справочнике](MALWARE_INTELLIGENCE.md). Обычные CVE не считаются protestware.
 
@@ -252,4 +258,4 @@ python protestware_check.py --path ../application --dependencies lock \
 - Отчёт записывается атомарно. Символические ссылки в конечном пути отчёта и перезапись существующего файла внутри сканируемого каталога запрещены. Сохраняйте отчёты в отдельный доверенный каталог. Существующий отчёт вне исходного дерева можно обновлять.
 - GitHub API и загрузка внешних списков не следуют перенаправлениям; используйте актуальное имя репозитория. Ответ GitHub API ограничен 16 МБ.
 - В `--package` диапазоны (`^1.0.0`, `>=1.0`, `1.*`), включая сокращённые npm-формы `1` и `1.2`, не считаются зафиксированной версией. В режиме `lock` они отмечаются как неполные; `registry` пытается подобрать версию и явно сохраняет приблизительный характер разрешения. Запросы malware advisories отправляются только для конкретных версий. Для npm нужна полная версия `major.minor.patch` с допустимыми prerelease/build-суффиксами; правило сокращённых npm-версий не переносится на PyPI или NuGet.
-- Предупреждения сохраняются в текстовом отчёте и в SARIF `invocations.toolExecutionNotifications`; неполное чтение отражается в `executionSuccessful=false`. Для строгой проверки используйте `--ast-mode required --dependency-strict`, а при включённых advisories — `--malware-strict`.
+- Предупреждения сохраняются в текстовом отчёте и в SARIF `invocations.toolExecutionNotifications`; зарегистрированная неполнота включённых этапов отражается в `executionSuccessful=false` и `properties.analysisCoverage`. Для строгой проверки используйте `--ast-mode required --dependency-strict`, а при включённых advisories — `--malware-strict`.

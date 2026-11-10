@@ -88,7 +88,7 @@ url = "git+https://github.com/demo/foo"
 
     def test_go_cargo_composer(self):
         manifest = {
-            "go.sum": "github.com/acme/mod v1.2.0 h1:abcdef\ngithub.com/acme/mod v1.2.0/go.mod h1:abcdef",
+            "go.sum": "github.com/acme/mod v1.2.0 h1:" + "A" * 43 + "=\ngithub.com/acme/mod v1.2.0/go.mod h1:" + "A" * 43 + "=",
             "Cargo.lock": '[[package]]\nname="crate"\nversion="1.0.0"\nsource="registry+https://github.com/rust-lang/crates.io-index"\n[[package]]\nname="gitcrate"\nversion="0.1"\nsource="git+https://github.com/a/crate#00"',
             "composer.lock": json.dumps({"packages": [{"name": "vendor/lib", "version": "v1.0", "source": {"type": "git", "url": "https://github.com/vendor/lib.git"}}]})
         }
@@ -194,7 +194,7 @@ class RegistryTests(unittest.TestCase):
 
     def test_registry_exact_npm_lock_enrichment_does_not_expand(self):
         data = {"lockfileVersion": 3, "packages": {"": {"dependencies": {"a": "1.0.0"}},
-                "node_modules/a": {"version": "1.0.0"}}}
+                "node_modules/a": {"version": "1.0.0", "resolved": "https://registry.npmjs.org/a/-/a-1.0.0.tgz"}}}
         with patch.object(dep, "official_json", return_value={"repository": "https://github.com/o/a", "dependencies": {"b": "1"}}):
             report = dep.analyze_dependencies({"package-lock.json": json.dumps(data)}, mode="registry")
         self.assertEqual(report["summary"]["count"], 1)
@@ -211,7 +211,7 @@ class RegistryTests(unittest.TestCase):
                 return {"info": {"project_urls": {"Source": "https://github.com/owner/child"}, "requires_dist": []}}
             raise AssertionError(url)
         with patch.object(dep, "official_json", side_effect=fake):
-            data = dep.analyze_dependencies({"requirements.txt": "parent==1.0"}, mode="registry")
+            data = dep.analyze_dependencies({"requirements.txt": "--index-url https://pypi.org/simple\nparent==1.0"}, mode="registry")
         self.assertEqual({p["name"] for p in data["packages"]}, {"parent", "child"})
         self.assertEqual({r[0] for r in data["references"]}, {"owner/parent", "owner/child"})
         self.assertFalse(data["summary"]["complete"])

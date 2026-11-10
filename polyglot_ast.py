@@ -101,6 +101,7 @@ class TreeAnalyzer:
         self.active = []
         self.returns = []
         self.invocations = 0
+        self.diagnostics: set[str] = set()
 
     def raw(self, node) -> str:
         return self.bytes[node.start_byte:node.end_byte].decode('utf-8', 'replace')
@@ -171,6 +172,10 @@ class TreeAnalyzer:
         args = [self.value(arg, state) for arg in self.call_arguments(call)]
         fn = self.functions.get(name)
         if fn is None or name in self.active or len(self.active) >= 6 or self.invocations >= 200:
+            if fn is not None:
+                reason = ('recursive call' if name in self.active else
+                          'call depth limit' if len(self.active) >= 6 else 'invocation budget')
+                self.diagnostics.add(f'Tree-sitter taint {reason} reached')
             return self.combine(args)
         self.invocations += 1
         names = self.function_parameters(fn)
@@ -202,6 +207,7 @@ class TreeAnalyzer:
 
     def value(self, node, state: dict[str, Flow], level: int = 0) -> Flow:
         if level > 40:
+            self.diagnostics.add('Tree-sitter taint expression depth limit reached')
             return Flow()
         text = self.raw(node).strip()
         if node.type in STRING_NODES:
@@ -328,7 +334,7 @@ class TreeAnalyzer:
             self.sink(node, state, branch)
             call_text = self.raw(node).strip()[:160]
             m = re.match(r'^([A-Za-z_$][\w$]*)\s*\(', call_text)
-            if m and m.group(1) in self.functions and m.group(1) not in self.active:
+            if m and m.group(1) in self.functions:
                 self.evaluate_function(m.group(1), node, state)
         for child in descendants:
             self.walk(child, state, branch, counter)
@@ -359,15 +365,22 @@ def scan_tree(path, content, allow):
             return [], f'AST parser returned no tree for {path}'
         if ext in {'.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx'}:
             from cpp_ast import scan_cpp
-            cpp_findings = scan_cpp(path, content, tree.root_node, allow)
-            diag = f'AST partial syntax recovery: {path}' if tree.root_node.has_error else None
+            diagnostics = []
+            cpp_findings = scan_cpp(path, content, tree.root_node, allow, diagnostics)
+            if tree.root_node.has_error and not diagnostics:
+                return cpp_findings, f'AST partial syntax recovery: {path}'
+            if tree.root_node.has_error:
+                diagnostics.append('syntax recovery')
+            diag = f"AST partial analysis: {path}: {'; '.join(diagnostics)}" if diagnostics else None
             return cpp_findings, diag
         analyzer = TreeAnalyzer(path, content, allow)
         analyzer.index_functions(tree.root_node)
         analyzer.walk(tree.root_node, {})
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             from js_behavior import scan_js_behavior
-            analyzer.findings.extend(scan_js_behavior(path, content, tree.root_node))
+            diagnostics = []
+            analyzer.findings.extend(scan_js_behavior(path, content, tree.root_node, diagnostics))
+            analyzer.diagnostics.update(diagnostics)
         if ext in {'.html', '.htm'}:
             # Embedded languages have their own syntax trees; byte offsets matter for Unicode.
             raw_data = content.encode('utf-8')
@@ -378,15 +391,19 @@ def scan_tree(path, content, allow):
                 subpath = 'inline.' + ('js' if match.group(1).lower() == b'script' else 'css')
                 inner, diagnostic = scan_tree(subpath, body, allow)
                 if diagnostic:
-                    return analyzer.findings, f'AST partial inline syntax: {path}: {diagnostic}'
+                    analyzer.diagnostics.add(f'inline analysis: {diagnostic}')
                 before = raw_data[:match.start(2)].count(b'\n')
                 for entry in inner:
                     number = before + entry['line']
                     if 0 < number <= len(analyzer.lines):
                         analyzer.findings.append({**entry, 'file': path, 'line': number,
                                                   'evidence': analyzer.lines[number - 1].strip()[:240]})
-        if tree.root_node.has_error:
+        if tree.root_node.has_error and not analyzer.diagnostics:
             return analyzer.findings, f'AST partial syntax recovery: {path}'
+        if tree.root_node.has_error:
+            analyzer.diagnostics.add('syntax recovery')
+        if analyzer.diagnostics:
+            return analyzer.findings, f"AST partial analysis: {path}: {'; '.join(sorted(analyzer.diagnostics))}"
         return analyzer.findings, None
     except (ValueError, RuntimeError, OSError) as exc:
         return [], f'AST unavailable: {path}: {exc}'

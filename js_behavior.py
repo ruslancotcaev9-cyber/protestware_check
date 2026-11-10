@@ -51,6 +51,7 @@ class BehaviorAnalyzer:
         self.functions: dict[str, FunctionInfo] = {}
         self.findings: list[dict] = []
         self.seen: set[tuple[str, int]] = set()
+        self.diagnostics: set[str] = set()
 
     def raw(self, node):
         return self.source[node.start_byte:node.end_byte].decode('utf-8', 'replace')
@@ -110,6 +111,7 @@ class BehaviorAnalyzer:
             node = todo.pop()
             count += 1
             if count > budget:
+                self.diagnostics.add('JavaScript network path node budget reached')
                 return None
             if node is not body and node.type in FUNCTION_TYPES:
                 continue  # function declarations are not executed when merely encountered
@@ -117,7 +119,10 @@ class BehaviorAnalyzer:
                 callee = self._callee(node)
                 if DIRECT_NETWORK.fullmatch(callee):
                     return [(node.start_point[0] + 1, 'sink', f'network call {callee}')]
-                if callee in self.functions and callee not in active and len(active) < 6:
+                if callee in self.functions and (callee in active or len(active) >= 6):
+                    reason = 'recursive call' if callee in active else 'call depth limit'
+                    self.diagnostics.add(f'JavaScript network path {reason} reached')
+                elif callee in self.functions:
                     other = self.functions[callee]
                     path = self.network_path(other.body, active | {callee}, budget=max(200, budget // 2))
                     if path:
@@ -172,9 +177,11 @@ class BehaviorAnalyzer:
                   '; obfuscation is not proof of malware')
 
 
-def scan_js_behavior(path: str, content: str, root):
+def scan_js_behavior(path: str, content: str, root, diagnostics: list[str] | None = None):
     scanner = BehaviorAnalyzer(path, content)
     scanner.index(root)
     scanner.scan_flood(root)
     scanner.scan_obfuscation(root)
+    if diagnostics is not None:
+        diagnostics.extend(sorted(scanner.diagnostics))
     return scanner.findings
