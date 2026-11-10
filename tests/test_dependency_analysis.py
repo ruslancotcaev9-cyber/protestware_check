@@ -33,7 +33,7 @@ class LockGraphTests(unittest.TestCase):
 
     def test_npm_v1_recursive_dependency(self):
         doc = {"lockfileVersion": 1, "dependencies": {"parent": {
-            "version": "1.1", "dependencies": {"child": {"version": "3.0"}}
+            "version": "1.1.0", "dependencies": {"child": {"version": "3.0.0"}}
         }}}
         files = {"package.json": '{"dependencies":{"parent":"1.1"}}', "package-lock.json": json.dumps(doc)}
         result = self.inventory(files, mode="lock")
@@ -137,15 +137,15 @@ snapshots:
     def test_watchlist_match_transitive_record_provenance(self):
         doc = {"lockfileVersion": 3, "packages": {
             "": {"dependencies": {"a": "1"}},
-            "node_modules/a": {"version": "1.0", "dependencies": {"b": "1"}},
-            "node_modules/b": {"version": "1.0", "resolved": "git+https://github.com/owner/flagged.git"}
+            "node_modules/a": {"version": "1.0.0", "dependencies": {"b": "1"}},
+            "node_modules/b": {"version": "1.0.0", "resolved": "git+https://github.com/owner/flagged.git"}
         }}
         toxic = {"black": set(), "toxic": {"owner/flagged": [{"id": 42, "type": "malware", "link": "https://github.com/owner/flagged"}]},
                  "metadata": {"mode": "offline"}}
         report = scanner.build_report("test", [("package-lock.json", json.dumps(doc))], [], [], [], watchlists=toxic)
         found = next(x for x in report["findings"] if x["rule"] == "TOXIC_REPO")
         self.assertEqual(found["matched_packages"][0]["name"], "b")
-        self.assertIn("a@1.0", found["matched_packages"][0]["via"])
+        self.assertIn("a@1.0.0", found["matched_packages"][0]["via"])
         self.assertEqual(found["matched_packages"][0]["direct"], False)
 
     def test_purl_registry_package_match(self):

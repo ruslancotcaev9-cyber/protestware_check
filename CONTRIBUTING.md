@@ -82,7 +82,9 @@ contact those package maintainers through their private reporting channel.
 `tests.yml` runs unit tests on pushes and pull requests. `pinned-regression.yml`
 runs on main pushes, pull requests and manual dispatch; it checks the pinned
 third-party sources as data only. `secret-history-scan.yml` checks fetched Git
-history. `malware-advisory-smoke.yml` is manual and uses public API metadata.
+history. `malware-advisory-smoke.yml` uses public API metadata and runs on
+manual dispatch or pushes to `feature/malware-advisory-feeds-20261109`, not
+on pushes to `main`.
 See [release checklist](docs/RELEASE_CHECKLIST.md) for tag/release behavior.
 
 For documentation changes, compare flags and defaults with `--help`, verify

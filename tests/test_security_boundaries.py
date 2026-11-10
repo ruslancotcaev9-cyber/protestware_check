@@ -186,6 +186,18 @@ class SecurityBoundaries(unittest.TestCase):
                 polyglot_ast._parser('go')
         fake.get_parser.assert_not_called()
 
+    def test_required_ast_does_not_assert_coverage_of_unsupported_languages(self):
+        with tempfile.TemporaryDirectory() as td:
+            Path(td, 'main.rs').write_text('fn main() {}\n', encoding='utf-8')
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                rc = scanner.main(['--path', td, '--ast-mode', 'required',
+                                   '--dependencies', 'off', '--format', 'json'])
+            report = json.loads(output.getvalue())
+            self.assertEqual(rc, 0)
+            self.assertFalse(report['ast']['complete'])
+            self.assertEqual(report['ast']['parsed'], 0)
+
 
 if __name__ == '__main__':
     unittest.main()

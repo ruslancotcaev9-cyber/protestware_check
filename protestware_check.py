@@ -497,7 +497,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ref", help="GitHub branch, tag, or commit (only with --repo)")
     parser.add_argument("--format", choices=("text", "json", "sarif", "cyclonedx"), default="text")
     parser.add_argument("--ast-mode", choices=("auto", "required", "off"), default="auto",
-                        help="Auto: AST if parsers available; required: fail on missing/partial AST; off: legacy patterns")
+                        help="Auto: AST if available; required: fail on missing/partial AST for supported languages only; off: legacy patterns")
     parser.add_argument("--output", type=Path, help="Write selected report format to this file (default: stdout)")
     parser.add_argument("--fail-on", choices=("low", "medium", "high"), default="high")
     parser.add_argument("--allow-domain", action="append", default=[], help="Trusted domain and subdomains; repeatable")

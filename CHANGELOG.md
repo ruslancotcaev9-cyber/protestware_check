@@ -4,6 +4,18 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Version-boundary and documentation fixes — 2026-11-10 (unreleased)
+
+- Treat npm partial versions (`1`, `1.2`) as ranges, never as exact advisory
+  coordinates; reject malformed npm SemVer identities as well.
+- In lock mode, preserve incomplete inventory/advisory status and strict exit
+  code 2. In registry mode, resolve partial ranges before versioned queries
+  while retaining the approximate-inventory warning.
+- Add inert regression cases for CLI strict gates, lockfiles, both advisory
+  sources, registry resolution, prereleases and build metadata.
+- Clarify that required AST mode applies to supported parser languages only;
+  document actual smoke-workflow triggers and link historical release notes.
+
 ## Documentation alignment — 2026-11-09 (unreleased)
 
 - Align README and release procedure with public repository status and 1.1.0 code.
@@ -85,4 +97,4 @@ a malware verdict engine or a guarantee against supply-chain compromise.
 ## 0.1.0 — 2026-11-03
 - First static heuristics, GitHub scanning, JSON/text reports and tests.
 
-[1.0.0]: https://github.com/ruslancotcaev9-cyber/protestware_check/releases/tag/v1.0.0
+[1.0.0]: docs/releases/v1.0.0.md

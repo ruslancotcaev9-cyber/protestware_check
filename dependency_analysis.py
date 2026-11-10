@@ -24,6 +24,17 @@ NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 PYPI_NORMALIZE = re.compile(r"[-_.]+")
 PIN_RE = re.compile(r"^\s*([A-Za-z0-9][\w.-]*)(?:\[[^]]+\])?\s*={2,3}\s*([^\s;#]+)")
 NPM_VERSION = re.compile(r"^(?:@([^/]+)/)?([^@/]+)@(.+)$")
+# npm partial versions (1, 1.2) are ranges. Require all SemVer components;
+# prerelease numeric identifiers cannot have leading zeroes, build IDs can.
+# Keep npm's optional 'v' prefix, without requiring an optional resolver package.
+NPM_EXACT_VERSION = re.compile(r"""
+    v?(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)
+    (?:-
+        (?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)
+        (?:\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*
+    )?
+    (?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?
+""", re.VERBOSE)
 GO_MODULE = re.compile(r"^github\.com/([^/]+)/([^/]+)(?:/|$)", re.I)
 
 
@@ -87,9 +98,11 @@ def is_exact_version(ecosystem: str, version: str) -> bool:
     """Conservative syntax check: constraints/tags/URLs are not pinned identities."""
     if not isinstance(version, str) or not version:
         return False
+    if ecosystem == "npm":
+        return NPM_EXACT_VERSION.fullmatch(version) is not None
     if ecosystem == "pypi":
         return bool(re.fullmatch(r"[0-9][A-Za-z0-9.!+_-]*", version))
-    if ecosystem in {"npm", "cargo", "composer", "go"}:
+    if ecosystem in {"cargo", "composer", "go"}:
         return bool(re.fullmatch(r"v?[0-9]+(?:\.[0-9]+){0,2}(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?", version))
     if ecosystem == "nuget":
         return bool(re.fullmatch(r"[0-9]+(?:\.[0-9]+){0,3}(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?", version))
