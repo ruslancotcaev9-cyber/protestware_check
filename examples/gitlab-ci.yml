@@ -6,7 +6,7 @@ stages:
 
 variables:
   # Tested scanner code; update this SHA only after reviewing a newer commit.
-  PROTESTWARE_SCANNER_COMMIT: "f6d452bcbcdd90b6a67dd410cd0489e815b95f6a"
+  PROTESTWARE_SCANNER_COMMIT: "0b0f95d2f663b1d7c50f9c119ecf508c009292da"
 
 .protestware_base:
   before_script:
@@ -21,7 +21,7 @@ protestware_scan:
   script:
     - python -m pip install -r .protestware-scanner/requirements-ast.txt -r .protestware-scanner/requirements-resolver.txt
     - python -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less','c','cpp'])"
-    - python .protestware-scanner/scripts/gitlab_scan.py --source . --output-dir .protestware-reports -- --ast-mode required --dependencies lock --exclude '.protestware-scanner/**' --exclude '.protestware-reports/**'
+    - python .protestware-scanner/scripts/gitlab_scan.py --source . --output-dir .protestware-reports -- --project-id "$CI_PROJECT_PATH" --ast-mode required --dependencies lock --exclude '.protestware-scanner/**' --exclude '.protestware-reports/**'
   artifacts:
     when: always
     expire_in: 14 days
