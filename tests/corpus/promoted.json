@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "suite": "promoted-external-v1-regression",
+  "suite": "promoted-external-regression",
   "detector_reference_commit": "32ca3cf1417acc962fcfc622899c4c623534d21e",
   "label_scope": "rule-observable operations, not malware classification",
   "review": "labels assigned by project maintainer assistant; no independent human adjudication",
-  "policy": "all examples were inspected during the previous evaluation; permanent regression, never fresh evaluation",
+  "policy": "v1 and consumed v2 source examples; strict regression, never fresh evaluation",
   "cases": [
     {
       "id": "golang-go-1",
@@ -305,6 +305,62 @@
         "license_sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
         "license_url": "https://github.com/python/cpython/blob/4b79d90e935398442d65c59243f8015f062da0f8/LICENSE"
       }
+    },
+    {
+      "id": "postgres-postgres-v2-1",
+      "language": "SQL",
+      "path": "postgres-postgres-v2-1.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": true,
+      "code": "TRUNCATE bigtable, fattable;\n",
+      "rationale": "The official source example truncates two tables without optional TABLE.",
+      "provenance": {
+        "repository": "postgres/postgres",
+        "revision": "c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf",
+        "path": "doc/src/sgml/ref/truncate.sgml",
+        "first_line": 189,
+        "last_line": 189,
+        "git_blob_sha": "d6efa286e993e7df1843ab893bc0240bc98d1db5",
+        "fragment": "TRUNCATE bigtable, fattable;\n",
+        "fragment_sha256": "20afb1b81aec7f493a4346b61a87ffdfa252c6eaba9d7d421836571440d03624",
+        "prefix": "",
+        "suffix": "",
+        "whole_file": false,
+        "transformation": "normalize CRLF to LF, dedent, add stated syntax wrapper; never execute",
+        "group": "postgres/postgres:c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf:doc/src/sgml/ref/truncate.sgml",
+        "license_path": "tests/corpus/licenses/postgres-postgres.txt",
+        "license_sha256": "3d6af92ff8a4c2cdf69afb1cf44edea727922f5cd0cf8b5f72b11cdecac8fdfd",
+        "license_url": "https://github.com/postgres/postgres/blob/c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf/COPYRIGHT"
+      },
+      "promoted_from_suite": "external-evaluation-v2-initial"
+    },
+    {
+      "id": "postgres-postgres-v2-2",
+      "language": "SQL",
+      "path": "postgres-postgres-v2-2.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": true,
+      "code": "TRUNCATE bigtable, fattable RESTART IDENTITY;\n",
+      "rationale": "The official source example truncates tables and restarts identities.",
+      "provenance": {
+        "repository": "postgres/postgres",
+        "revision": "c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf",
+        "path": "doc/src/sgml/ref/truncate.sgml",
+        "first_line": 197,
+        "last_line": 197,
+        "git_blob_sha": "d6efa286e993e7df1843ab893bc0240bc98d1db5",
+        "fragment": "TRUNCATE bigtable, fattable RESTART IDENTITY;\n",
+        "fragment_sha256": "41703f5faa59ceab0ae5708b8a394aa0ec349376962ab87b825cb133f9092f06",
+        "prefix": "",
+        "suffix": "",
+        "whole_file": false,
+        "transformation": "normalize CRLF to LF, dedent, add stated syntax wrapper; never execute",
+        "group": "postgres/postgres:c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf:doc/src/sgml/ref/truncate.sgml",
+        "license_path": "tests/corpus/licenses/postgres-postgres.txt",
+        "license_sha256": "3d6af92ff8a4c2cdf69afb1cf44edea727922f5cd0cf8b5f72b11cdecac8fdfd",
+        "license_url": "https://github.com/postgres/postgres/blob/c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf/COPYRIGHT"
+      },
+      "promoted_from_suite": "external-evaluation-v2-initial"
     }
   ]
 }

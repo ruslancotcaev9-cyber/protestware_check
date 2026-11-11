@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "suite": "external-evaluation-v2",
-  "detector_reference_commit": "d361000b3360d3185777fd8dfeaffb0c004d1838",
+  "suite": "external-evaluation-v2.1",
+  "detector_reference_commit": "051d9616cd03ec475af4e90953225a420cbba561",
   "label_scope": "observable filesystem/database operations; not malware classification",
   "review": "labels assigned by project maintainer assistant from upstream source; no independent human adjudication",
   "policy": "fresh upstream source files, no overlap with v1; frozen before first evaluation; fragments from one source file are correlated",
@@ -439,60 +439,6 @@
       }
     },
     {
-      "id": "postgres-postgres-v2-1",
-      "language": "SQL",
-      "path": "postgres-postgres-v2-1.sql",
-      "rule": "SQL_DESTRUCTIVE",
-      "positive": true,
-      "code": "TRUNCATE bigtable, fattable;\n",
-      "rationale": "The official source example truncates two tables without optional TABLE.",
-      "provenance": {
-        "repository": "postgres/postgres",
-        "revision": "c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf",
-        "path": "doc/src/sgml/ref/truncate.sgml",
-        "first_line": 189,
-        "last_line": 189,
-        "git_blob_sha": "d6efa286e993e7df1843ab893bc0240bc98d1db5",
-        "fragment": "TRUNCATE bigtable, fattable;\n",
-        "fragment_sha256": "20afb1b81aec7f493a4346b61a87ffdfa252c6eaba9d7d421836571440d03624",
-        "prefix": "",
-        "suffix": "",
-        "whole_file": false,
-        "transformation": "normalize CRLF to LF, dedent, add stated syntax wrapper; never execute",
-        "group": "postgres/postgres:c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf:doc/src/sgml/ref/truncate.sgml",
-        "license_path": "tests/corpus/licenses/postgres-postgres.txt",
-        "license_sha256": "3d6af92ff8a4c2cdf69afb1cf44edea727922f5cd0cf8b5f72b11cdecac8fdfd",
-        "license_url": "https://github.com/postgres/postgres/blob/c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf/COPYRIGHT"
-      }
-    },
-    {
-      "id": "postgres-postgres-v2-2",
-      "language": "SQL",
-      "path": "postgres-postgres-v2-2.sql",
-      "rule": "SQL_DESTRUCTIVE",
-      "positive": true,
-      "code": "TRUNCATE bigtable, fattable RESTART IDENTITY;\n",
-      "rationale": "The official source example truncates tables and restarts identities.",
-      "provenance": {
-        "repository": "postgres/postgres",
-        "revision": "c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf",
-        "path": "doc/src/sgml/ref/truncate.sgml",
-        "first_line": 197,
-        "last_line": 197,
-        "git_blob_sha": "d6efa286e993e7df1843ab893bc0240bc98d1db5",
-        "fragment": "TRUNCATE bigtable, fattable RESTART IDENTITY;\n",
-        "fragment_sha256": "41703f5faa59ceab0ae5708b8a394aa0ec349376962ab87b825cb133f9092f06",
-        "prefix": "",
-        "suffix": "",
-        "whole_file": false,
-        "transformation": "normalize CRLF to LF, dedent, add stated syntax wrapper; never execute",
-        "group": "postgres/postgres:c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf:doc/src/sgml/ref/truncate.sgml",
-        "license_path": "tests/corpus/licenses/postgres-postgres.txt",
-        "license_sha256": "3d6af92ff8a4c2cdf69afb1cf44edea727922f5cd0cf8b5f72b11cdecac8fdfd",
-        "license_url": "https://github.com/postgres/postgres/blob/c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf/COPYRIGHT"
-      }
-    },
-    {
       "id": "postgres-postgres-v2-3",
       "language": "SQL",
       "path": "postgres-postgres-v2-3.sql",
@@ -652,6 +598,60 @@
         "license_path": "tests/corpus/licenses/python-cpython.txt",
         "license_sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
         "license_url": "https://github.com/python/cpython/blob/4b79d90e935398442d65c59243f8015f062da0f8/LICENSE"
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-5",
+      "language": "SQL",
+      "path": "postgres-postgres-v2-5.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": true,
+      "code": "TRUNCATE fk_partitioned_fk_2;\n",
+      "rationale": "An upstream foreign-key regression test issues a real TRUNCATE command without optional TABLE.",
+      "provenance": {
+        "repository": "postgres/postgres",
+        "revision": "c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf",
+        "path": "src/test/regress/sql/foreign_key.sql",
+        "first_line": 1606,
+        "last_line": 1606,
+        "git_blob_sha": "65b68f463255556907087613c1e4f9383a2eac96",
+        "fragment": "TRUNCATE fk_partitioned_fk_2;\n",
+        "fragment_sha256": "73c9393f11a0c8a6d1d2ebae5143872560598fe991a96cd830080cc47864dbf3",
+        "prefix": "",
+        "suffix": "",
+        "whole_file": false,
+        "transformation": "normalize CRLF to LF, dedent, add stated syntax wrapper; never execute",
+        "group": "postgres/postgres:c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf:src/test/regress/sql/foreign_key.sql",
+        "license_path": "tests/corpus/licenses/postgres-postgres.txt",
+        "license_sha256": "3d6af92ff8a4c2cdf69afb1cf44edea727922f5cd0cf8b5f72b11cdecac8fdfd",
+        "license_url": "https://github.com/postgres/postgres/blob/c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf/COPYRIGHT"
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-6",
+      "language": "SQL",
+      "path": "postgres-postgres-v2-6.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": true,
+      "code": "TRUNCATE fk_partitioned_fk_full;\n",
+      "rationale": "An upstream foreign-key regression test issues a real TRUNCATE command without optional TABLE.",
+      "provenance": {
+        "repository": "postgres/postgres",
+        "revision": "c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf",
+        "path": "src/test/regress/sql/foreign_key.sql",
+        "first_line": 1699,
+        "last_line": 1699,
+        "git_blob_sha": "65b68f463255556907087613c1e4f9383a2eac96",
+        "fragment": "TRUNCATE fk_partitioned_fk_full;\n",
+        "fragment_sha256": "584f551431bd5cdf22875708f48b6cd3a6968b0c145d20901c31b2a079c9e08c",
+        "prefix": "",
+        "suffix": "",
+        "whole_file": false,
+        "transformation": "normalize CRLF to LF, dedent, add stated syntax wrapper; never execute",
+        "group": "postgres/postgres:c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf:src/test/regress/sql/foreign_key.sql",
+        "license_path": "tests/corpus/licenses/postgres-postgres.txt",
+        "license_sha256": "3d6af92ff8a4c2cdf69afb1cf44edea727922f5cd0cf8b5f72b11cdecac8fdfd",
+        "license_url": "https://github.com/postgres/postgres/blob/c5daeb1e0f5adfbc19ed621bb97ce2d68c8455bf/COPYRIGHT"
       }
     }
   ]

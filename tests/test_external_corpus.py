@@ -39,9 +39,9 @@ class ExternalCorpusTests(unittest.TestCase):
         self.assertEqual(report['overall']['tn'], 2)
 
     def test_promoted_v1_has_no_shared_source_files_with_fresh_evaluation(self):
-        old = corpus_evaluation.load(ROOT / 'tests/corpus/promoted-v1.json')
+        old = corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
         fresh = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
-        self.assertEqual(len(old), 12)
+        self.assertEqual(len(old), 14)
         key = lambda c: (c['provenance']['repository'], c['provenance']['path'])
         self.assertTrue(set(map(key, old)).isdisjoint(set(map(key, fresh))))
         self.assertTrue({c['id'] for c in old}.isdisjoint({c['id'] for c in fresh}))

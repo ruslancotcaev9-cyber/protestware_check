@@ -57,7 +57,7 @@ jobs:
       - name: Labeled static corpus and resource measurements
         run: python scripts/evaluate_corpus.py --measure --output corpus-metrics.json
       - name: Promoted external examples as strict regression
-        run: python scripts/evaluate_corpus.py --corpus tests/corpus/promoted-v1.json --measure --output promoted-corpus-metrics.json
+        run: python scripts/evaluate_corpus.py --corpus tests/corpus/promoted.json --measure --output promoted-corpus-metrics.json
       - name: Fresh external evaluation without tuning detection rules
         run: python scripts/evaluate_corpus.py --corpus tests/corpus/external.json --report-only --measure --output external-corpus-metrics.json
       - name: Save corpus metrics
