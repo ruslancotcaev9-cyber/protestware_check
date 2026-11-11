@@ -96,6 +96,9 @@ class NodeFilesystemTests(unittest.TestCase):
         self.assertEqual(len(self.deletions(source)), 1)
         self.assertFalse(self.deletions("import fs from 'fs'; { fs.promises.rm(path); let fs = fake; }"))
 
+    def test_typescript_enum_is_a_runtime_shadow(self):
+        self.assertFalse(self.deletions("import fs from 'fs'; function run(){ enum fs { promises }; (fs as any).promises.rm(path); }"))
+
     def test_var_hoisting_and_function_shadow(self):
         for body in ("fs.promises.rm(path); if(flag){ var fs = fake; }", "fs.promises.rm(path); function fs(){}",
                      "fs.promises.rm(path); for(var fs of values){}"):

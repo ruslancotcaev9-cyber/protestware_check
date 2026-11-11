@@ -142,7 +142,7 @@ class Resolver:
         todo = list(node.named_children)
         while todo:
             child = todo.pop()
-            if child.type in FUNCTIONS | {'class_declaration'}:
+            if child.type in FUNCTIONS | {'class_declaration', 'abstract_class_declaration', 'enum_declaration'}:
                 if not hoisted:
                     self.bind(child.child_by_field_name('name'), UNKNOWN, state, len(state.scopes) - 1)
                 continue
