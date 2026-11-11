@@ -111,10 +111,18 @@ class Resolver:
         if kind == 'block' or kind in CONTROL | CASES:
             scopes = [*scopes, {}]
         if kind == 'type_switch_statement':
+            for field in ('initializer', 'value'):
+                value = node.child_by_field_name(field)
+                if value is not None:
+                    self.walk(value, scopes, depth + 1)
             alias = node.child_by_field_name('alias')
             if alias is not None:
                 for name in self.names(alias.named_children):
                     scopes[-1][name] = None
+            for case in node.named_children:
+                if case.type in CASES:
+                    self.walk(case, scopes, depth + 1)
+            return
         if kind in {'short_var_declaration', 'range_clause', 'receive_statement'}:
             right = node.child_by_field_name('right')
             if right is not None:

@@ -26,7 +26,8 @@ class LanguageSmokeTests(unittest.TestCase):
                 self.assertTrue(scanner.is_scannable("src/main" + suffix, []))
 
     def test_go_file_and_network(self):
-        results = self.rules('os.RemoveAll(home)\nresp, err := http.Get("https://evil.example/api")', ".go")
+        results = self.rules('package p\nimport ("os"; "net/http")\n'
+                             'func run(){ os.RemoveAll(home); resp, err := http.Get("https://evil.example/api") }', ".go")
         self.assertTrue({"GO_FS_DELETE", "GO_NETWORK", "NET_EXTERNAL"} <= results)
 
     def test_go_comment_does_not_execute(self):

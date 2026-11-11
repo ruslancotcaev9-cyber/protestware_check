@@ -95,6 +95,10 @@ class GoImportDetectionTests(unittest.TestCase):
                   'func run(){ f := func(fs fake){ fs.Remove(path) }; use(f) }')
         self.assertNotIn('GO_FS_DELETE', {f['rule'] for f in scanner.scan_text('x.go', source, [], [], ast_mode='required')})
 
+    def test_type_switch_value_precedes_its_alias_scope(self):
+        findings = self.scan('import . "os"', 'switch Remove := any(Remove(path)).(type) { case error: use(Remove) }')
+        self.assertEqual(sum(f['rule'] == 'GO_FS_DELETE' for f in findings), 1)
+
     def test_other_import_blank_import_and_own_function_are_not_os(self):
         for imports, body, prefix in (('import fs "example.test/fs"', 'fs.Remove(path)', ''),
                                       ('import _ "os"', 'Remove(path)', ''),
