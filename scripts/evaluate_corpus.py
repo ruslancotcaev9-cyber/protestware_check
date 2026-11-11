@@ -21,6 +21,8 @@ def main():
         if args.output and args.output.resolve() == args.corpus.resolve():
             raise ValueError('Corpus input and output must differ')
         report = corpus_evaluation.evaluate(corpus_evaluation.load(args.corpus), measure=args.measure)
+        metadata = json.loads(safe_io.read_regular(args.corpus, 2_000_000))
+        report['suite'] = {key: metadata[key] for key in ('suite', 'detector_reference_commit', 'label_scope', 'review', 'policy') if key in metadata}
         report['evaluation_mode'] = 'report-only' if args.report_only else 'regression-gate'
         report['corpus_sha256'] = sha256(safe_io.read_regular(args.corpus, 2_000_000)).hexdigest()
         text = json.dumps(report, indent=2) + '\n'

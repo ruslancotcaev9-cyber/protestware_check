@@ -69,7 +69,11 @@ def evaluate(cases, *, measure=False, scan=None):
     finally:
         if measure:
             tracemalloc.stop()
+    groups_of_source = {c['provenance'].get('group', c['provenance']['repository'] + ':' + c['provenance']['path'])
+                        for c in cases if c.get('provenance')}
     return {'schema': 1, 'tool_version': scanner.VERSION, 'cases': len(cases),
+            'source_groups': len(groups_of_source),
+            'whole_file_cases': sum(bool(c.get('provenance', {}).get('whole_file')) for c in cases),
             'metrics_valid': not bool(total['errors']), 'overall': _metrics(total),
             'by_language_and_rule': [{'language': key[0], 'rule': key[1], **_metrics(value)} for key, value in sorted(groups.items())],
             'performance': {'measured': measure, 'elapsed_seconds': sum(durations),

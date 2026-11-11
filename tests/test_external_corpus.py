@@ -13,9 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 class ExternalCorpusTests(unittest.TestCase):
     def test_provenance_and_licenses_are_pinned(self):
         cases = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
-        self.assertEqual(len(cases), 12)
+        self.assertEqual(len(cases), 24)
         self.assertEqual(len({c['language'] for c in cases}), 6)
-        self.assertEqual(sum(c['positive'] for c in cases), 6)
+        self.assertEqual(sum(c['positive'] for c in cases), 12)
+        self.assertEqual(sum(c['provenance']['whole_file'] for c in cases), 8)
+        self.assertEqual(len({c['provenance']['group'] for c in cases}), 14)
         for case in cases:
             p = case['provenance']
             self.assertIsNotNone(re.fullmatch('[a-f0-9]{40}', p['revision']))
@@ -33,8 +35,16 @@ class ExternalCorpusTests(unittest.TestCase):
         cases = [c for c in corpus_evaluation.load(ROOT / 'tests/corpus/external.json') if c['language'] == 'Python']
         report = corpus_evaluation.evaluate(cases)
         self.assertEqual(report['overall']['errors'], 0)
-        self.assertEqual(report['overall']['tp'], 1)
-        self.assertEqual(report['overall']['tn'], 1)
+        self.assertEqual(report['overall']['tp'], 2)
+        self.assertEqual(report['overall']['tn'], 2)
+
+    def test_promoted_v1_has_no_shared_source_files_with_fresh_evaluation(self):
+        old = corpus_evaluation.load(ROOT / 'tests/corpus/promoted-v1.json')
+        fresh = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
+        self.assertEqual(len(old), 12)
+        key = lambda c: (c['provenance']['repository'], c['provenance']['path'])
+        self.assertTrue(set(map(key, old)).isdisjoint(set(map(key, fresh))))
+        self.assertTrue({c['id'] for c in old}.isdisjoint({c['id'] for c in fresh}))
 
 
 if __name__ == '__main__':
