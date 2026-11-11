@@ -1,5 +1,8 @@
 # Проверка v1.3.0 — 11.11.2026
 
+Исторический снимок 1.3.0. Прежние пропуски исправлены в 1.3.1;
+[актуальные результаты и оставшиеся ограничения](EVALUATION_1_3_1.md).
+
 Проверенный код: [`0b0f95d2f663b1d7c50f9c119ecf508c009292da`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/0b0f95d2f663b1d7c50f9c119ecf508c009292da).
 [Полный CI](https://github.com/ruslancotcaev9-cyber/protestware_check/actions/runs/42976186560)
 прошёл 326 unit-тестов без пропусков с мультиязычными грамматиками. Отдельно

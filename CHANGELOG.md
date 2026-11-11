@@ -4,6 +4,21 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] — unreleased (2026-11-11)
+
+- Resolve Go os.Remove/RemoveAll through ordinary, aliased and dot imports with
+  lexical shadowing. Preserve canonical symbols in JSON/SARIF; use the same calls
+  for geographic correlation. Avoid classifying io.Discard as deletion.
+- Detect PostgreSQL TRUNCATE without TABLE across lines and comments. Mask quoted
+  and dollar-quoted SQL, E-strings and nested comments. Validate complete TRUNCATE
+  options before offset-preserving normalization for the generic SQL grammar.
+- Promote 12 previously evaluated snippets and 2 consumed SQL grammar examples
+  into strict regression. Freeze 24 fresh cases from 14 other upstream source
+  files across 7 projects, including 8 whole files; retain provenance and licenses.
+- Report suite metadata and correlated source groups. Keep the newly observed
+  fs.promises.rm miss visible in external evaluation rather than tuning against it.
+- Update version documentation, CI examples and evaluation evidence.
+
 ## [1.3.0] — unreleased (2026-11-11)
 
 - Align project documentation with 1.3.0, complete the CLI/options and report-field

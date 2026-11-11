@@ -15,7 +15,7 @@ The maintainers may change the supported release line as new versions are publis
 
 Known detection gaps and dated validation evidence are recorded in the
 [technical reference](docs/TECHNICAL_REFERENCE.md) and
-[evaluation report](docs/EVALUATION_2026-11-11.md). They do not establish a published
+[evaluation report](docs/EVALUATION_1_3_1.md). They do not establish a published
 release or complete detection coverage.
 
 ## Reporting a vulnerability privately
