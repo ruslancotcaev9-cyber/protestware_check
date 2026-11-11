@@ -23,6 +23,9 @@ def main():
         if args.output:
             safe_io.atomic_write(args.output, text)
         print(json.dumps({key: report[key] for key in ('cases', 'metrics_valid', 'overall', 'performance')}))
+        for result in report['results']:
+            if result['outcome'] in {'errors', 'fp', 'fn'}:
+                print('CORPUS_CASE=' + json.dumps(result))
         return corpus_evaluation.status(report)
     except (ValueError, OSError, UnicodeError, RecursionError) as error:
         print(f'Corpus evaluation failed: {error}', file=sys.stderr)

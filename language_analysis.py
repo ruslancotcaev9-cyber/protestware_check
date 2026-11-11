@@ -14,7 +14,7 @@ SCRIPT_LANGS = {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".cs"}
 STYLE_LANGS = {".css", ".scss", ".sass", ".less"}
 SUPPORTED = SCRIPT_LANGS | STYLE_LANGS | {".sql", ".html", ".htm"}
 
-# Only syntax-level comments, never script/library code embedded in comments.
+# SQL also masks quoted literal/identifier contents, retaining offsets/delimiters.
 def mask_comments(text: str, suffix: str) -> str:
     if suffix not in SUPPORTED:
         return text
@@ -30,9 +30,12 @@ def mask_comments(text: str, suffix: str) -> str:
                 continue
             if ch == quote:
                 if suffix == ".sql" and i + 1 < n and text[i + 1] == quote:
+                    chars[i] = chars[i + 1] = " " if quote == "'" else "_"
                     i += 2
                     continue
                 quote = ""
+            elif suffix == ".sql" and ch != "\n":
+                chars[i] = " " if quote == "'" else "_"
             i += 1
             continue
         if ch in "\"'`":

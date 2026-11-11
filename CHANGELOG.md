@@ -17,6 +17,8 @@ Changes to **protestware-check** are recorded here. Format follows
 - Add Python sensitive-source-to-HTTP-payload findings and AST geographic deletion
   correlation for Go/C#/JavaScript/TypeScript. Fold literal dead branches; retain
   confidence and trace context without asserting malicious intent.
+- Mask SQL quoted literals/identifier contents before keyword heuristics to avoid
+  interpreting example text as destructive statements; retain dynamic SQL signals.
 - Add 48 balanced inert corpus cases for six languages, rule-level quality metrics
   and resource measurements saved by CI. Reuse one parsed Python tree per file.
 - Add bounded OSV page tokens/GitHub cursors, transient retries, advisory request/time

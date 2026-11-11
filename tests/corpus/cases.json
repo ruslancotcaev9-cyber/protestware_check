@@ -39,7 +39,7 @@
       "path": "sample.go",
       "rule": "AST_GEO_ACTION",
       "positive": false,
-      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if (country == \"RU\") { println(country) } os.RemoveAll(path) }"
+      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if (country == \"RU\") { println(country) }; os.RemoveAll(path) }"
     },
     {
       "id": "go-6",

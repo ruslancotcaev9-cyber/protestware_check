@@ -59,6 +59,14 @@ class LanguageSmokeTests(unittest.TestCase):
     def test_sql_does_not_read_comments_as_commands(self):
         self.assertNotIn("SQL_DESTRUCTIVE", self.rules('-- DROP TABLE customers;\n/* TRUNCATE TABLE t; */', ".sql"))
 
+    def test_sql_literals_and_quoted_identifiers_are_not_commands(self):
+        for text in ("SELECT 'DROP TABLE records;' AS example;", 'SELECT "DROP TABLE records" FROM logs;',
+                     "SELECT 'It''s an example: DROP TABLE records;' AS example;"):
+            with self.subTest(text=text):
+                self.assertNotIn('SQL_DESTRUCTIVE', self.rules(text, '.sql'))
+        self.assertIn('SQL_MODIFY', self.rules('UPDATE "records" SET flag = 1;', '.sql'))
+        self.assertIn('SQL_DYNAMIC', self.rules("EXECUTE IMMEDIATE 'DROP TABLE records';", '.sql'))
+
     def test_html_external_script(self):
         self.assertIn("HTML_REMOTE_SCRIPT", self.rules('<script src="https://cdn.evil.example/lib.js"></script>', ".html"))
 
