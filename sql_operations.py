@@ -93,3 +93,61 @@ def truncates(text):
                 results.append(bisect_right(newlines, offset) + 1)
         start = kind == 'punctuation' and value == ';'
     return results
+
+
+def parser_source(text):
+    """Mask validated TRUNCATE options absent from the generic SQL grammar.
+
+    Only complete, narrowly recognized command shapes qualify. Keep original
+    character/UTF-8 offsets; never mask arbitrary trailing SQL or quoted content.
+    """
+    result = list(text)
+    statement = []
+
+    def normalize(tokens):
+        if not tokens or tokens[0][0] != 'word' or tokens[0][1].upper() != 'TRUNCATE':
+            return
+        cursor, hidden = 1, []
+        def keyword(index, word):
+            return index < len(tokens) and tokens[index][0] == 'word' and tokens[index][1].isascii() and tokens[index][1].upper() == word
+        if keyword(cursor, 'TABLE'):
+            cursor += 1
+        while cursor < len(tokens):
+            if keyword(cursor, 'ONLY'):
+                hidden.append(tokens[cursor]); cursor += 1
+            if cursor >= len(tokens) or tokens[cursor][0] not in {'word', 'identifier'}:
+                return
+            cursor += 1
+            while cursor < len(tokens) and tokens[cursor][1] == '.':
+                cursor += 1
+                if cursor >= len(tokens) or tokens[cursor][0] not in {'word', 'identifier'}:
+                    return
+                cursor += 1
+            if cursor < len(tokens) and tokens[cursor][1] == '*':
+                hidden.append(tokens[cursor]); cursor += 1
+            if cursor >= len(tokens) or tokens[cursor][1] != ',':
+                break
+            cursor += 1
+            if cursor >= len(tokens):
+                return
+        if keyword(cursor, 'RESTART') or keyword(cursor, 'CONTINUE'):
+            if not keyword(cursor + 1, 'IDENTITY'):
+                return
+            hidden.extend(tokens[cursor:cursor + 2]); cursor += 2
+        if keyword(cursor, 'CASCADE') or keyword(cursor, 'RESTRICT'):
+            hidden.append(tokens[cursor]); cursor += 1
+        if cursor != len(tokens):
+            return
+        for _, _, start, end in hidden:
+            result[start:end] = ' ' * (end - start)
+
+    for token in lex(text):
+        if token[0] == 'comment':
+            continue
+        if token[0] == 'punctuation' and token[1] == ';':
+            normalize(statement)
+            statement = []
+        else:
+            statement.append(token)
+    normalize(statement)
+    return ''.join(result)

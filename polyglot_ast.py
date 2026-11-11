@@ -404,7 +404,11 @@ def scan_tree(path, content, allow):
     if ext not in GRAMMARS:
         return [], None
     try:
-        tree = _parser(GRAMMARS[ext]).parse(content.encode('utf-8'))
+        parser_content = content
+        if ext == '.sql':
+            from sql_operations import parser_source
+            parser_content = parser_source(content)
+        tree = _parser(GRAMMARS[ext]).parse(parser_content.encode('utf-8'))
         if tree is None:
             return [], f'AST parser returned no tree for {path}'
         if ext in {'.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx'}:

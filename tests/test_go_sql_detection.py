@@ -168,6 +168,36 @@ class SqlCommandTests(unittest.TestCase):
         self.assertIn('SQL_DYNAMIC', self.rules("EXECUTE IMMEDIATE 'TRUNCATE records';"))
         self.assertNotIn('SQL_DESTRUCTIVE', self.rules("EXECUTE IMMEDIATE 'TRUNCATE records';"))
 
+    def test_validated_parser_options_preserve_utf8_offsets(self):
+        code = 'TRUNCATE TABLE ONLY "данные"*, other RESTART IDENTITY CASCADE;'
+        normalized = sql_operations.parser_source(code)
+        self.assertEqual(len(code.encode()), len(normalized.encode()))
+        self.assertEqual(normalized.index('"данные"'), code.index('"данные"'))
+        self.assertNotIn('RESTART', normalized)
+        for invalid in ('TRUNCATE t RESTART IDENTITY SELECT 1;', 'TRUNCATE t RESTART;',
+                        "SELECT 'TRUNCATE t RESTART IDENTITY';", 'TRUNCATE t,;', 'TRUNCATE t RESTART ıdentity;'):
+            self.assertEqual(sql_operations.parser_source(invalid), invalid)
+
+
+class SqlGrammarOptionTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        try:
+            import tree_sitter_language_pack  # noqa: F401
+        except ImportError:
+            raise unittest.SkipTest('SQL grammar required')
+
+    def test_postgresql_options_in_required_mode(self):
+        for code in ('TRUNCATE t RESTART IDENTITY;', 'TRUNCATE TABLE ONLY "данные" CASCADE;',
+                     'TRUNCATE t*, other CONTINUE IDENTITY RESTRICT;'):
+            with self.subTest(code=code):
+                rules = {f['rule'] for f in scanner.scan_text('x.sql', code, [], [], ast_mode='required')}
+                self.assertIn('SQL_DESTRUCTIVE', rules)
+
+    def test_unrecognized_trailing_sql_is_not_normalized(self):
+        with self.assertRaises(scanner.ScanError):
+            scanner.scan_text('x.sql', 'TRUNCATE t RESTART IDENTITY SELECT 1;', [], [], ast_mode='required')
+
     def test_cli_medium_gate_without_ast(self):
         with tempfile.TemporaryDirectory() as folder:
             source = Path(folder, 'source'); source.mkdir()
