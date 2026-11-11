@@ -1,6 +1,6 @@
 # Руководство пользователя protestware-check
 
-Актуально для кода **v1.1.0 в `main`** (не опубликованный GitHub Release). [На главную](../README.md) · [Политика безопасности](../SECURITY.md) · [Технический справочник](TECHNICAL_REFERENCE.md).
+Актуально для кода **v1.3.0 в `main`, unreleased**. [Указатель документации](README.md) · [На главную](../README.md) · [Политика безопасности](../SECURITY.md) · [Технический справочник](TECHNICAL_REFERENCE.md).
 
 ## 1. Назначение и модель угроз
 
@@ -117,20 +117,62 @@ python protestware_check.py --path ../application \
 
 Используйте [пример workflow](../examples/github-code-scanning.yml): он отдельно получает целевой проект и закреплённый коммит сканера, устанавливает только зависимости сканера, заранее готовит грамматики и пишет SARIF вне исходного дерева. Коды 1/2 сохраняют ошибку шага, а доступный отчёт загружается отдельно. Пример использует `--ast-mode required`, но не включает строгую инвентаризацию или внешние advisories: включайте их согласно политике проекта. GitHub Code Scanning должен быть доступен и настроен для целевого репозитория; для публикации SARIF нужны `security-events: write` и подходящие права. **Результаты в SARIF не равны подтверждённым CVE или вредоносным пакетам.**
 
+### F. Политика и baseline после рассмотрения находок
+
+```bash
+python protestware_check.py --path ../application --project-id team/application \
+  --policy ./review-policy.toml --format json --output ./review.json \
+  --write-baseline ./baseline-v2.json
+# После рассмотрения и утверждения baseline в доверенной конфигурации:
+python protestware_check.py --path ../application --project-id team/application \
+  --policy ./review-policy.toml --baseline ./baseline-v2.json --only-new \
+  --format json --output ./current.json
+```
+
+Политику передавайте явно: сканер не загружает её автоматически из проверяемого
+проекта. Одинаковые проект, политика и параметры нужны на обоих шагах.
+`--only-new` оставляет известные находки в отчёте, но исключает их из порога только
+при совпадении контекста. Изменение выбранного кода или настроек возвращает их
+на ревью как `updated`; baseline schema 1 для фильтрации отклоняется с кодом 2.
+[Политика и исключения](POLICY_AND_CI.md), [контекст и миграция](BASELINE_AND_GO_IMPORT.md).
+
+### G. Импорт выбранного профиля Go
+
+```bash
+python protestware_check.py --path ../application --dependencies lock \
+  --go-build-info ../trusted-go/build-info.json --source-revision "$CI_COMMIT_SHA" \
+  --project-id "$CI_PROJECT_PATH" --dependency-strict \
+  --format json --output ./go-report.json
+```
+
+Пример предназначен для CI, где эти переменные заданы доверенной конфигурацией.
+JSON заранее формируется отдельным доверенным заданием Go и нормализуется
+`scripts/prepare_go_build_info.py`. Сканер заново проверяет набор и хеши входных
+файлов, не вызывает Go и не устанавливает зависимости. Повторяйте `--go-build-info`
+для разных поддерживаемых профилей. Полнота относится к указанным целям и профилям;
+тестовые пакеты, vendor и overlay не поддерживаются.
+[Подготовка JSON, параметры helper и границы доверия](BASELINE_AND_GO_IMPORT.md).
+
+### H. Проверка поставляемых файлов
+
+```bash
+python protestware_check.py --path ../application --profile artifact \
+  --dependencies lock --format json --output ./artifact-report.json
+```
+
+`artifact` включает дополнительные сборочные каталоги, `node_modules` и минифицированные
+файлы; остальные фильтры и бюджеты сохраняются. По умолчанию действует `source`.
+Сравнивайте `coverage.file_counts`, `pruned_directories` и `ast_by_extension`;
+профиль не делает бинарные файлы объектом статического анализа.
+[Область и учёт пропусков](POLICY_AND_CI.md).
+
 ## 4. Справочник CLI
 
-Новые параметры v1.2.0: `--profile`, `--coverage-max-samples`, `--policy`, `--baseline`,
-`--write-baseline`, `--only-new`, `--all-findings` — [покрытие, политика и CI](POLICY_AND_CI.md).
-
-В v1.3.0 добавлены `--project-id`, `--go-build-info` (повторяемый) и
-`--source-revision`. Baseline schema 2 возвращает известные находки на ревью при
-изменении выбранного кода, правил, настроек, зависимостей или политики.
-Schema 1 требует пересмотра перед использованием `--only-new`.
-[Миграция и импорт Go из доверенного CI](BASELINE_AND_GO_IMPORT.md).
-`--malware-max-pages`, `--malware-retries`, `--malware-time-budget`, `--advisory-cache`,
-`--advisory-cache-max-age`, `--advisory-offline` — [снимок и лимиты](MALWARE_INTELLIGENCE.md#снимок-пагинация-и-лимиты-v120).
-
-Точную версию ключей всегда проверяйте `python protestware_check.py --help`.
+Таблица охватывает все прикладные параметры CLI 1.3.0; `-h`/`--help` показывает
+встроенную справку. Явные CLI-значения `--profile`, `--fail-on` и переключателя
+`--only-new`/`--all-findings` имеют приоритет над политикой; `--exclude` и
+`--allow-domain` дополняют списки политики. По умолчанию политика и baseline
+не загружаются, `--only-new` выключен. [Формат политики](POLICY_AND_CI.md).
 
 | Параметр | Назначение / умолчание |
 | --- | --- |
@@ -141,6 +183,13 @@ Schema 1 требует пересмотра перед использовани
 | `--output PATH` | Сохранить отчёт в файл; по умолчанию stdout |
 | `--ast-mode auto\|required\|off` | Использование синтаксических парсеров; `auto`. `required` требует успешного разбора только для языков с поддерживаемым AST-парсером |
 | `--fail-on low\|medium\|high` | Порог кода выхода 1; `high` |
+| `--profile source\|artifact` | Область отбора файлов; `source` |
+| `--coverage-max-samples N` | Максимум примеров пропусков в отчёте; `100`, диапазон `0–10000`; счётчики сохраняются при `0` |
+| `--policy PATH` | Явный доверенный TOML; без него используется встроенная политика |
+| `--baseline PATH` | Явный рассмотренный JSON baseline; для фильтрации требуется schema 2 |
+| `--write-baseline PATH` | Сохранить baseline schema 2 отдельно от отчёта; автоматически не утверждает находки |
+| `--only-new` | Применять порог к новым находкам и известным с изменившимся контекстом; требует baseline schema 2 |
+| `--all-findings` | Применять порог ко всем активным находкам; отменяет `only_new` политики, несовместим с `--only-new` |
 | `--allow-domain DOMAIN` | Доверенный DNS-домен (включая поддомены); можно повторять |
 | `--exclude GLOB` | Дополнительные маски исключений; можно повторять |
 | `--political-terms-file PATH` | Дополнительные контекстные фразы (UTF-8; по строке) |
@@ -158,14 +207,25 @@ Schema 1 требует пересмотра перед использовани
 | `--dependency-max-requests N` | Лимит запросов к реестрам; `300` |
 | `--dependency-strict` | Код 2, если инвентаризация зависимостей неполна |
 | `--go-build-info PATH` | Доверенный экспорт выбранных Go-пакетов; повторяется для разных профилей, только local/lock |
-| `--source-revision SHA` | Ожидаемая ревизия источника для Go-экспорта, обязательна при импорте |
-| `--project-id ID` | Устойчивая идентичность проекта для контекста baseline |
+| `--source-revision SHA` | Ожидаемая ревизия для Go-экспорта: 40/64 строчных hex-символа; обязательна при импорте, без значения по умолчанию |
+| `--project-id ID` | Устойчивая идентичность проекта для baseline; до 256 символов без управляющих ASCII; по умолчанию отсутствует |
 | `--malware-intel off\|osv\|github\|both` | Сверка точных версий по malware advisories; `off` |
 | `--malware-max-packages N` | Лимит уникальных координат пакетов для advisories; `100` |
 | `--malware-max-requests N` | Лимит запросов к advisory API; `120` |
 | `--malware-strict` | Код 2 при неполноте advisories или инвентаризации; требует включённого `--malware-intel` |
+| `--malware-max-pages N` | Лимит страниц на пакет/источник; `10`, диапазон `1–100` |
+| `--malware-retries N` | Повторы временных ошибок advisory API; `1`, диапазон `0–3` |
+| `--malware-time-budget SECONDS` | Общий бюджет advisory-этапа; `120`, больше 0 и не больше 3600; не жёсткий таймаут всего процесса |
+| `--advisory-cache PATH` | Явный доверенный JSON-снимок ответов; требует включённого `--malware-intel` |
+| `--advisory-cache-max-age SECONDS` | Максимальный возраст записи снимка; `86400`, диапазон `1–31536000` |
+| `--advisory-offline` | Только свежие записи снимка, без advisory-сети; требует `--advisory-cache`, local/lock и отсутствия live-watchlists |
 
-`--package` и `--dependency-strict` требуют включённого анализа зависимостей. `--malware-intel` также несовместим с `--dependencies off`. Все числовые лимиты должны быть положительными.
+`--package` и `--dependency-strict` требуют включённого анализа зависимостей.
+`--malware-intel` также несовместим с `--dependencies off`. `--go-build-info`
+допускается только с локальным `--path`, режимом `lock` и `--source-revision`.
+Пути отчёта и нового baseline должны отличаться друг от друга и от входов политики,
+baseline и снимков. Все числовые лимиты положительны, кроме допускающих `0`
+`--coverage-max-samples` и `--malware-retries`.
 
 Пример снижения ложных срабатываний для известного доверенного API:
 
@@ -178,7 +238,12 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 
 ## 5. Интерпретация отчётов и CI
 
-**JSON:** `source`, `files_scanned`, `risk`, `code_risk`, `summary`, `findings`, `watchlists`, `dependencies`, `malware_intel`, `scan`, `ast`, `warnings`. В каждой находке проверяйте `rule`, `severity`, `file`, `line`, `message`, `evidence`; для отдельных AST/taint-правил предусмотрены `dataflow` и `reachability`.
+**JSON:** `tool`, `version`, `source`, `files_scanned`, `risk`, `code_risk`, `summary`,
+`findings`, `watchlists`, `dependencies`, `malware_intel`, `scan`, `coverage`, `ast`,
+`analysis_context`, `policy`, `gate`, `warnings`. В каждой находке проверяйте `rule`,
+`severity`, `file`, `line`, `message`, `evidence`; для отдельных AST/taint-правил
+предусмотрены `dataflow` и `reachability`. CLI добавляет `fingerprint`,
+`baseline_state`, `effective_severity` и `policy_decision`.
 
 **SARIF:** результаты с привязкой к файлам/строкам, а при наличии трассировок — `codeFlows`. Для advisory сохраняются пакет, версия, происхождение, ID и ссылки в `properties`; неизвестный номер строки не подменяется фиктивным. Сигналы уровня репозитория без файла могут не отображаться в интерфейсе Code Scanning; сохраняйте также JSON. **CycloneDX:** список компонентов и предполагаемых связей, с индикатором `protestware-check:dependency-analysis-complete` и свойством `protestware-check:package-origin`. Совпадение с `black-mark` не становится CVE/SBOM-vulnerability.
 
@@ -195,6 +260,17 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 | `dependencies.summary.complete` | Нет зарегистрированных ошибок/пропусков инвентаризации; не доказательство полного воспроизводимого разрешения установки |
 | `malware_intel.complete` | Полнота выбранных advisory-запросов; при `off` значение `true` означает отсутствие запрошенной проверки |
 | `malware_intel.inventory_complete` | Отдельный признак полноты входной инвентаризации |
+| `coverage` | Профиль, число наблюдённых/выбранных/проанализированных файлов, причины пропусков, AST по расширению; для GitHub — разрешённые commit/tree SHA |
+| `analysis_context` | Хеши выбранных входов, правил/парсеров, конфигурации и зависимостей; не содержит исходников |
+| `policy.risk` | Риск активных находок после политики, исключений и baseline; применяется к порогу gate |
+| `policy.baseline_context_match` | Совпадение контекста с загруженным baseline; `null`, если baseline не задан |
+| `gate.exit_code`, `gate.reasons` | Итоговый код CLI и причины неполноты, требующие кода 2 |
+| `dependencies.go_builds` | Заявленные Go-профили, ревизии, хеши снимков, область целей и результат проверки входов |
+
+SARIF сохраняет состояния baseline `new`/`unchanged`/`updated` и причины повторного
+ревью в свойствах находок. CycloneDX добавляет `protestware-check:build-context`
+для импортированных Go-компонентов. Подробности — в
+[описании контекста и происхождения Go](BASELINE_AND_GO_IMPORT.md).
 
 В `auto` и без строгих флагов код 0 возможен при неполном AST, зависимостях или advisories. Проверяйте режимы, поля полноты и предупреждения вместе. SARIF сохраняет предупреждения в `invocations.toolExecutionNotifications`. `executionSuccessful=false` отражает зарегистрированную неполноту чтения или включённых анализов; `invocations.properties.analysisCoverage` показывает соответствующие этапы (`null` — этап не применялся). Этот флаг не заменяет проверку кода завершения и остальных полей.
 
@@ -214,7 +290,7 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 | SQL, HTML, CSS, SCSS, Less | Tree-sitter и специализированные статические правила |
 | Sass `.sass` | Частичный структурный разбор по отступам |
 
-Зависимости: npm (`package-lock.json` v1–v3, `npm-shrinkwrap.json`, `pnpm-lock.yaml` v6–v9), Python (`uv.lock`, `poetry.lock`, `pylock.toml`, `requirements*.txt`, `pyproject.toml`), Cargo (`Cargo.lock`), Composer (`composer.lock`), Go (`go.mod` и `go.sum`, без полного выбранного графа сборки), NuGet (`packages.lock.json`, проекты и `Directory.Packages.props`). Не поддерживаются как полный lock-граф `yarn.lock`, `Pipfile.lock`, `Gemfile.lock` и некоторые динамически вычисляемые манифесты. Подробнее см. [технический справочник](TECHNICAL_REFERENCE.md).
+Зависимости: npm (`package-lock.json` v1–v3, `npm-shrinkwrap.json`, `pnpm-lock.yaml` v6–v9), Python (`uv.lock`, `poetry.lock`, `pylock.toml`, `requirements*.txt`, `pyproject.toml`), Cargo (`Cargo.lock`), Composer (`composer.lock`), Go (`go.mod`/`go.sum` и выбранные профили из доверенного JSON), NuGet (`packages.lock.json`, проекты и `Directory.Packages.props`). `go.work`/`go.work.sum` связываются с исходниками в доверенном экспорте; самостоятельно полный workspace-граф из них не вычисляется. Не поддерживаются как полный lock-граф `yarn.lock`, `Pipfile.lock`, `Gemfile.lock` и некоторые динамически вычисляемые манифесты. Подробнее см. [технический справочник](TECHNICAL_REFERENCE.md).
 
 ## 7. Типовые проблемы
 
@@ -232,6 +308,10 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 | `Total source file/byte budget exceeded` | Сканировать меньшие независимые части или обоснованно увеличить `--max-files` / `--max-total-bytes` |
 | `--malware-strict` даёт код 2 | Проверить точные версии, происхождение (`skipped_unverified_origin`), полноту инвентаризации, API и лимиты запросов |
 | HTTP 3xx от GitHub/списков | Перенаправления запрещены; использовать актуальный источник |
+| `Context-aware baseline schema 2 required` | Пересмотреть исходный отчёт и создать новый baseline; schema 1 не может фильтровать находки |
+| Известные находки вернулись как `updated` | Изучить `baseline_context_changes`: изменение выбранного кода, правил или настроек требует повторного ревью |
+| `Go build-info ... stale` / `revision mismatch` | Повторно экспортировать JSON в доверенном CI для текущего неизменяемого дерева и ожидаемой ревизии |
+| Неполнота `go_imports` при нескольких снимках | Проверить дубли профилей и `dependencies.summary.warnings`; передавать один снимок на профиль |
 
 ## Перед публичным релизом
 
@@ -252,7 +332,7 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 - [Технический справочник](TECHNICAL_REFERENCE.md).
 
 
-## Дополнительные источники о вредоносных пакетах (v1.1.0)
+## Дополнительные источники о вредоносных пакетах
 
 После чтения lock-файлов сканер может по явному запросу проверить точные версии пакетов по OpenSSF Malicious Packages / OSV и GitHub Advisory Database (`type=malware`):
 

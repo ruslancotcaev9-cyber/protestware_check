@@ -6,6 +6,9 @@ Changes to **protestware-check** are recorded here. Format follows
 
 ## [1.3.0] — unreleased (2026-11-11)
 
+- Align project documentation with 1.3.0, complete the CLI/options and report-field
+  references, add the documentation index, development notes and explicit roadmap.
+  Pin both CI examples to reviewed scanner code and preserve known detection gaps.
 - Export baseline schema 2 with selected source, rules/backend, configuration,
   dependency graph and policy digests. Reopen known findings when this conservative
   project context changes, including added calls with identical evidence. Preserve
