@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 import subprocess
 import sys
+import re
 import unittest
 from unittest.mock import patch
 
@@ -89,6 +90,20 @@ class GitLabTests(unittest.TestCase):
             result = subprocess.run([sys.executable, str(ROOT / 'scripts/gitlab_gate.py'), str(output)], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertFalse(marker.exists())
+
+    def test_example_requires_gate_and_pins_real_scanner_code(self):
+        try:
+            import yaml
+        except ImportError:
+            self.skipTest('PyYAML required to inspect example configuration')
+        data = yaml.load((ROOT / 'examples/gitlab-ci.yml').read_text(), Loader=yaml.BaseLoader)
+        commit = data['variables']['PROTESTWARE_SCANNER_COMMIT']
+        self.assertIsNotNone(re.fullmatch(r'[a-f0-9]{40}', commit))
+        self.assertNotEqual(commit, '0' * 40)
+        self.assertNotIn('allow_failure', data['protestware_gate'])
+        self.assertEqual(data['protestware_gate']['needs'], [{'job': 'protestware_scan', 'artifacts': 'true'}])
+        self.assertEqual(data['protestware_scan']['artifacts']['when'], 'always')
+        self.assertTrue(any('gitlab_gate.py' in command for command in data['protestware_gate']['script']))
 
 
 class CorpusTests(unittest.TestCase):

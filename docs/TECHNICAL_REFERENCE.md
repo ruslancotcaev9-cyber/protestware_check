@@ -119,7 +119,7 @@ advisory API — 2 000 000. Перенаправления отключены. �
 
 `SENSITIVE_DATA_SEND` поддерживает встроенный Python AST: ключи окружения с
 признаками TOKEN/SECRET/PASSWORD/API_KEY и др., непосредственные чтения известных
-имён файлов учётных данных, передачи в URL/params/headers/cookies/data/json.
+имён файлов учётных данных, передачи в URL/params/headers/cookies/data/json/auth/files.
 Есть внут­рифайловое связывание параметров/возвратов. Статический внешний HTTP-host
 вне allowlist даёт high, неизвестный — medium; confidence остаётся medium.
 Сам секрет/файл не читается сканером. Разрешённый домен снимает именно этот сигнал,

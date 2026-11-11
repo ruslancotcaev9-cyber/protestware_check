@@ -5,8 +5,8 @@ stages:
   - security_gate
 
 variables:
-  # Replace with a reviewed scanner commit containing scripts/gitlab_scan.py.
-  PROTESTWARE_SCANNER_COMMIT: "0000000000000000000000000000000000000000"
+  # Tested scanner code; update this SHA only after reviewing a newer commit.
+  PROTESTWARE_SCANNER_COMMIT: "f6d452bcbcdd90b6a67dd410cd0489e815b95f6a"
 
 .protestware_base:
   before_script:
