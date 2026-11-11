@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "external-evaluation-v3",
-  "detector_reference_commit": "8b4be8369322022d675f6996b451ed194d920fb8",
+  "detector_reference_commit": "f95f0c191b80a988c38a5ca52dbf1c87427805c1",
   "label_scope": "observable filesystem/database operations; not malware classification",
   "review": "labels assigned by project maintainer assistant from upstream source; no independent human adjudication",
   "policy": "Fresh JS/TS source groups replace all consumed JS/TS examples. No source-file overlap with regression. Other unchanged language cases retained; no claim of a wholly independent new sample.",

@@ -1,6 +1,6 @@
 # Руководство пользователя protestware-check
 
-Актуально для кода **v1.3.1 в `main`, unreleased**. [Указатель документации](README.md) · [На главную](../README.md) · [Политика безопасности](../SECURITY.md) · [Технический справочник](TECHNICAL_REFERENCE.md).
+Актуально для кода **v1.3.2 в `main`, unreleased**. [Указатель документации](README.md) · [На главную](../README.md) · [Политика безопасности](../SECURITY.md) · [Технический справочник](TECHNICAL_REFERENCE.md).
 
 ## 1. Назначение и модель угроз
 
@@ -166,9 +166,25 @@ python protestware_check.py --path ../application --profile artifact \
 профиль не делает бинарные файлы объектом статического анализа.
 [Область и учёт пропусков](POLICY_AND_CI.md).
 
+### I. Удаление файлов в JavaScript/TypeScript
+
+Для разрешения Node API заранее загрузите грамматики `javascript`, `typescript`
+и `tsx` и используйте `--ast-mode required`. Правило `FS_DELETE` распознаёт,
+например, `import { rm as remove } from 'node:fs/promises'; remove(path)` и
+`const fs = require('fs'); fs.promises.rm(path)` с учётом локального затенения.
+Проверяемый JavaScript не выполняется. Поддерживаются `.js`, `.jsx`, `.mjs`,
+`.cjs`, `.ts`, `.tsx`.
+
+При успешном полном AST прежняя текстовая эвристика `FS_DELETE` для этих файлов
+заменяется результатом разрешения импортов. В `off`, при отсутствии грамматики
+или частичном разборе `auto` сохраняет ограниченный fallback; качество разрешения
+имён к нему не относится. `required` возвращает 2 при диагностированной неполноте.
+Это анализ одного файла: динамические загрузчики и произвольные межфайловые
+переэкспорты не разрешаются. [Подробности и пределы](TECHNICAL_REFERENCE.md#nodejs-и-typescript).
+
 ## 4. Справочник CLI
 
-Таблица охватывает все прикладные параметры CLI 1.3.1; `-h`/`--help` показывает
+Таблица охватывает все прикладные параметры CLI 1.3.2; `-h`/`--help` показывает
 встроенную справку. Явные CLI-значения `--profile`, `--fail-on` и переключателя
 `--only-new`/`--all-findings` имеют приоритет над политикой; `--exclude` и
 `--allow-domain` дополняют списки политики. По умолчанию политика и baseline
@@ -244,6 +260,10 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 `severity`, `file`, `line`, `message`, `evidence`; для отдельных AST/taint-правил
 предусмотрены `dataflow` и `reachability`. CLI добавляет `fingerprint`,
 `baseline_state`, `effective_severity` и `policy_decision`.
+Разрешённые файловые вызовы Go/Node содержат `resolved_symbol`. Для Node
+`binding_certainty=resolved|possible` отражает однозначность связи с импортом;
+`possible` означает также неизвестную альтернативу при слиянии ветвей.
+Эти поля сохраняются в SARIF `properties` и не выражают вероятность вредоносности.
 
 **SARIF:** результаты с привязкой к файлам/строкам, а при наличии трассировок — `codeFlows`. Для advisory сохраняются пакет, версия, происхождение, ID и ссылки в `properties`; неизвестный номер строки не подменяется фиктивным. Сигналы уровня репозитория без файла могут не отображаться в интерфейсе Code Scanning; сохраняйте также JSON. **CycloneDX:** список компонентов и предполагаемых связей, с индикатором `protestware-check:dependency-analysis-complete` и свойством `protestware-check:package-origin`. Совпадение с `black-mark` не становится CVE/SBOM-vulnerability.
 

@@ -4,6 +4,24 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] — unreleased (2026-11-11)
+
+- Resolve Node filesystem deletion through fs.promises, fs/promises, ESM/CommonJS
+  imports, destructuring and local aliases. Track lexical shadowing, type-only
+  imports, escaped identifiers and bounded direct namespace mutation in JS/TS.
+- Replace generic FS_DELETE text matches with import-aware results only after
+  full successful JS/TS AST analysis; preserve partial/off-mode fallback and
+  incomplete-analysis diagnostics. Reuse resolved calls for AST_GEO_ACTION.
+- Retain imported child_process exec/execSync deletion-prefix signals. Export
+  resolved_symbol and binding_certainty in JSON/SARIF and include the new resolver
+  in baseline rule-context hashing.
+- Promote all 8 consumed JS/TS examples, bringing strict external regression to
+  22 cases. Replace them with 8 other-source-file examples; retain 16 unchanged
+  cases. Preserve actual upstream binding context, hashes and licenses.
+- Verify 376 unit tests without skips and three separate corpora: 48 own,
+  22 promoted and 24 external cases, all without FP/FN or parser errors. Document
+  the small sample, correlated sources and remaining semantic limitations.
+
 ## [1.3.1] — unreleased (2026-11-11)
 
 - Resolve Go os.Remove/RemoveAll through ordinary, aliased and dot imports with

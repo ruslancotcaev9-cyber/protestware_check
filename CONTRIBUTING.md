@@ -92,15 +92,16 @@ relative Markdown links, and run the existing documentation/release checks.
 Mark historical review results with their date and commit rather than implying
 that they certify later versions.
 
-Current development documentation covers 1.3.1 (unreleased). Keep the
+Current development documentation covers 1.3.2 (unreleased). Keep the
 [documentation index](docs/README.md), user guide, security support line, changelog
 and release procedure consistent with `VERSION`. Do not create or publish a release
 as a side effect of a documentation update.
 
 `tests.yml` also runs a real Go listing round-trip on our own benign fixture and
-three separate corpus evaluations. The 48 own cases and 14 promoted external
-cases gate on FP/FN. The 24-case fresh evaluation records FP/FN in report-only
-mode; parser errors still fail. Retain source revisions, fragment hashes and
+three separate corpus evaluations. The 48 own cases and 22 promoted external
+cases gate on FP/FN. The 24-case external evaluation replaces 8 consumed JS/TS
+cases and retains 16 other-language cases. It records FP/FN in report-only mode;
+parser errors still fail. Retain source revisions, fragment hashes and
 third-party licenses. Record source-file groups: fragments of the same upstream
 file are correlated and do not constitute independent observations.
 When tuning a rule against an external example, move that example to regression

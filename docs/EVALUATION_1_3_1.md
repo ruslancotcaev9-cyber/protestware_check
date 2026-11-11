@@ -1,5 +1,7 @@
 # Проверка 1.3.1 — 11.11.2026
 
+Исторический результат; актуальный прогон — [1.3.2](EVALUATION_1_3_2.md).
+
 Проверенный код и корпус: [`4451610330729f18dee0f9dc037c28945395f604`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/4451610330729f18dee0f9dc037c28945395f604).
 [CI](https://github.com/ruslancotcaev9-cyber/protestware_check/actions/runs/42982846314)
 прошёл **352 unit-теста без пропусков**, отдельные advisory-регрессии и реальный
