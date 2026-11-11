@@ -145,6 +145,8 @@ class Resolver:
                     if declaration.type == 'variable_declarator':
                         self.bind(declaration.child_by_field_name('name'), UNKNOWN, state,
                                   state.function if child.type == 'variable_declaration' else len(state.scopes) - 1)
+            if hoisted and child.type == 'for_in_statement' and self.raw(child.child_by_field_name('kind')) == 'var':
+                self.bind(child.child_by_field_name('left'), UNKNOWN, state, state.function)
             if hoisted or child.type == 'export_statement':
                 todo.extend(child.named_children)
 
@@ -226,8 +228,9 @@ class Resolver:
             return
         if kind == 'for_in_statement':
             right, left = node.child_by_field_name('right'), node.child_by_field_name('left')
+            target = state.function if self.raw(node.child_by_field_name('kind')) == 'var' else len(state.scopes) - 1
+            self.bind(left, UNKNOWN, state, target)
             self.walk(right, state, depth + 1)
-            self.bind(left, UNKNOWN, state, len(state.scopes) - 1)
             body = node.child_by_field_name('body')
             if body is not None:
                 branches = [state.copy(), state.copy()]
@@ -253,9 +256,20 @@ class Resolver:
             if right is not None:
                 self.walk(right, state, depth + 1)
             if left.type in {'member_expression', 'subscript_expression'}:
-                state.modified.update(self.value(left, state) - {''})
+                values = self.value(left, state) - {''}
+                state.modified.update(values)
+                if not values and self.value(left.child_by_field_name('object'), state) & {FS, PROMISES}:
+                    state.modified.update(self.value(left.child_by_field_name('object'), state) - {''})
+                    self.diagnostics.add('JS filesystem computed property write is unresolved')
             else:
                 self.bind(left, self.value(right, state) if kind == 'assignment_expression' else UNKNOWN, state)
+            return
+        if kind == 'update_expression':
+            self.bind(node.child_by_field_name('argument'), UNKNOWN, state)
+            return
+        if kind == 'unary_expression' and self.raw(node.child_by_field_name('operator')) == 'delete':
+            argument = node.child_by_field_name('argument')
+            state.modified.update(self.value(argument, state) - {''})
             return
         if kind == 'call_expression':
             values = self.value(node.child_by_field_name('function'), state)

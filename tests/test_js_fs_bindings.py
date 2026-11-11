@@ -90,7 +90,8 @@ class NodeFilesystemTests(unittest.TestCase):
         self.assertFalse(self.deletions("import fs from 'fs'; { fs.promises.rm(path); let fs = fake; }"))
 
     def test_var_hoisting_and_function_shadow(self):
-        for body in ("fs.promises.rm(path); if(flag){ var fs = fake; }", "fs.promises.rm(path); function fs(){}"):
+        for body in ("fs.promises.rm(path); if(flag){ var fs = fake; }", "fs.promises.rm(path); function fs(){}",
+                     "fs.promises.rm(path); for(var fs of values){}"):
             self.assertFalse(self.deletions("const fs = require('fs'); function run(){" + body + '}'))
 
     def test_catch_and_loop_bindings(self):
@@ -102,13 +103,19 @@ class NodeFilesystemTests(unittest.TestCase):
     def test_reassigned_namespace_and_function_alias(self):
         for source in ("let fs = require('fs'); fs = fake; fs.promises.rm(path);",
                        "const {rm} = require('fs/promises'); let erase = rm; erase = fake; erase(path);",
-                       "const fs = require('fs'); fs.promises.rm = safe; fs.promises.rm(path);"):
+                       "const fs = require('fs'); fs.promises.rm = safe; fs.promises.rm(path);",
+                       "const fs = require('fs'); delete fs.promises.rm; fs.promises.rm(path);",
+                       "let {rm} = require('fs/promises'); rm++; rm(path);"):
             with self.subTest(source=source):
                 self.assertFalse(self.deletions(source))
 
     def test_reassignment_does_not_remove_earlier_observation(self):
         found = self.deletions("let fs = require('fs'); fs.promises.rm(path); fs = fake; fs.promises.rm(path);")
         self.assertEqual(len(found), 1)
+
+    def test_computed_native_property_write_is_explicitly_partial(self):
+        with self.assertRaisesRegex(scanner.ScanError, 'computed property write'):
+            self.scan("const fs = require('fs'); fs.promises[key] = safe; fs.promises.rm(path)")
 
     def test_branch_merging_preserves_possible_native_identity(self):
         source = "let fs = require('fs'); if(flag){ fs = fake; } fs.promises.rm(path);"

@@ -135,7 +135,8 @@
       "path": "sample.js",
       "rule": "AST_GEO_ACTION",
       "positive": true,
-      "code": "function run(country, path) { if (country == \"RU\") { fs.rmSync(path); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country, path) { if (country == \"RU\") { fs.rmSync(path); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "javascript-2",
@@ -143,7 +144,8 @@
       "path": "sample.js",
       "rule": "AST_GEO_ACTION",
       "positive": true,
-      "code": "function run(country, path) { if (country == \"BY\") { fs.unlinkSync(path); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country, path) { if (country == \"BY\") { fs.unlinkSync(path); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "javascript-3",
@@ -151,7 +153,8 @@
       "path": "sample.js",
       "rule": "AST_GEO_ACTION",
       "positive": true,
-      "code": "function run(country, path) { if (country != \"RU\") { console.log(country); } else { fs.rmSync(path); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country, path) { if (country != \"RU\") { console.log(country); } else { fs.rmSync(path); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "javascript-4",
@@ -159,7 +162,8 @@
       "path": "sample.js",
       "rule": "AST_GEO_ACTION",
       "positive": true,
-      "code": "function run(country, path) { if (country == \"RU\") { if (enabled) { fs.unlinkSync(path); } } }"
+      "code": "const fs = require('node:fs');\nfunction run(country, path) { if (country == \"RU\") { if (enabled) { fs.unlinkSync(path); } } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "javascript-5",
@@ -167,7 +171,8 @@
       "path": "sample.js",
       "rule": "AST_GEO_ACTION",
       "positive": false,
-      "code": "function run(country, path) { if (country == \"RU\") { console.log(country); } fs.rmSync(path); }"
+      "code": "const fs = require('node:fs');\nfunction run(country, path) { if (country == \"RU\") { console.log(country); } fs.rmSync(path); }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "javascript-6",
@@ -175,7 +180,8 @@
       "path": "sample.js",
       "rule": "AST_GEO_ACTION",
       "positive": false,
-      "code": "function run(country, path) { if (false && country == \"RU\") { fs.rmSync(path); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country, path) { if (false && country == \"RU\") { fs.rmSync(path); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "javascript-7",
@@ -183,7 +189,8 @@
       "path": "sample.js",
       "rule": "AST_GEO_ACTION",
       "positive": false,
-      "code": "function run(country, path) { if (country == \"RU\") { const callback = () => { fs.rmSync(path); }; } }"
+      "code": "const fs = require('node:fs');\nfunction run(country, path) { if (country == \"RU\") { const callback = () => { fs.rmSync(path); }; } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "javascript-8",
@@ -191,7 +198,8 @@
       "path": "sample.js",
       "rule": "AST_GEO_ACTION",
       "positive": false,
-      "code": "function run(country, path) { if (country == \"BY\") { console.log(country); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country, path) { if (country == \"BY\") { console.log(country); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "typescript-1",
@@ -199,7 +207,8 @@
       "path": "sample.ts",
       "rule": "AST_GEO_ACTION",
       "positive": true,
-      "code": "function run(country: string, path: string) { if (country == \"RU\") { fs.rmSync(path); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country: string, path: string) { if (country == \"RU\") { fs.rmSync(path); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "typescript-2",
@@ -207,7 +216,8 @@
       "path": "sample.ts",
       "rule": "AST_GEO_ACTION",
       "positive": true,
-      "code": "function run(country: string, path: string) { if (country == \"BY\") { fs.unlinkSync(path); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country: string, path: string) { if (country == \"BY\") { fs.unlinkSync(path); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "typescript-3",
@@ -215,7 +225,8 @@
       "path": "sample.ts",
       "rule": "AST_GEO_ACTION",
       "positive": true,
-      "code": "function run(country: string, path: string) { if (country != \"RU\") { console.log(country); } else { fs.rmSync(path); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country: string, path: string) { if (country != \"RU\") { console.log(country); } else { fs.rmSync(path); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "typescript-4",
@@ -223,7 +234,8 @@
       "path": "sample.ts",
       "rule": "AST_GEO_ACTION",
       "positive": true,
-      "code": "function run(country: string, path: string) { if (country == \"RU\") { if (enabled) { fs.unlinkSync(path); } } }"
+      "code": "const fs = require('node:fs');\nfunction run(country: string, path: string) { if (country == \"RU\") { if (enabled) { fs.unlinkSync(path); } } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "typescript-5",
@@ -231,7 +243,8 @@
       "path": "sample.ts",
       "rule": "AST_GEO_ACTION",
       "positive": false,
-      "code": "function run(country: string, path: string) { if (country == \"RU\") { console.log(country); } fs.rmSync(path); }"
+      "code": "const fs = require('node:fs');\nfunction run(country: string, path: string) { if (country == \"RU\") { console.log(country); } fs.rmSync(path); }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "typescript-6",
@@ -239,7 +252,8 @@
       "path": "sample.ts",
       "rule": "AST_GEO_ACTION",
       "positive": false,
-      "code": "function run(country: string, path: string) { if (false && country == \"RU\") { fs.rmSync(path); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country: string, path: string) { if (false && country == \"RU\") { fs.rmSync(path); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "typescript-7",
@@ -247,7 +261,8 @@
       "path": "sample.ts",
       "rule": "AST_GEO_ACTION",
       "positive": false,
-      "code": "function run(country, path) { if (country == \"RU\") { const callback = () => { fs.rmSync(path); }; } }"
+      "code": "const fs = require('node:fs');\nfunction run(country, path) { if (country == \"RU\") { const callback = () => { fs.rmSync(path); }; } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "typescript-8",
@@ -255,7 +270,8 @@
       "path": "sample.ts",
       "rule": "AST_GEO_ACTION",
       "positive": false,
-      "code": "function run(country: string, path: string) { if (country == \"BY\") { console.log(country); } }"
+      "code": "const fs = require('node:fs');\nfunction run(country: string, path: string) { if (country == \"BY\") { console.log(country); } }",
+      "binding_setup": "Explicit Node filesystem binding; no assumed global fs"
     },
     {
       "id": "sql-1",
