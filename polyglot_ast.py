@@ -104,6 +104,7 @@ class TreeAnalyzer:
         self.returns = []
         self.invocations = 0
         self.diagnostics: set[str] = set()
+        self.go_deletions = set()
 
     def raw(self, node) -> str:
         return self.bytes[node.start_byte:node.end_byte].decode('utf-8', 'replace')
@@ -258,7 +259,8 @@ class TreeAnalyzer:
         pattern = deletes.get(ext)
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             pattern = r'(?:fs\s*\.\s*(?:rm|rmSync|unlink|unlinkSync|rmdir|rmdirSync)|Deno\s*\.\s*remove)'
-        if branch and pattern and re.match(r'^(?:' + pattern + r')\s*\(', visible):
+        deletion = node.start_byte in self.go_deletions if ext == '.go' else bool(pattern and re.match(r'^(?:' + pattern + r')\s*\(', visible))
+        if branch and deletion:
             flow = Flow(sources=(('geographic-condition', int(branch)),),
                         trace=(('condition', int(branch), 'RU/BY geographic branch'),))
             self.emit('AST_GEO_ACTION', 'correlation', 'high', node,
@@ -416,6 +418,17 @@ def scan_tree(path, content, allow):
             diag = f"AST partial analysis: {path}: {'; '.join(diagnostics)}" if diagnostics else None
             return cpp_findings, diag
         analyzer = TreeAnalyzer(path, content, allow)
+        if ext == '.go':
+            from go_bindings import resolve
+            deletions, diagnostics = resolve(content, tree.root_node)
+            analyzer.go_deletions = set(deletions)
+            analyzer.diagnostics.update(diagnostics)
+            for node, symbol in deletions.values():
+                previous = len(analyzer.findings)
+                analyzer.emit('GO_FS_DELETE', 'filesystem', 'medium', node,
+                              f'Go AST: imported {symbol} call; review path and purpose')
+                if len(analyzer.findings) > previous:
+                    analyzer.findings[-1]['resolved_symbol'] = symbol
         analyzer.index_functions(tree.root_node)
         analyzer.walk(tree.root_node, {})
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:

@@ -35,7 +35,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request
 
-VERSION = "1.3.0"
+VERSION = "1.3.1"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -442,6 +442,8 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
             output.append(item)
             seen.add((item["rule"], item["line"]))
     if parsed:
+        if suffix == '.go' and diagnostic is None:
+            output = [item for item in output if item['rule'] not in {'GO_FS_DELETE', 'FS_DELETE'}]
         current = {(item["rule"], item["line"]): item for item in output}
         for item in tree_findings:
             if item["rule"] in {"TAINT_URL", "AST_NET_EXTERNAL", "AST_NET_DYNAMIC"}:

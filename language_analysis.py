@@ -9,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 import re
 from urllib.parse import urlparse
+import sql_operations
 
 SCRIPT_LANGS = {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".cs"}
 STYLE_LANGS = {".css", ".scss", ".sass", ".less"}
@@ -16,6 +17,8 @@ SUPPORTED = SCRIPT_LANGS | STYLE_LANGS | {".sql", ".html", ".htm"}
 
 # SQL also masks quoted literal/identifier contents, retaining offsets/delimiters.
 def mask_comments(text: str, suffix: str) -> str:
+    if suffix == '.sql':
+        return sql_operations.mask(text)
     if suffix not in SUPPORTED:
         return text
     line_comment = ("//",) if suffix in SCRIPT_LANGS | STYLE_LANGS else (("--",) if suffix == ".sql" else ())
@@ -73,8 +76,9 @@ def scan_language(path: str, source: str, allowed_domains: list[str]) -> list[di
         return []
     cleaned = mask_comments(source, suffix)
     findings: list[dict] = []
+    original_lines = source.splitlines()
     def emit(rule: str, category: str, severity: str, number: int, message: str) -> None:
-        evidence = source.splitlines()[number - 1].strip()[:240]
+        evidence = original_lines[number - 1].strip()[:240]
         findings.append({"rule": rule, "category": category, "severity": severity, "file": path,
                          "line": number, "evidence": evidence, "message": message,
                          "analysis": "language-pattern"})
@@ -143,7 +147,7 @@ def scan_language(path: str, source: str, allowed_domains: list[str]) -> list[di
         rules = [
             (r"\b(?:http\.(?:Get|Post|PostForm|NewRequest(?:WithContext)?)|client\.(?:Get|Post|Do))\s*\(",
              "GO_NETWORK", "network", "low", "Go HTTP-клиент: проверьте адрес назначения"),
-            (r"\b(?:os\.(?:Remove|RemoveAll)|(?:io|ioutil)\.Discard)\s*\(",
+            (r"\bos\.(?:Remove|RemoveAll)\s*\(",
              "GO_FS_DELETE", "filesystem", "medium", "Go выполняет потенциально удаляющую операцию"),
             (r"\b(?:os\.(?:WriteFile|Create|Rename)|ioutil\.WriteFile)\s*\(",
              "GO_FS_WRITE", "filesystem", "low", "Go записывает или перемещает файлы"),
@@ -162,8 +166,11 @@ def scan_language(path: str, source: str, allowed_domains: list[str]) -> list[di
              "CS_DYNAMIC", "obfuscation", "low", "C# декодирование или динамическая загрузка/исполнение"),
         ]
     elif suffix == ".sql":
+        for number in sql_operations.truncates(source):
+            emit('SQL_DESTRUCTIVE', 'database', 'medium', number,
+                 'SQL-команда TRUNCATE удаляет строки таблицы; проверить назначение и область действия')
         rules = [
-            (r"\b(?:DROP\s+(?:TABLE|DATABASE|SCHEMA)|TRUNCATE\s+TABLE)\b",
+            (r"\bDROP\s+(?:TABLE|DATABASE|SCHEMA)\b",
              "SQL_DESTRUCTIVE", "database", "medium", "SQL-команда удаления структуры или данных"),
             (r"\b(?:DELETE\s+FROM|UPDATE\s+[\w.\[\]\"`]+\s+SET)\b",
              "SQL_MODIFY", "database", "low", "SQL-команда изменения пользовательских данных"),

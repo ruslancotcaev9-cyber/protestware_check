@@ -139,7 +139,7 @@ def sarif(report: dict[str, Any], *, gitlab: bool = False) -> dict[str, Any]:
                                   "properties": {"category": item.get("category", "unknown"),
                                                  "severity": item.get("severity", "info")}}
         for field in ("package", "matched_packages", "advisory_ids", "sources", "references", "version_match",
-                      "origin_match", "analysis", "repository", "evidence", "fingerprint", "confidence",
+                      "origin_match", "analysis", "resolved_symbol", "repository", "evidence", "fingerprint", "confidence",
                       "effective_severity", "policy_decision", "policy_override", "policy_exception", "policy_review_required", "baseline_context_changes"):
             if field in item:
                 result["properties"][field] = item[field]
