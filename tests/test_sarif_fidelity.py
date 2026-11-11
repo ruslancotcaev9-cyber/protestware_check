@@ -13,7 +13,7 @@ class SarifFidelityTests(unittest.TestCase):
     def report(self):
         lock = {'lockfileVersion': 3, 'packages': {'': {'dependencies': {'demo': '1.2.3'}},
                 'node_modules/demo': {'version': '1.2.3', 'resolved': 'https://registry.npmjs.org/demo/-/demo-1.2.3.tgz'}}}
-        def fake(url, payload=None):
+        def fake(url, payload=None, **transport):
             if url == mi.OSV_BATCH_URL:
                 return {'results': [{'vulns': [{'id': 'MAL-2026-123'}]}]}
             return {'id': 'MAL-2026-123', 'aliases': ['GHSA-abcd-1234-abcd']}

@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import safe_io
-import tempfile
+import scan_policy
+from advisory_cache import AdvisoryCache
 
 import ast_analysis
 import threat_intel
@@ -15,6 +17,7 @@ import report_formats
 import malware_intel
 import polyglot_ast
 import python_taint
+from scan_coverage import Coverage
 import base64
 import fnmatch
 import io
@@ -29,7 +32,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -126,21 +129,34 @@ def api_json(url: str, token: str | None) -> dict[str, Any]:
         raise ScanError(f"GitHub API request failed: {type(err).__name__}") from err
 
 
-def is_scannable(path: str, extra_exclude: list[str]) -> bool:
-    if any(part in EXCLUDED_DIRS for part in Path(path).parts):
-        return False
+def selection_reason(path: str, extra_exclude: list[str], profile: str = "source", *, directory=False) -> str | None:
+    if profile not in {"source", "artifact"}:
+        raise ValueError("Unknown scan profile")
+    excluded_dirs = EXCLUDED_DIRS - ({"dist", "build", ".next", "node_modules"} if profile == "artifact" else set())
     if any(fnmatch.fnmatch(path, p) or fnmatch.fnmatch(Path(path).name, p)
+           or (directory and fnmatch.fnmatch(path + "/", p))
            for p in extra_exclude):
-        return False
+        return "user_exclude"
+    if any(part in excluded_dirs for part in Path(path).parts):
+        return "default_directory"
+    if directory:
+        return None
     if threat_intel.is_manifest(path):
-        return True
+        return None
     if any(fnmatch.fnmatch(path, p) or fnmatch.fnmatch(Path(path).name, p)
-           for p in EXCLUDED_GLOBS):
-        return False
-    return Path(path).suffix.lower() in TEXT_SUFFIXES or Path(path).name in {"Dockerfile", "Makefile"}
+           for p in EXCLUDED_GLOBS - ({"*.min.js"} if profile == "artifact" else set())):
+        return "default_pattern"
+    if Path(path).suffix.lower() not in TEXT_SUFFIXES and Path(path).name not in {"Dockerfile", "Makefile"}:
+        return "unsupported_extension"
+    return None
 
 
-def iter_local(root: Path, max_bytes: int, exclude: list[str], warnings: list[str]) -> Iterable[tuple[str, str]]:
+def is_scannable(path: str, extra_exclude: list[str], profile: str = "source") -> bool:
+    return selection_reason(path, extra_exclude, profile) is None
+
+
+def iter_local(root: Path, max_bytes: int, exclude: list[str], warnings: list[str],
+               coverage: Coverage | None = None, profile: str = "source") -> Iterable[tuple[str, str]]:
     if not root.is_dir() or root.is_symlink():
         raise ScanError("--path must point to a real directory (not a symlink)")
     def walk_error(error):
@@ -151,29 +167,49 @@ def iter_local(root: Path, max_bytes: int, exclude: list[str], warnings: list[st
         walk = ((base, dirs, files, None) for base, dirs, files in
                 os.walk(root, followlinks=False, onerror=walk_error))
     for base, dirs, files, directory_fd in walk:
-        dirs[:] = sorted(d for d in dirs if not (Path(base, d).is_symlink()
-                         or d in EXCLUDED_DIRS
-                         or any(fnmatch.fnmatch(d, p) for p in exclude)))
+        retained = []
+        for directory in sorted(dirs):
+            actual = Path(base, directory)
+            relative = actual.relative_to(root).as_posix()
+            reason = "symlink" if actual.is_symlink() else selection_reason(relative, exclude, profile, directory=True)
+            if reason:
+                if coverage is not None:
+                    coverage.record(relative, reason, directory=True)
+            else:
+                retained.append(directory)
+        dirs[:] = retained
         for filename in sorted(files):
             actual = Path(base, filename)
             relative = actual.relative_to(root).as_posix()
-            if actual.is_symlink() or not is_scannable(relative, exclude):
+            reason = "symlink" if actual.is_symlink() else selection_reason(relative, exclude, profile)
+            if reason:
+                if coverage is not None:
+                    coverage.record(relative, reason)
                 continue
             try:
                 content = safe_io.read_regular(filename if directory_fd is not None else actual,
                                                max_bytes, dir_fd=directory_fd)
             except ValueError:
                 warnings.append(f"Skipped oversized file: {relative}")
+                if coverage is not None:
+                    coverage.record(relative, "oversized")
                 continue
             except OSError as err:
                 warnings.append(f"Could not read {relative}: {type(err).__name__}")
+                if coverage is not None:
+                    coverage.record(relative, "read_error")
                 continue
             if b"\x00" in content:
+                if coverage is not None:
+                    coverage.record(relative, "binary", size=len(content))
                 continue
+            if coverage is not None:
+                coverage.record(relative, "scanned", size=len(content))
             yield relative, content.decode("utf-8-sig", errors="replace")
 
 
-def iter_github(repo: str, ref: str | None, max_bytes: int, exclude: list[str], warnings: list[str]) -> Iterable[tuple[str, str]]:
+def iter_github(repo: str, ref: str | None, max_bytes: int, exclude: list[str], warnings: list[str],
+                coverage: Coverage | None = None, profile: str = "source") -> Iterable[tuple[str, str]]:
     owner, name = github_coordinates(repo)
     token = os.environ.get("GITHUB_TOKEN")
     prefix = f"https://api.github.com/repos/{owner}/{name}"
@@ -181,25 +217,47 @@ def iter_github(repo: str, ref: str | None, max_bytes: int, exclude: list[str], 
     branch = ref or metadata.get("default_branch")
     if not branch:
         raise ScanError("Repository has no default branch")
+    if coverage is not None:
+        commit = api_json(f"{prefix}/commits/{quote(branch, safe='')}", token)
+        resolved = commit.get("sha")
+        if not isinstance(resolved, str) or not re.fullmatch(r"[a-f0-9]{40}", resolved):
+            raise ScanError("GitHub did not resolve the requested ref to a commit")
+        coverage.resolved_commit = resolved
+        branch = resolved
     tree = api_json(f"{prefix}/git/trees/{quote(branch, safe='')}?recursive=1", token)
     if tree.get("truncated"):
         raise ScanError("GitHub tree was truncated; refusing to report partial results")
     if not isinstance(tree.get("tree"), list):
         raise ScanError("Invalid GitHub tree response")
+    if coverage is not None:
+        coverage.resolved_tree = tree.get("sha")
     for item in sorted(tree["tree"], key=lambda obj: obj.get("path", "")):
         path = item.get("path", "")
-        if item.get("type") != "blob" or item.get("mode") == "120000" or not is_scannable(path, exclude):
+        if item.get("type") == "commit" and coverage is not None:
+            coverage.record(path, "submodule")
+        if item.get("type") != "blob":
+            continue
+        reason = "symlink" if item.get("mode") == "120000" else selection_reason(path, exclude, profile)
+        if reason:
+            if coverage is not None:
+                coverage.record(path, reason)
             continue
         if item.get("size", 0) > max_bytes:
             warnings.append(f"Skipped oversized file: {path}")
+            if coverage is not None:
+                coverage.record(path, "oversized")
             continue
         sha = item.get("sha")
         if not isinstance(sha, str) or not re.fullmatch(r"[a-f0-9]{40}", sha):
             warnings.append(f"Missing blob SHA: {path}")
+            if coverage is not None:
+                coverage.record(path, "invalid_blob")
             continue
         blob = api_json(f"{prefix}/git/blobs/{sha}", token)
         if blob.get("encoding") != "base64":
             warnings.append(f"Unsupported blob encoding: {path}")
+            if coverage is not None:
+                coverage.record(path, "invalid_blob")
             continue
         try:
             raw = base64.b64decode(blob["content"], validate=False)
@@ -207,7 +265,11 @@ def iter_github(repo: str, ref: str | None, max_bytes: int, exclude: list[str], 
             raise ScanError(f"Invalid blob content: {path}") from err
         if len(raw) > max_bytes:
             warnings.append(f"Skipped oversized blob: {path}")
+            if coverage is not None:
+                coverage.record(path, "oversized")
             continue
+        if coverage is not None:
+            coverage.record(path, "binary" if b"\x00" in raw else "scanned", size=len(raw))
         if b"\x00" not in raw:
             yield path, raw.decode("utf-8-sig", errors="replace")
 
@@ -305,7 +367,15 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
             output.append(finding("OBF_ENCODING", "obfuscation", "low", path, n, line,
                                   "Возможное сокрытие строк или полезной нагрузки"))
     # Prefer AST control-flow correlation for syntactically valid Python: not line proximity.
-    ast_findings = ast_analysis.scan_python(path, content, allowed_domains) if ast_mode != "off" else None
+    python_tree = None
+    if suffix == ".py" and ast_mode != "off":
+        try:
+            python_tree = ast.parse(content, filename=path)
+        except (SyntaxError, ValueError, MemoryError):
+            pass
+    ast_findings = ast_analysis.scan_python(path, content, allowed_domains, tree=python_tree) if python_tree is not None else None
+    if suffix == '.py' and ast_mode == 'off' and ast_stats is not None:
+        ast_stats['disabled'] = ast_stats.get('disabled', 0) + 1
     if suffix == ".py" and ast_findings is None and ast_mode != "off":
         if ast_mode == "required":
             raise ScanError(f"Invalid Python syntax prevents AST analysis: {path}")
@@ -315,7 +385,7 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
             ast_warnings.append(f"AST diagnostic {path}: invalid Python syntax, pattern-only analysis")
     if ast_findings is not None and suffix == ".py":
         diagnostics: list[str] = []
-        taint_findings = python_taint.scan_python_taint(path, content, allowed_domains, diagnostics) or []
+        taint_findings = python_taint.scan_python_taint(path, content, allowed_domains, diagnostics, tree=python_tree) or []
         if diagnostics:
             diagnostic = f"AST partial analysis: {path}: {'; '.join(diagnostics)}"
             if ast_mode == "required":
@@ -394,7 +464,10 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
                  explicit_packages: list[str] | None = None,
                  ast_mode: str = "auto", malware_mode: str = "off",
                  malware_max_packages: int = 100, malware_max_requests: int = 120,
-                 max_files: int = 10000, max_total_bytes: int = 100_000_000) -> dict[str, Any]:
+                 max_files: int = 10000, max_total_bytes: int = 100_000_000,
+                 coverage: Coverage | None = None, advisory_snapshot=None,
+                 malware_max_pages: int = 10, malware_retries: int = 1,
+                 malware_time_budget: float = 120) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     scanned = 0
     total_bytes = 0
@@ -402,6 +475,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
     ast_warnings: list[str] = []
     manifests: dict[str, str] = {}
     references: list[tuple[str, str, int, str]] = []
+    coverage = coverage if coverage is not None else Coverage()
     if repository and watchlists is not None:
         references.append((repository.casefold(), "(repository)", 0, repository))
     for name in package_repos or []:
@@ -409,15 +483,23 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
         if watchlists is not None:
             references.append((f"{owner}/{repo}".casefold(), "(package)", 0, name))
     for path, content in files:
+        if coverage.enumeration == 'provided':
+            coverage.record(path, 'scanned', size=len(content.encode('utf-8')))
         scanned += 1
         total_bytes += len(content.encode("utf-8"))
         if scanned > max_files or total_bytes > max_total_bytes:
             raise ScanError("Total source file/byte budget exceeded; scan is incomplete")
         try:
+            previous_stats = ast_stats.copy()
             results.extend(scan_text(path, content, political_terms, allowed_domains,
                                      ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats))
         except RecursionError as error:
             raise ScanError(f"Analysis nesting limit exceeded: {path}") from error
+        status = next((key for key in ("partial", "degraded", "parsed", "disabled")
+                       if ast_stats[key] > previous_stats[key]), "unsupported")
+        if ast_mode == "off" and Path(path).suffix.lower() == ".py":
+            status = "disabled"
+        coverage.analyzed(Path(path).suffix.lower(), len(content.encode("utf-8")), status)
         if dependency_mode != "off" and threat_intel.is_manifest(path):
             manifests[path] = content
         if watchlists is not None:
@@ -452,7 +534,8 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
     advisory_check = malware_intel.check_packages(
         dependencies["packages"], mode=malware_mode,
         max_packages=malware_max_packages, max_requests=malware_max_requests,
-        inventory_complete=dependencies["summary"].get("complete", False))
+        inventory_complete=dependencies["summary"].get("complete", False), snapshot=advisory_snapshot,
+        max_pages=malware_max_pages, retries=malware_retries, time_budget=malware_time_budget)
     results.extend(advisory_check["findings"])
     warnings.extend(advisory_check["warnings"])
     results.sort(key=lambda f: (f["file"], f["line"], f["rule"]))
@@ -462,7 +545,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
     risk = max((technical_item["severity"] for technical_item in technical),
                key=lambda s: SEVERITIES[s], default="none")
     return {"tool": "protestware-check", "version": VERSION, "source": source, "files_scanned": scanned,
-            "scan": {"complete": ingestion_complete},
+            "scan": {"complete": ingestion_complete}, "coverage": coverage.as_dict(),
             "risk": risk, "code_risk": code_risk, "summary": levels, "findings": results,
             "watchlists": watchlists["metadata"] if watchlists else {"mode": "off"},
             "malware_intel": advisory_check["metadata"],
@@ -490,6 +573,13 @@ def report_text(report: dict[str, Any]) -> str:
         lines.append(f"    {item['evidence']}")
     for warning in report.get("warnings", []) + dep["summary"].get("warnings", []):
         lines.append(f"Warning: {warning}")
+    if "coverage" in report:
+        coverage = report["coverage"]
+        lines.append(f"Coverage: profile={coverage['profile']} | analyzed={coverage['files_analyzed']} | "
+                     f"file outcomes={coverage['file_counts']} | pruned directories={coverage['pruned_directories']}")
+    if "policy" in report:
+        lines.append(f"Policy risk: {report['policy']['risk']} | decisions={report['policy']['counts']} | "
+                     f"gate exit={report['gate']['exit_code']}")
     return "\n".join(lines) + "\n"
 
 
@@ -507,7 +597,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--ast-mode", choices=("auto", "required", "off"), default="auto",
                         help="Auto: AST if available; required: fail on missing/partial AST for supported languages only; off: legacy patterns")
     parser.add_argument("--output", type=Path, help="Write selected report format to this file (default: stdout)")
-    parser.add_argument("--fail-on", choices=("low", "medium", "high"), default="high")
+    parser.add_argument("--fail-on", choices=("low", "medium", "high"), default=None)
+    parser.add_argument("--profile", choices=("source", "artifact"), default=None,
+                        help="Source defaults or distributed artifacts, including bundles/builds/node_modules")
+    parser.add_argument("--coverage-max-samples", type=int, default=100)
+    parser.add_argument("--policy", type=Path, help="Explicit trusted TOML policy; never auto-loaded from scanned source")
+    parser.add_argument("--baseline", type=Path, help="Reviewed fingerprint baseline JSON")
+    parser.add_argument("--write-baseline", type=Path, help="Export finding fingerprints to a separate JSON file")
+    comparison = parser.add_mutually_exclusive_group()
+    comparison.add_argument("--only-new", action="store_true", default=None,
+                            help="Apply the risk threshold to findings absent from the explicit baseline")
+    comparison.add_argument("--all-findings", dest="only_new", action="store_false")
     parser.add_argument("--allow-domain", action="append", default=[], help="Trusted domain and subdomains; repeatable")
     parser.add_argument("--exclude", action="append", default=[], help="Additional file/directory glob; repeatable")
     parser.add_argument("--political-terms-file", type=Path, help="One extra literal phrase per line (UTF-8)")
@@ -537,7 +637,31 @@ def main(argv: list[str] | None = None) -> int:
                         help="Maximum public advisory API requests")
     parser.add_argument("--malware-strict", action="store_true",
                         help="Exit 2 if advisory checks or the dependency inventory are incomplete")
+    parser.add_argument('--malware-max-pages', type=int, default=10)
+    parser.add_argument('--malware-retries', type=int, default=1)
+    parser.add_argument('--malware-time-budget', type=float, default=120,
+                        help='Seconds across advisory requests/retries; each request has at most 12 seconds socket timeout')
+    parser.add_argument('--advisory-cache', type=Path, help='Explicit trusted snapshot JSON outside the scanned source')
+    parser.add_argument('--advisory-cache-max-age', type=int, default=86400)
+    parser.add_argument('--advisory-offline', action='store_true', help='Use fresh snapshot entries only; requires local input and lock dependencies')
     args = parser.parse_args(argv)
+    try:
+        policy = scan_policy.load(args.policy)
+        baseline_values = scan_policy.load_baseline(args.baseline)
+        args.profile = args.profile or policy['scan'].get('profile', 'source')
+        args.fail_on = args.fail_on or policy['gate'].get('fail_on', 'high')
+        args.only_new = args.only_new if args.only_new is not None else policy['gate'].get('only_new', False)
+        args.exclude = policy['scan'].get('exclude', []) + args.exclude
+        args.allow_domain = policy['scan'].get('allow_domains', []) + args.allow_domain
+        if args.only_new and baseline_values is None:
+            raise ValueError('--only-new requires --baseline')
+        if not 0 <= args.coverage_max_samples <= 10000:
+            raise ValueError('--coverage-max-samples must be between 0 and 10000')
+        if args.write_baseline and args.output and args.write_baseline.resolve() == args.output.resolve():
+            raise ValueError('Report and baseline outputs must differ')
+    except (ValueError, OSError, UnicodeError, RecursionError) as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 2
     if args.ref and not args.repo:
         parser.error("--ref requires --repo")
     if min(args.max_bytes, args.max_files, args.max_total_bytes) < 1:
@@ -554,11 +678,25 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--malware-intel requires --dependencies lock or registry")
     if args.malware_strict and args.malware_intel == "off":
         parser.error("--malware-strict requires --malware-intel osv, github or both")
+    if not (1 <= args.malware_max_pages <= 100 and 0 <= args.malware_retries <= 3 and 0 < args.malware_time_budget <= 3600):
+        parser.error('Invalid advisory page/retry/time limits')
+    if args.advisory_cache and args.malware_intel == 'off':
+        parser.error('--advisory-cache requires an enabled --malware-intel mode')
+    if args.advisory_offline and (not args.advisory_cache or args.repo or args.dependencies != 'lock' or args.watchlists == 'live'):
+        parser.error('--advisory-offline requires --advisory-cache, local input, lock dependencies and no live watchlists')
+    if args.advisory_cache and not args.advisory_offline and not args.repo and args.advisory_cache.resolve().is_relative_to(args.path.resolve()):
+        parser.error('Writable advisory cache must be outside the scanned source')
+    inputs = [path.resolve() for path in (args.policy, args.baseline, args.advisory_cache) if path is not None]
+    outputs = [path.resolve() for path in (args.output, args.write_baseline) if path is not None]
+    if any(path in inputs for path in outputs):
+        parser.error('Outputs must differ from policy, baseline and snapshot inputs')
     domains = [x.lower().strip(".") for x in args.allow_domain]
     if any(not re.fullmatch(r"[a-z0-9-]+(?:\.[a-z0-9-]+)+", x) for x in domains):
         parser.error("--allow-domain expects a DNS domain, e.g. api.example.org")
     phrases = [s.casefold() for s in POLITICAL_TERMS]
     try:
+        snapshot = AdvisoryCache(args.advisory_cache, mode='offline' if args.advisory_offline else 'readwrite',
+                                 max_age=args.advisory_cache_max_age) if args.advisory_cache else None
         if args.political_terms_file:
             phrases.extend(line.strip().casefold() for line in args.political_terms_file.read_text(encoding="utf-8").splitlines()
                            if line.strip() and not line.lstrip().startswith("#"))
@@ -568,11 +706,12 @@ def main(argv: list[str] | None = None) -> int:
             owner, name = github_coordinates(value)
             packages.append(f"{owner}/{name}")
         warnings: list[str] = []
+        coverage = Coverage(args.profile, enumeration='github' if args.repo else 'local', sample_limit=args.coverage_max_samples)
         if args.repo:
-            files = iter_github(args.repo, args.ref, args.max_bytes, args.exclude, warnings)
+            files = iter_github(args.repo, args.ref, args.max_bytes, args.exclude, warnings, coverage, args.profile)
             source = args.repo + (f"@{args.ref}" if args.ref else "")
         else:
-            files = iter_local(args.path, args.max_bytes, args.exclude, warnings)
+            files = iter_local(args.path, args.max_bytes, args.exclude, warnings, coverage, args.profile)
             source = str(args.path.resolve())
         root_repo = "/".join(github_coordinates(args.repo)) if args.repo else None
         report = build_report(source, files, phrases, domains, warnings,
@@ -585,7 +724,17 @@ def main(argv: list[str] | None = None) -> int:
                               malware_mode=args.malware_intel,
                               malware_max_packages=args.malware_max_packages,
                               malware_max_requests=args.malware_max_requests,
-                              max_files=args.max_files, max_total_bytes=args.max_total_bytes)
+                              max_files=args.max_files, max_total_bytes=args.max_total_bytes, coverage=coverage,
+                              advisory_snapshot=snapshot, malware_max_pages=args.malware_max_pages,
+                              malware_retries=args.malware_retries, malware_time_budget=args.malware_time_budget)
+        if snapshot is not None:
+            snapshot.save()
+        scan_policy.apply(report, policy, baseline_values=baseline_values, only_new=args.only_new,
+                          fail_on=args.fail_on, dependency_strict=args.dependency_strict,
+                          malware_strict=args.malware_strict, ast_required=args.ast_mode == 'required')
+        if args.write_baseline:
+            safe_io.atomic_write(args.write_baseline, json.dumps(scan_policy.baseline(report), indent=2) + '\n',
+                                 source_root=None if args.repo else args.path)
     except (ScanError, threat_intel.WatchlistError, ValueError, OSError, UnicodeError) as err:
         print(f"Error: {err}", file=sys.stderr)
         return 2
@@ -599,21 +748,8 @@ def main(argv: list[str] | None = None) -> int:
         rendered = None
     if args.output:
         try:
-            # Replace the directory entry atomically, never follow an output symlink.
-            if args.output.is_symlink():
-                raise OSError("Output must not be a symlink")
-            if not args.repo and args.output.exists() and args.output.resolve().is_relative_to(args.path.resolve()):
-                raise OSError("Refusing to overwrite an existing file inside the scanned source")
-            temporary = None
-            try:
-                with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=args.output.parent,
-                                                 prefix=".protestware-report-", delete=False) as stream:
-                    temporary = Path(stream.name)
-                    stream.write(rendered if rendered is not None else report_text(report))
-                os.replace(temporary, args.output)
-            finally:
-                if temporary is not None:
-                    temporary.unlink(missing_ok=True)
+            safe_io.atomic_write(args.output, rendered if rendered is not None else report_text(report),
+                                 source_root=None if args.repo else args.path)
         except OSError as err:
             print(f"Error: Cannot write report: {type(err).__name__}", file=sys.stderr)
             return 2
@@ -621,14 +757,7 @@ def main(argv: list[str] | None = None) -> int:
         print(rendered, end="")
     else:
         output_text(report)
-    if not report["scan"]["complete"]:
-        return 2
-    if args.dependency_strict and not report["dependencies"]["summary"].get("complete", False):
-        return 2
-    if args.malware_strict and (not report["malware_intel"].get("complete", False) or
-                                not report["malware_intel"].get("inventory_complete", False)):
-        return 2
-    return int(SEVERITIES.get(report["risk"], 0) >= SEVERITIES[args.fail_on])
+    return report['gate']['exit_code']
 
 
 if __name__ == "__main__":

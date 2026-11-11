@@ -4,6 +4,26 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — unreleased (2026-11-11)
+
+- Add source/artifact selection profiles and bounded file/directory coverage
+  accounting, per-extension AST outcomes and resolved GitHub commit/tree IDs.
+- Add explicit TOML policies, reviewed fingerprint baselines, new-finding gates,
+  expiring owner/reason exceptions, retained findings and SARIF policy metadata.
+  Expired exceptions cannot be hidden by baseline filtering.
+- Add separate GitLab report/gate helpers with fresh output directories, report
+  digests and fail-closed artifact checks. Preserve separate line-less package
+  findings in GitLab SARIF without inventing source lines.
+- Add Python sensitive-source-to-HTTP-payload findings and AST geographic deletion
+  correlation for Go/C#/JavaScript/TypeScript. Fold literal dead branches; retain
+  confidence and trace context without asserting malicious intent.
+- Add 48 balanced inert corpus cases for six languages, rule-level quality metrics
+  and resource measurements saved by CI. Reuse one parsed Python tree per file.
+- Add bounded OSV page tokens/GitHub cursors, transient retries, advisory request/time
+  budgets and an explicit expiring snapshot for offline positive/negative results.
+  Cache hits retain retrieval times; stale/absent offline entries remain incomplete.
+- Pin the Tree-sitter Python dependency and document operational limits and examples.
+
 ## Analysis integrity fixes — 2026-11-10 (unreleased)
 
 - Report bounded Python/Tree-sitter taint, C/C++ helper and JavaScript network-path

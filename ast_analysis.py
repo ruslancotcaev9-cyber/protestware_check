@@ -272,14 +272,15 @@ class Analyzer(ast.NodeVisitor):
         self.constants = {key: value for key, value in left[2].items() if key in right[2] and right[2][key] == value}
 
 
-def scan_python(path: str, content: str, allowed_domains: list[str]) -> list[dict] | None:
+def scan_python(path: str, content: str, allowed_domains: list[str], *, tree: ast.Module | None = None) -> list[dict] | None:
     """Returns None if syntax is invalid; callers may use legacy heuristics."""
     if Path(path).suffix.lower() != ".py":
         return []
-    try:
-        tree = ast.parse(content, filename=path)
-    except (SyntaxError, ValueError, MemoryError):
-        return None
+    if tree is None:
+        try:
+            tree = ast.parse(content, filename=path)
+        except (SyntaxError, ValueError, MemoryError):
+            return None
     analyzer = Analyzer(path, content, allowed_domains)
     analyzer.visit(tree)
     return analyzer.findings

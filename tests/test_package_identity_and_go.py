@@ -72,7 +72,7 @@ class PackageOriginTests(unittest.TestCase):
             'resolved': 'https://registry.npmjs.org/parent/-/parent-2.0.0.tgz'}
         lock['packages']['node_modules/parent/node_modules/demo'] = {
             'version': '1.2.3', 'resolved': 'https://private.example/demo.tgz'}
-        def fake(url, payload=None):
+        def fake(url, payload=None, **transport):
             if url == mi.OSV_BATCH_URL:
                 return {'results': [{'vulns': [{'id': 'MAL-2026-123'}]} if q['package']['name'] == 'demo' else {}
                                     for q in payload['queries']]}

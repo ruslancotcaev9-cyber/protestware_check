@@ -103,11 +103,16 @@ def cyclonedx(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def sarif(report: dict[str, Any]) -> dict[str, Any]:
+def sarif(report: dict[str, Any], *, gitlab: bool = False) -> dict[str, Any]:
     """Represent observations (not asserted vulnerabilities) in GitHub SARIF 2.1.0."""
     findings = report.get("findings", [])
-    rules = sorted({str(f["rule"]) for f in findings})
-    first = {rule: next(f for f in findings if f["rule"] == rule) for rule in rules}
+    def rule_id(item):
+        if gitlab and isinstance(item.get('package'), dict) and not item.get('line'):
+            from scan_policy import fingerprint
+            return str(item['rule']) + '/' + fingerprint(item)[:24]
+        return str(item['rule'])
+    rules = sorted({rule_id(f) for f in findings})
+    first = {rule: next(f for f in findings if rule_id(f) == rule) for rule in rules}
     tags = {"context": "context", "watchlist_context": "context", "watchlist_repository": "supply-chain",
             "watchlist_package": "supply-chain", "malware_advisory": "supply-chain"}
     definitions = [{"id": rule, "shortDescription": {"text": rule.replace("_", " ").capitalize()},
@@ -118,7 +123,7 @@ def sarif(report: dict[str, Any]) -> dict[str, Any]:
     results = []
     for item in findings:
         path, number = str(item.get("file", "")), item.get("line")
-        rule = str(item["rule"])
+        rule = rule_id(item)
         message = str(item.get("message") or rule)
         package = item.get("package")
         if isinstance(package, dict):
@@ -126,16 +131,24 @@ def sarif(report: dict[str, Any]) -> dict[str, Any]:
             message += f" [{identity}]"
         if item.get("advisory_ids"):
             message += " [" + ", ".join(item["advisory_ids"]) + "]"
-        result: dict[str, Any] = {"ruleId": rule, "level": levels.get(item.get("severity"), "note"),
+        result: dict[str, Any] = {"ruleId": rule, "level": levels.get(item.get("effective_severity", item.get("severity")), "note"),
                                   "message": {"text": message},
                                   "properties": {"category": item.get("category", "unknown"),
                                                  "severity": item.get("severity", "info")}}
         for field in ("package", "matched_packages", "advisory_ids", "sources", "references", "version_match",
-                      "origin_match", "analysis", "repository", "evidence"):
+                      "origin_match", "analysis", "repository", "evidence", "fingerprint", "confidence",
+                      "effective_severity", "policy_decision", "policy_override", "policy_exception"):
             if field in item:
                 result["properties"][field] = item[field]
         if isinstance(package, dict) and (uri := purl(package)):
             result["properties"]["purl"] = uri
+        result['properties']['originalRuleId'] = item['rule']
+        if item.get('baseline_state') in {'new', 'unchanged'}:
+            result['baselineState'] = item['baseline_state']
+        if item.get('policy_decision') in {'suppressed', 'disabled'}:
+            exception = item.get('policy_exception', {})
+            result['suppressions'] = [{'kind': 'external', 'status': 'accepted', 'justification':
+                f"{exception.get('reason', '')} (owner={exception.get('owner', '')}; expires={exception.get('expires', '')})"}]
         if path and not path.startswith("("):
             normalized = path.replace("\\", "/")
             # No escaping repository boundaries; SARIF may carry source-provided paths.
@@ -172,6 +185,8 @@ def sarif(report: dict[str, Any]) -> dict[str, Any]:
         if isinstance(package, dict):
             fingerprint += "\x00" + json.dumps({"package": package, "ids": sorted(item.get("advisory_ids", []))}, sort_keys=True)
         result["partialFingerprints"] = {"primaryLocationLineHash": sha256(fingerprint.encode()).hexdigest()[:32]}
+        if item.get('fingerprint'):
+            result['partialFingerprints']['protestwareFingerprint/v1'] = item['fingerprint']
         results.append(result)
     ast = report.get("ast", {})
     dependencies = report.get("dependencies", {})

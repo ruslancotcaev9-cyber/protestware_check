@@ -1,6 +1,8 @@
 """Bounded reads of regular files and single-hop HTTPS responses."""
 import os
 import stat
+from pathlib import Path
+import tempfile
 from urllib.request import HTTPRedirectHandler, build_opener
 
 
@@ -30,3 +32,22 @@ def read_regular(path, limit, *, dir_fd=None):
         if len(raw) > limit:
             raise ValueError("File size limit exceeded")
         return raw
+
+
+def atomic_write(path, text, *, source_root=None):
+    """Write to an explicit trusted destination; never overwrite scanned input."""
+    path = Path(path)
+    if path.is_symlink():
+        raise OSError('Output must not be a symlink')
+    if source_root is not None and path.exists() and path.resolve().is_relative_to(Path(source_root).resolve()):
+        raise OSError('Refusing to overwrite an existing file inside the scanned source')
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=path.parent,
+                                         prefix='.protestware-', delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(text)
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)

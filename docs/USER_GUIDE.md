@@ -119,6 +119,11 @@ python protestware_check.py --path ../application \
 
 ## 4. Справочник CLI
 
+Новые параметры v1.2.0: `--profile`, `--coverage-max-samples`, `--policy`, `--baseline`,
+`--write-baseline`, `--only-new`, `--all-findings` — [покрытие, политика и CI](POLICY_AND_CI.md).
+`--malware-max-pages`, `--malware-retries`, `--malware-time-budget`, `--advisory-cache`,
+`--advisory-cache-max-age`, `--advisory-offline` — [снимок и лимиты](MALWARE_INTELLIGENCE.md#снимок-пагинация-и-лимиты-v120).
+
 Точную версию ключей всегда проверяйте `python protestware_check.py --help`.
 
 | Параметр | Назначение / умолчание |
@@ -169,6 +174,10 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 **SARIF:** результаты с привязкой к файлам/строкам, а при наличии трассировок — `codeFlows`. Для advisory сохраняются пакет, версия, происхождение, ID и ссылки в `properties`; неизвестный номер строки не подменяется фиктивным. Сигналы уровня репозитория без файла могут не отображаться в интерфейсе Code Scanning; сохраняйте также JSON. **CycloneDX:** список компонентов и предполагаемых связей, с индикатором `protestware-check:dependency-analysis-complete` и свойством `protestware-check:package-origin`. Совпадение с `black-mark` не становится CVE/SBOM-vulnerability.
 
 **Выходные коды:** `0` — риск ниже `--fail-on` и нет ошибки, требующей кода 2; `1` — достигнут порог; `2` — ошибка ввода/вывода, неполное чтение, превышение суммарного бюджета, отсутствие/неполнота AST для поддерживаемого парсером языка при `required` или неполнота при `--dependency-strict` / `--malware-strict`. Код 2 имеет приоритет перед кодом 1. Ошибка до построения отчёта может оставить только сообщение в stderr: наличие выходного файла не гарантировано.
+
+При политике/baseline порог применяется к `policy.risk`, исходный `risk` сохраняется
+для ревью; итоговый код находится также в JSON `gate.exit_code`. Ошибки чтения и
+строгих этапов не скрываются исключениями или сравнением с baseline.
 
 | Поле | Как трактовать |
 | --- | --- |

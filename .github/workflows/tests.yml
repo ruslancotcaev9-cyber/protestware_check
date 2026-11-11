@@ -39,3 +39,13 @@ jobs:
         run: python -m compileall -q .
       - name: Regression and parser tests
         run: python -m unittest discover -s tests -v
+      - name: Labeled static corpus and resource measurements
+        run: python scripts/evaluate_corpus.py --measure --output corpus-metrics.json
+      - name: Save corpus metrics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: corpus-metrics
+          path: corpus-metrics.json
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,27 @@
+schema = 1
+
+[scan]
+profile = "source" # artifact includes dist/build/node_modules and *.min.js
+exclude = []
+allow_domains = [] # add only reviewed destinations
+
+[gate]
+fail_on = "high"
+only_new = false # requires --baseline when enabled
+require_complete = false # true blocks incomplete enabled analyses, including unresolved Go build lists
+
+# Overrides and suppressions require a reason, owner and ISO expiry date.
+# Copy the exact fingerprint from a reviewed JSON finding.
+#
+# [rules.NET_EXTERNAL]
+# severity = "low"
+# reason = "Reviewed service integration in this application"
+# owner = "security-team"
+# expires = "2027-01-31"
+#
+# [[suppressions]]
+# rule = "GEO_ACTION"
+# fingerprint = "<64-character finding fingerprint>"
+# reason = "Reviewed test fixture; never shipped in production"
+# owner = "security-team"
+# expires = "2027-01-31"

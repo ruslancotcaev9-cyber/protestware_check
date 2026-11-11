@@ -31,7 +31,9 @@ ASSIGN_NODES = {'assignment_expression', 'assignment_statement', 'variable_decla
                 'short_var_declaration', 'const_spec', 'var_spec', 'init_declarator'}
 FUNCTION_DEFS = {'function_declaration', 'method_declaration', 'function_definition'}
 SCOPES = {'function_declaration', 'function_definition', 'method_declaration',
-          'function_expression', 'arrow_function', 'local_function_statement'}
+          'function_expression', 'arrow_function', 'local_function_statement',
+          'method_definition', 'constructor_declaration', 'destructor_declaration',
+          'func_literal', 'lambda_expression', 'anonymous_method_expression'}
 STRING_NODES = {'string', 'string_literal', 'raw_string_literal', 'interpreted_string_literal',
                 'verbatim_string_literal', 'string_value', 'single_quoted_string', 'double_quoted_string'}
 
@@ -39,7 +41,7 @@ STRING_NODES = {'string', 'string_literal', 'raw_string_literal', 'interpreted_s
 @dataclass(frozen=True)
 class Flow:
     sources: tuple[tuple[str, int], ...] = ()
-    literal: str | None = None
+    literal: str | bool | None = None
     trace: tuple[tuple[str, int, str], ...] = ()
 
     def step(self, kind: str, line: int, message: str) -> 'Flow':
@@ -118,7 +120,7 @@ class TreeAnalyzer:
         if flow and flow.sources:
             hops = flow.trace or (('source', flow.sources[0][1], flow.sources[0][0]),)
             entry['dataflow'] = [{'file': self.path, 'line': ln, 'kind': kind, 'message': msg}
-                                 for kind, ln, msg in (*hops, ('sink', line, 'network URL'))]
+                                 for kind, ln, msg in (*hops, ('sink', line, 'filesystem deletion' if rule == 'AST_GEO_ACTION' else 'network URL'))]
         self.findings.append(entry)
 
     def index_functions(self, root):
@@ -249,6 +251,18 @@ class TreeAnalyzer:
 
     def sink(self, node, state: dict[str, Flow], branch: bool):
         text = self.raw(node).strip()
+        visible = re.sub(r'^(?:await|return)\s+', '', text)
+        ext = Path(self.path).suffix.lower()
+        deletes = {'.go': r'os\s*\.\s*Remove(?:All)?',
+                   '.cs': r'(?:System\s*\.\s*IO\s*\.\s*)?(?:File|Directory)\s*\.\s*Delete'}
+        pattern = deletes.get(ext)
+        if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
+            pattern = r'(?:fs\s*\.\s*(?:rm|rmSync|unlink|unlinkSync|rmdir|rmdirSync)|Deno\s*\.\s*remove)'
+        if branch and pattern and re.match(r'^(?:' + pattern + r')\s*\(', visible):
+            flow = Flow(sources=(('geographic-condition', int(branch)),),
+                        trace=(('condition', int(branch), 'RU/BY geographic branch'),))
+            self.emit('AST_GEO_ACTION', 'correlation', 'high', node,
+                      'AST: filesystem deletion in a geographic branch; review reachability and intent', flow)
         if not NETWORK_RE.match(re.sub(r'^(?:await|return)\s+', '', text)):
             return
         args = [n for n in children(node) if 'argument' in n.type]
@@ -299,6 +313,28 @@ class TreeAnalyzer:
             elif re.match(r'\s*(?:DELETE\s+FROM|UPDATE\s+\S+\s+SET)\b', text, re.I):
                 self.emit('AST_SQL_MODIFY', 'database', 'low', node, 'SQL AST modifying statement')
 
+    def constant_truth(self, node):
+        text = self.raw(node).strip()
+        if text in {'true', 'True', '1'}:
+            return True
+        if text in {'false', 'False', '0'}:
+            return False
+        descendants = children(node)
+        if len(descendants) == 1 and node.type in {'parenthesized_expression', 'condition_clause'}:
+            return self.constant_truth(descendants[0])
+        if node.type in {'binary_expression', 'logical_expression'}:
+            left, right = node.child_by_field_name('left'), node.child_by_field_name('right')
+            operator = node.child_by_field_name('operator')
+            op = self.raw(operator) if operator is not None else next((child.type for child in node.children if child.type in {'&&', '||'}), '')
+            if left is not None and right is not None and op in {'&&', '||'}:
+                values = [self.constant_truth(left), self.constant_truth(right)]
+                absorbing = op == '||'
+                if absorbing in values:
+                    return absorbing
+                if all(value is not None for value in values):
+                    return not absorbing
+        return None
+
     def walk(self, node, state: dict[str, Flow], branch=False, counter=None):
         if counter is None:
             counter = [0]
@@ -308,6 +344,7 @@ class TreeAnalyzer:
         kind = node.type
         if kind in SCOPES:
             state = dict(state)
+            branch = False
         self.markup(node)
         descendants = children(node)
         if kind in {'if_statement', 'if_expression', 'conditional_expression'} and descendants:
@@ -317,9 +354,14 @@ class TreeAnalyzer:
                 self.emit('AST_GEO_TARGET', 'geolocation', 'medium', node, 'AST geographic condition')
             self.walk(condition, state, branch, counter)
             copies = []
-            for child in descendants[1:]:
+            known = self.constant_truth(condition)
+            suites = descendants[1:]
+            if known is not None:
+                suites = suites[:1] if known else suites[1:]
+            geographic = condition.start_point[0] + 1 if geo and known is None else False
+            for child in suites:
                 local = dict(state)
-                self.walk(child, local, branch or geo, counter)
+                self.walk(child, local, branch or geographic, counter)
                 copies.append(local)
             for local in copies:
                 for key, val in local.items():

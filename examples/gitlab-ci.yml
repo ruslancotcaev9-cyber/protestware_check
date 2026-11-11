@@ -1,0 +1,41 @@
+# Linux runner requirements: Python 3.11+, pip and git, trusted TLS certificates.
+# The scanner is checked out by an immutable SHA; target code is never installed.
+stages:
+  - security_scan
+  - security_gate
+
+variables:
+  # Replace with a reviewed scanner commit containing scripts/gitlab_scan.py.
+  PROTESTWARE_SCANNER_COMMIT: "0000000000000000000000000000000000000000"
+
+.protestware_base:
+  before_script:
+    - python -c "import os,re; value=os.environ['PROTESTWARE_SCANNER_COMMIT']; assert re.fullmatch('[a-f0-9]{40}', value) and value != '0'*40, 'Set a reviewed scanner commit'"
+    - git -c core.hooksPath=/dev/null clone --no-checkout --filter=blob:none https://github.com/ruslancotcaev9-cyber/protestware_check.git .protestware-scanner
+    - git -C .protestware-scanner -c core.hooksPath=/dev/null fetch --depth=1 origin "$PROTESTWARE_SCANNER_COMMIT"
+    - git -C .protestware-scanner -c core.hooksPath=/dev/null checkout --detach "$PROTESTWARE_SCANNER_COMMIT"
+
+protestware_scan:
+  extends: .protestware_base
+  stage: security_scan
+  script:
+    - python -m pip install -r .protestware-scanner/requirements-ast.txt -r .protestware-scanner/requirements-resolver.txt
+    - python -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less','c','cpp'])"
+    - python .protestware-scanner/scripts/gitlab_scan.py --source . --output-dir .protestware-reports -- --ast-mode required --dependencies lock --exclude '.protestware-scanner/**' --exclude '.protestware-reports/**'
+  artifacts:
+    when: always
+    expire_in: 14 days
+    paths:
+      - .protestware-reports/
+    # For a GitLab version/tier supporting SARIF ingestion, enable:
+    # reports:
+    #   sarif: .protestware-reports/findings.sarif
+
+protestware_gate:
+  extends: .protestware_base
+  stage: security_gate
+  needs:
+    - job: protestware_scan
+      artifacts: true
+  script:
+    - python .protestware-scanner/scripts/gitlab_gate.py .protestware-reports

