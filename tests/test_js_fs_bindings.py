@@ -64,6 +64,13 @@ class NodeFilesystemTests(unittest.TestCase):
             with self.subTest(source=source):
                 self.assertEqual(len(self.deletions(source)), 1)
 
+    def test_identifier_escapes_preserve_binding_and_shadow_identity(self):
+        for source in (r"import * as f\u0073 from 'fs'; fs.promises.rm(path)",
+                       r"import fs from 'fs'; f\u0073.promises.r\u006d(path)",
+                       r"import {r\u006d as erase} from 'fs/promises'; erase(path)"):
+            self.assertEqual(len(self.deletions(source)), 1)
+        self.assertFalse(self.deletions(r"import fs from 'fs'; function run(f\u0073){fs.promises.rm(path)}"))
+
     def test_supported_javascript_extensions(self):
         for suffix in ('js', 'jsx', 'mjs', 'cjs', 'ts', 'tsx'):
             self.assertEqual(len(self.deletions("const fs = require('node:fs'); fs.promises.rm(path)", suffix)), 1)
@@ -149,6 +156,15 @@ class NodeFilesystemTests(unittest.TestCase):
     def test_sync_and_callback_api_are_preserved(self):
         for call in ('rmSync(path)', 'unlinkSync(path)', 'rmdirSync(path)', 'rm(path, callback)', 'unlink(path, callback)'):
             self.assertEqual(len(self.deletions("const fs=require('fs'); fs." + call)), 1)
+
+    def test_shell_deletion_is_preserved_without_matching_example_strings(self):
+        for source in ("const cp=require('child_process'); cp.execSync('rm -rf data');",
+                       "import {exec} from 'node:child_process'; exec(`rm -rf ${path}`);",
+                       "import {execSync} from 'child_process'; execSync('rm -rf ' + path);"):
+            self.assertEqual(len(self.deletions(source)), 1)
+        for source in ("console.log('rm -rf data');", "const cp=require('child_process'); cp.execSync('echo rm -rf data');",
+                       "const cp = fake; cp.execSync('rm -rf data');"):
+            self.assertFalse(self.deletions(source))
 
     def test_sarif_preserves_identity_and_no_execution(self):
         with patch('subprocess.run', side_effect=AssertionError('No target execution')):

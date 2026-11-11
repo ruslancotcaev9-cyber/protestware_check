@@ -3,6 +3,10 @@ from dataclasses import dataclass
 import re
 
 FS, PROMISES, UNKNOWN = 'node:fs', 'node:fs/promises', frozenset({''})
+PROCESS = 'node:child_process'
+EXEC_METHODS = {'exec', 'execSync'}
+MODULES = {'fs': FS, 'node:fs': FS, 'fs/promises': PROMISES, 'node:fs/promises': PROMISES,
+           'child_process': PROCESS, 'node:child_process': PROCESS}
 METHODS = {'rm', 'rmSync', 'unlink', 'unlinkSync', 'rmdir', 'rmdirSync'}
 PROMISE_METHODS = {'rm', 'unlink', 'rmdir'}
 FUNCTIONS = {'function_declaration', 'generator_function_declaration', 'function_expression',
@@ -64,6 +68,10 @@ class Resolver:
     def raw(self, node):
         return self.data[node.start_byte:node.end_byte].decode('utf-8', 'replace') if node is not None else ''
 
+    def name(self, node):
+        value = self.raw(node)
+        return string('"' + value + '"') if '\\u' in value else value
+
     def lookup(self, name, state):
         return next((scope[name] for scope in reversed(state.scopes) if name in scope), UNKNOWN)
 
@@ -71,7 +79,7 @@ class Resolver:
         results = set()
         for value in values:
             target = (PROMISES if value == FS and key == 'promises' else
-                      value + '.' + key if (value == FS and key in METHODS) or (value == PROMISES and key in PROMISE_METHODS) else '')
+                      value + '.' + key if (value == FS and key in METHODS) or (value == PROMISES and key in PROMISE_METHODS) or (value == PROCESS and key in EXEC_METHODS) else '')
             if target and any(target == prefix or target.startswith(prefix + '.') for prefix in state.modified):
                 target = ''
             results.add(target)
@@ -85,12 +93,12 @@ class Resolver:
             return UNKNOWN
         kind = node.type
         if kind in {'identifier', 'shorthand_property_identifier_pattern'}:
-            return self.lookup(self.raw(node), state)
+            return self.lookup(self.name(node), state)
         if kind in {'parenthesized_expression', 'await_expression', 'as_expression', 'satisfies_expression', 'non_null_expression', 'type_assertion'}:
             parts = node.named_children
             return self.value(parts[-1] if kind == 'type_assertion' else parts[0], state, depth + 1) if parts else UNKNOWN
         if kind in {'member_expression', 'subscript_expression'}:
-            key = (self.raw(node.child_by_field_name('property')) if kind == 'member_expression' else
+            key = (self.name(node.child_by_field_name('property')) if kind == 'member_expression' else
                    string(self.raw(node.child_by_field_name('index'))))
             return self.property(self.value(node.child_by_field_name('object'), state, depth + 1), key, state) if key else UNKNOWN
         if kind == 'call_expression':
@@ -98,10 +106,8 @@ class Resolver:
             if self.value(function, state, depth + 1) == frozenset({'global:require'}) and arguments is not None:
                 args = arguments.named_children
                 module = string(self.raw(args[0])) if len(args) == 1 else None
-                if module in {'fs', 'node:fs'}:
-                    return frozenset({FS})
-                if module in {'fs/promises', 'node:fs/promises'}:
-                    return frozenset({PROMISES})
+                if module in MODULES:
+                    return frozenset({MODULES[module]})
         if kind == 'ternary_expression':
             return self.value(node.child_by_field_name('consequence'), state, depth + 1) | self.value(node.child_by_field_name('alternative'), state, depth + 1)
         return UNKNOWN
@@ -111,17 +117,17 @@ class Resolver:
             return
         kind = node.type
         if kind in {'identifier', 'shorthand_property_identifier_pattern'}:
-            name = self.raw(node)
+            name = self.name(node)
             index = scope if scope is not None else next((i for i in reversed(range(len(state.scopes))) if name in state.scopes[i]), len(state.scopes) - 1)
             state.scopes[index][name] = values
         elif kind == 'object_pattern':
             for child in node.named_children:
                 if child.type == 'pair_pattern':
                     key = child.child_by_field_name('key')
-                    label = string(self.raw(key)) if key.type == 'string' else self.raw(key)
+                    label = string(self.raw(key)) if key.type == 'string' else self.name(key)
                     self.bind(child.child_by_field_name('value'), self.property(values, label, state), state, scope)
                 elif child.type == 'shorthand_property_identifier_pattern':
-                    self.bind(child, self.property(values, self.raw(child), state), state, scope)
+                    self.bind(child, self.property(values, self.name(child), state), state, scope)
                 else:
                     self.bind(child, UNKNOWN, state, scope)
         elif kind in {'assignment_pattern', 'object_assignment_pattern'}:
@@ -155,7 +161,7 @@ class Resolver:
             if node.type != 'import_statement' or re.match(r'\s*import\s+type\b', self.raw(node)):
                 continue
             source = string(self.raw(node.child_by_field_name('source')))
-            values = frozenset({FS if source in {'fs', 'node:fs'} else PROMISES}) if source in {'fs', 'node:fs', 'fs/promises', 'node:fs/promises'} else UNKNOWN
+            values = frozenset({MODULES[source]}) if source in MODULES else UNKNOWN
             for clause in node.named_children:
                 if clause.type != 'import_clause':
                     continue
@@ -169,7 +175,7 @@ class Resolver:
                             if spec.type != 'import_specifier' or re.match(r'type\s+(?!as\b)', self.raw(spec)):
                                 continue
                             name = spec.child_by_field_name('name')
-                            label = string(self.raw(name)) if name.type == 'string' else self.raw(name)
+                            label = string(self.raw(name)) if name.type == 'string' else self.name(name)
                             alias = spec.child_by_field_name('alias') or name
                             self.bind(alias, values if label == 'default' else self.property(values, label, state), state, 0)
 
@@ -258,7 +264,7 @@ class Resolver:
             if left.type in {'member_expression', 'subscript_expression'}:
                 values = self.value(left, state) - {''}
                 state.modified.update(values)
-                if not values and self.value(left.child_by_field_name('object'), state) & {FS, PROMISES}:
+                if not values and self.value(left.child_by_field_name('object'), state) & {FS, PROMISES, PROCESS}:
                     state.modified.update(self.value(left.child_by_field_name('object'), state) - {''})
                     self.diagnostics.add('JS filesystem computed property write is unresolved')
             else:
@@ -274,6 +280,20 @@ class Resolver:
         if kind == 'call_expression':
             values = self.value(node.child_by_field_name('function'), state)
             targets = values & DELETIONS
+            # Preserve the existing shell-deletion signal, but require an actual
+            # imported process API and a deletion command prefix rather than prose.
+            process = values & {PROCESS + '.' + name for name in EXEC_METHODS}
+            if process:
+                arguments = node.child_by_field_name('arguments')
+                argument = arguments.named_children[0] if arguments is not None and arguments.named_children else None
+                if argument is not None and argument.type == 'binary_expression':
+                    argument = argument.child_by_field_name('left')
+                raw = self.raw(argument)
+                command = string(raw)
+                if command is None and raw.startswith('`'):
+                    command = raw[1:].split('${', 1)[0]
+                if command and re.match(r'^\s*(?:rm\s+-[a-zA-Z]*[rf][a-zA-Z]*\s+|del\s+/[fq]\b)', command):
+                    targets |= process
             if targets:
                 self.calls[node.start_byte] = (node, sorted(targets), '' in values)
         for child in node.named_children:
