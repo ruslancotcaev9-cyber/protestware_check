@@ -55,6 +55,9 @@ def cyclonedx(report: dict[str, Any]) -> dict[str, Any]:
                       {"name": "protestware-check:direct", "value": str(bool(pkg.get("direct", False))).lower()}]
         if pkg.get("depth") is not None:
             properties.append({"name": "protestware-check:depth", "value": str(pkg["depth"])})
+        if pkg.get('build_context'):
+            properties.append({'name': 'protestware-check:build-context',
+                               'value': json.dumps(pkg['build_context'], sort_keys=True)})
         component: dict[str, Any] = {"type": "library", "name": pkg["name"], "bom-ref": ref, "properties": properties}
         if pkg.get("version"):
             component["version"] = str(pkg["version"])
@@ -137,13 +140,13 @@ def sarif(report: dict[str, Any], *, gitlab: bool = False) -> dict[str, Any]:
                                                  "severity": item.get("severity", "info")}}
         for field in ("package", "matched_packages", "advisory_ids", "sources", "references", "version_match",
                       "origin_match", "analysis", "repository", "evidence", "fingerprint", "confidence",
-                      "effective_severity", "policy_decision", "policy_override", "policy_exception", "policy_review_required"):
+                      "effective_severity", "policy_decision", "policy_override", "policy_exception", "policy_review_required", "baseline_context_changes"):
             if field in item:
                 result["properties"][field] = item[field]
         if isinstance(package, dict) and (uri := purl(package)):
             result["properties"]["purl"] = uri
         result['properties']['originalRuleId'] = item['rule']
-        if item.get('baseline_state') in {'new', 'unchanged'}:
+        if item.get('baseline_state') in {'new', 'unchanged', 'updated'}:
             result['baselineState'] = item['baseline_state']
         if item.get('policy_decision') in {'suppressed', 'disabled'}:
             exception = item.get('policy_exception', {})

@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections import Counter, deque
 from dataclasses import dataclass, field
 import json
+from pathlib import PurePosixPath
 import re
 import tomllib
 import xml.etree.ElementTree as ET
@@ -18,6 +19,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 from typing import Any
 
 import threat_intel
+import go_build_info
 from package_identity import (advisory_origin_matches, npm_origin, origin, origin_key,
                               public_origin, python_origin)
 
@@ -55,6 +57,7 @@ class Package:
     dependents: dict[str, str] = field(default_factory=dict)
     qualifiers: list[str] = field(default_factory=list)
     origin: dict[str, Any] = field(default_factory=lambda: {"kind": "unknown", "basis": "unspecified"})
+    build_context: dict[str, Any] = field(default_factory=dict)
 
     def key(self) -> tuple[str, str, str, str, str]:
         return (self.ecosystem, normalize(self.ecosystem, self.name), self.version,
@@ -66,7 +69,7 @@ class Package:
                 "source": self.source, "depth": self.depth if self.depth >= 0 else None,
                 "direct": self.direct, "repository": self.repository,
                 "requested": self.requested, "via": sorted(self.via)[:12],
-                "qualifiers": self.qualifiers, "origin": self.origin}
+                "qualifiers": self.qualifiers, "origin": self.origin, 'build_context': self.build_context}
 
 
 class RegistryError(Exception):
@@ -152,7 +155,7 @@ def sibling(path: str, basename: str) -> str:
 
 class Inventory:
     def __init__(self, manifests: dict[str, str], *, mode: str,
-                 max_packages: int = 2000, max_depth: int = 12, max_requests: int = 300):
+                 max_packages: int = 2000, max_depth: int = 12, max_requests: int = 300, go_builds=None):
         self.manifests = manifests
         self.mode = mode
         self.max_packages = max_packages
@@ -166,6 +169,10 @@ class Inventory:
         self.source_files: set[str] = set()
         self.unlocked_specs: dict[tuple[str, str, str], str] = {}
         self.go_unselected_checksums = 0
+        self.go_builds = go_builds or []
+        self.go_covered = set()
+        self.go_profiles = []
+        self.go_provenance = []
 
     def warn(self, text: str) -> None:
         self.partial = True
@@ -662,11 +669,81 @@ class Inventory:
                                                    revision=source.get("reference")) if isinstance(source, dict)
                                      else origin("composer")))
 
+    def go_imports(self) -> None:
+        for build in self.go_builds:
+            modules, packages, reached, manifests = go_build_info.validate(build)
+            if not build.get('inputs_verified'):
+                raise ValueError('Go build-info must be loaded and verified against source inputs')
+            profile = go_build_info.digest({'profile': build['profile'], 'manifests': sorted(manifests)})
+            if any(item['profile_id'] == profile for item in self.go_profiles):
+                raise ValueError('Duplicate Go build profile')
+            logical = go_build_info.logical_digest(build)
+            workspace = sorted(path for path in build['extra_inputs'] if PurePosixPath(path).name == 'go.work')
+            if sum(module['main'] for module in modules.values()) > 1 and not workspace:
+                raise ValueError('Multi-module Go exports require a bound go.work')
+            anchor = workspace[0] if workspace else next(module['manifest'] for module in modules.values() if module['main'])
+            covered = set(manifests) | {str(PurePosixPath(path).parent / 'go.sum') for path in manifests} | set(workspace) | {path + '.sum' for path in workspace}
+            self.go_covered.update(covered)
+            self.source_files.update(path for path in covered if path in build['inputs'])
+            used = {packages[path]['module'] for path in reached if not packages[path]['standard']}
+            mains = {name for name, module in modules.items() if module['main']}
+            edges = {name: set() for name in modules}
+            for path in reached:
+                parent = packages[path]['module']
+                if parent is None:
+                    continue
+                for target in packages[path]['imports']:
+                    child = packages[target]['module']
+                    if child is not None and child != parent:
+                        edges[parent].add(child)
+            depth, queue = {name: 0 for name in mains}, deque(mains)
+            while queue:
+                parent = queue.popleft()
+                for child in edges[parent]:
+                    value = 0 if child in mains else depth[parent] + 1
+                    if child not in depth or value < depth[child]:
+                        depth[child] = value
+                        queue.append(child)
+            names = {}
+            for name, module in modules.items():
+                replacement = module.get('replace')
+                names[name] = (replacement['path'], replacement['version']) if replacement and replacement.get('version') else (name, '' if replacement else module['version'])
+            for name in sorted(used - mains):
+                module = modules[name]
+                actual, version = names[name]
+                replacement = module.get('replace')
+                origin_data = {'kind': 'module', 'module': actual, 'basis': 'go-build-info', 'profile': profile}
+                if replacement and replacement.get('local_path') is not None:
+                    origin_data = {'kind': 'local', 'url': 'file:' + replacement['local_path'], 'basis': 'go-build-info', 'profile': profile}
+                if replacement:
+                    origin_data['replaces'] = {'module': name, 'version': module['version']}
+                sums = {key: module[key] for key in ('Sum', 'GoModSum') if key in module}
+                if sums:
+                    origin_data['checksums'] = sums
+                repo = GO_MODULE.match(actual)
+                via = {f'{names[parent][0]}@{names[parent][1]}' for parent in used - mains if name in edges[parent]}
+                self.add(Package('go', actual, version, anchor, 'go-build-info', depth.get(name, -1),
+                                 any(name in edges[parent] for parent in mains),
+                                 repository=f'{repo.group(1)}/{repo.group(2)}'.lower() if repo and version else None,
+                                 requested=f'{name}@{module["version"]}', via=via,
+                                 qualifiers=['selected-go-package-profile'], origin=origin_data,
+                                 build_context={'source_revision': build['source_revision'], 'profile': build['profile'],
+                                                'snapshot_sha256': build.get('snapshot_sha256'), 'manifests': sorted(manifests)}))
+            self.go_profiles.append({'profile_id': profile, 'logical_digest': logical, 'manifests': sorted(manifests)})
+            self.go_provenance.append({'profile_id': profile, 'source_revision': build['source_revision'],
+                                       'profile': build['profile'], 'snapshot_sha256': build.get('snapshot_sha256'),
+                                       'inputs_verified': True, 'input_count': len(build['inputs']),
+                                       'selected_modules': len(modules), 'packages': len(packages),
+                                       'used_dependency_modules': len(used - mains), 'unused_selected_modules': sorted(set(modules) - used),
+                                       'scope': 'requested-production-package-closure'})
+
     def go_modules(self) -> None:
         """Read declared requirements; checksums alone never prove the build list."""
         sums: dict[str, dict[tuple[str, str], dict[str, str]]] = {}
         for path, text in roots_for(self.manifests, ("go.sum",)):
             self.source_files.add(path)
+            if path in self.go_covered:
+                continue
             records = sums.setdefault(path, {})
             for number, line in enumerate(text.splitlines(), 1):
                 fields = line.split()
@@ -687,6 +764,8 @@ class Inventory:
         consumed = set()
         for path, text in roots_for(self.manifests, ("go.mod",)):
             self.source_files.add(path)
+            if path in self.go_covered:
+                continue
             sum_path = sibling(path, "go.sum")
             consumed.add(sum_path)
             records = sums.get(sum_path, {})
@@ -1115,7 +1194,7 @@ class Inventory:
         if self.mode == "off":
             return {"mode": "off", "packages": [], "references": [], "summary": {"count": 0, "complete": False}}
         for parse in (self.npm_locks, self.pnpm_locks, self.python_locks,
-                      self.other_locks, self.go_modules, self.nuget_locks):
+                      self.other_locks, self.go_imports, self.go_modules, self.nuget_locks):
             try:
                 parse()
             except (TypeError, AttributeError, KeyError, ValueError, RecursionError) as error:
@@ -1146,11 +1225,13 @@ class Inventory:
             self.warn("Unlocked registry-selected versions are approximate; no global backtracking resolver is used")
         counts = Counter(pkg.ecosystem for pkg in packages)
         return {"mode": self.mode,
+                'go_builds': self.go_provenance,
                 "packages": [pkg.as_dict() for pkg in packages],
                 "references": references,
                 "summary": {"count": len(packages), "ecosystems": dict(sorted(counts.items())),
                             "identified_repositories": len(references), "registry_requests": self.requests,
                             "go_unselected_checksums": self.go_unselected_checksums,
+                            'go_build_profiles': self.go_profiles,
                             "complete": not self.partial, "manifests": sorted(self.source_files),
                             "warnings": self.warnings}}
 
@@ -1158,8 +1239,8 @@ class Inventory:
 def analyze_dependencies(manifests: dict[str, str], *, mode: str = "lock",
                          max_packages: int = 2000, max_depth: int = 12,
                          max_requests: int = 300,
-                         explicit_packages: list[str] | None = None) -> dict:
+                         explicit_packages: list[str] | None = None, go_builds=None) -> dict:
     if mode not in {"off", "lock", "registry"}:
         raise ValueError("Invalid dependency analysis mode")
     return Inventory(manifests, mode=mode, max_packages=max_packages,
-                     max_depth=max_depth, max_requests=max_requests).analyze(explicit_packages)
+                     max_depth=max_depth, max_requests=max_requests, go_builds=go_builds).analyze(explicit_packages)

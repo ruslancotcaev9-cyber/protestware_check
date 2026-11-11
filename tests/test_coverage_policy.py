@@ -97,7 +97,7 @@ class PolicyTests(unittest.TestCase):
 
     def test_baseline_only_new_and_new_action_remains_blocking(self):
         report = self.report()
-        baseline = set(scan_policy.baseline(report)['fingerprints'])
+        baseline = scan_policy.parse_baseline(scan_policy.baseline(report))
         self.apply(report, baseline_values=baseline, only_new=True)
         self.assertEqual(report['gate']['exit_code'], 0)
         self.assertEqual(report['risk'], 'high')
@@ -109,7 +109,7 @@ class PolicyTests(unittest.TestCase):
     def test_incompleteness_is_not_hidden_by_a_baseline(self):
         report = self.report()
         report['scan']['complete'] = False
-        self.apply(report, baseline_values=set(scan_policy.baseline(report)['fingerprints']), only_new=True)
+        self.apply(report, baseline_values=scan_policy.parse_baseline(scan_policy.baseline(report)), only_new=True)
         self.assertEqual(report['gate']['exit_code'], 2)
 
     def test_suppression_is_retained_in_json_and_sarif(self):
@@ -127,7 +127,7 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(report['gate']['exit_code'], 1)
         self.assertTrue(any('Expired' in item for item in report['warnings']))
         self.apply(report, policy, today=date(2031, 1, 1),
-                   baseline_values=set(scan_policy.baseline(report)['fingerprints']), only_new=True)
+                   baseline_values=scan_policy.parse_baseline(scan_policy.baseline(report)), only_new=True)
         self.assertEqual(report['gate']['exit_code'], 1)
 
     def test_rule_override_keeps_original_severity(self):

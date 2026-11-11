@@ -3,6 +3,21 @@ on:
   push:
   pull_request:
 jobs:
+  go-export-import:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: stable
+          cache: false
+      - name: Import a real listing from our own benign Go fixture
+        run: python tests/go_export_integration.py
   malware-regression:
     runs-on: ubuntu-latest
     permissions:
@@ -41,11 +56,15 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Labeled static corpus and resource measurements
         run: python scripts/evaluate_corpus.py --measure --output corpus-metrics.json
+      - name: External evaluation without tuning detection rules
+        run: python scripts/evaluate_corpus.py --corpus tests/corpus/external.json --report-only --measure --output external-corpus-metrics.json
       - name: Save corpus metrics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: corpus-metrics
-          path: corpus-metrics.json
+          path: |
+            corpus-metrics.json
+            external-corpus-metrics.json
           if-no-files-found: error
           retention-days: 14

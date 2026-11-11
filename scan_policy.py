@@ -6,6 +6,7 @@ import re
 import tomllib
 
 import safe_io
+import analysis_context
 
 LEVELS = {'info': 0, 'low': 1, 'medium': 2, 'high': 3}
 FINGERPRINT = re.compile(r'[a-f0-9]{64}')
@@ -90,24 +91,44 @@ def fingerprint(finding):
     return sha256(json.dumps(identity, sort_keys=True, ensure_ascii=True, separators=(',', ':')).encode()).hexdigest()
 
 
-def load_baseline(path):
-    if path is None:
-        return None
-    doc = json.loads(safe_io.read_regular(path, 5_000_000))
-    if (not isinstance(doc, dict) or type(doc.get('schema')) is not int or doc['schema'] != 1 or
+class Baseline(set):
+    def __init__(self, fingerprints, context=None):
+        super().__init__(fingerprints)
+        self.context = context
+
+
+def parse_baseline(doc):
+    if (not isinstance(doc, dict) or type(doc.get('schema')) is not int or doc['schema'] not in (1, 2) or
             type(doc.get('fingerprint_version')) is not int or doc['fingerprint_version'] != 1):
         raise ValueError('Unsupported baseline schema/fingerprint version')
     values = doc.get('fingerprints')
     if not isinstance(values, list) or len(values) > 50000 or any(not isinstance(item, str) or not FINGERPRINT.fullmatch(item) for item in values):
         raise ValueError('Invalid baseline fingerprints')
-    return set(values)
+    context = doc.get('context') if doc['schema'] == 2 else None
+    if doc['schema'] == 2:
+        fields = {'source_digest', 'ruleset_digest', 'configuration_digest', 'dependencies_digest', 'policy_digest'}
+        if (not isinstance(context, dict) or set(context) != fields | {'schema', 'source_files'} or
+                type(context.get('schema')) is not int or context['schema'] != 1 or
+                type(context.get('source_files')) is not int or not 0 <= context['source_files'] <= 10_000_000 or
+                any(not isinstance(context.get(field), str) or not FINGERPRINT.fullmatch(context[field]) for field in fields)):
+            raise ValueError('Invalid baseline review context')
+    return Baseline(values, context)
+
+
+def load_baseline(path):
+    if path is None:
+        return None
+    return parse_baseline(json.loads(safe_io.read_regular(path, 5_000_000)))
 
 
 def baseline(report):
     values = sorted({fingerprint(item) for item in report['findings']})
     if len(values) > 50000:
         raise ValueError('Baseline finding limit exceeded')
-    return {'schema': 1, 'fingerprint_version': 1, 'tool_version': report['version'],
+    context = report.get('policy', {}).get('review_context') or analysis_context.effective(report, load(), 'high')
+    if context is None:
+        raise ValueError('Cannot export a baseline without analysis context')
+    return {'schema': 2, 'fingerprint_version': 1, 'tool_version': report['version'], 'context': context,
             'created_at_utc': datetime.now(timezone.utc).isoformat(), 'fingerprints': values}
 
 
@@ -116,6 +137,13 @@ def apply(report, policy, *, baseline_values=None, only_new=False, fail_on='high
     today = today or datetime.now(timezone.utc).date()
     if only_new and baseline_values is None:
         raise ValueError('--only-new requires an explicit baseline')
+    context = analysis_context.effective(report, policy, fail_on)
+    old_context = getattr(baseline_values, 'context', None)
+    if only_new and (old_context is None or context is None):
+        raise ValueError('Context-aware baseline schema 2 required; review and regenerate the legacy baseline')
+    differences = sorted(key for key in ('source_digest', 'ruleset_digest', 'configuration_digest',
+                                        'dependencies_digest', 'policy_digest')
+                         if baseline_values is not None and (old_context or {}).get(key) != (context or {}).get(key))
     notices = set()
     exceptions = {(item['rule'], item['fingerprint']): item for item in policy['suppressions']}
     active = []
@@ -124,9 +152,14 @@ def apply(report, policy, *, baseline_values=None, only_new=False, fail_on='high
         item.pop('policy_exception', None)
         item.pop('policy_override', None)
         item.pop('policy_review_required', None)
+        item.pop('baseline_context_changes', None)
         value = fingerprint(item)
         item['fingerprint'] = value
         item['baseline_state'] = 'unchanged' if baseline_values is not None and value in baseline_values else 'new'
+        if item['baseline_state'] == 'unchanged' and differences:
+            item['baseline_state'] = 'updated'
+            item['policy_review_required'] = True
+            item['baseline_context_changes'] = differences
         item['effective_severity'] = item['severity']
         item.setdefault('confidence', 'medium' if item.get('analysis') or item.get('advisory_ids') else 'low')
         item['policy_decision'] = 'active'
@@ -169,7 +202,9 @@ def apply(report, policy, *, baseline_values=None, only_new=False, fail_on='high
     exit_code = 2 if reasons else int(LEVELS.get(risk, 0) >= LEVELS[fail_on])
     report['policy'] = {'configuration_sha256': policy.get('sha256'), 'only_new': only_new,
                         'baseline_loaded': baseline_values is not None, 'counts': counts,
-                        'risk': risk, 'warnings': sorted(notices)}
+                        'risk': risk, 'warnings': sorted(notices), 'review_context': context,
+                        'baseline_context_match': None if baseline_values is None else not bool(differences),
+                        'baseline_context_changes': differences}
     report['gate'] = {'exit_code': exit_code, 'fail_on': fail_on, 'reasons': reasons,
                       'require_complete': require_complete}
     report['warnings'].extend(sorted(notices))

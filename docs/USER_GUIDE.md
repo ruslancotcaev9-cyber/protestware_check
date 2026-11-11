@@ -73,7 +73,7 @@ python protestware_check.py --path ../application \
 Для Go учитываются объявленные версии из `go.mod`, `// indirect` и `replace`.
 `go.sum` используется для контрольных сумм, включая различие между архивом и
 `/go.mod`; старые версии не выдаются за текущие требования. Полный выбранный граф
-сборки не вычисляется, поэтому Go-модуль с требованиями получает
+сборки внутри сканера не вычисляется, поэтому без доверенного импорта Go-модуль с требованиями получает
 `dependencies.summary.complete=false`. Подробнее — [ограничения Go](TECHNICAL_REFERENCE.md#особенности-go).
 
 ```bash
@@ -121,6 +121,12 @@ python protestware_check.py --path ../application \
 
 Новые параметры v1.2.0: `--profile`, `--coverage-max-samples`, `--policy`, `--baseline`,
 `--write-baseline`, `--only-new`, `--all-findings` — [покрытие, политика и CI](POLICY_AND_CI.md).
+
+В v1.3.0 добавлены `--project-id`, `--go-build-info` (повторяемый) и
+`--source-revision`. Baseline schema 2 возвращает известные находки на ревью при
+изменении выбранного кода, правил, настроек, зависимостей или политики.
+Schema 1 требует пересмотра перед использованием `--only-new`.
+[Миграция и импорт Go из доверенного CI](BASELINE_AND_GO_IMPORT.md).
 `--malware-max-pages`, `--malware-retries`, `--malware-time-budget`, `--advisory-cache`,
 `--advisory-cache-max-age`, `--advisory-offline` — [снимок и лимиты](MALWARE_INTELLIGENCE.md#снимок-пагинация-и-лимиты-v120).
 
@@ -151,6 +157,9 @@ python protestware_check.py --path ../application \
 | `--dependency-max-depth N` | Лимит рекурсии зависимостей; `12` |
 | `--dependency-max-requests N` | Лимит запросов к реестрам; `300` |
 | `--dependency-strict` | Код 2, если инвентаризация зависимостей неполна |
+| `--go-build-info PATH` | Доверенный экспорт выбранных Go-пакетов; повторяется для разных профилей, только local/lock |
+| `--source-revision SHA` | Ожидаемая ревизия источника для Go-экспорта, обязательна при импорте |
+| `--project-id ID` | Устойчивая идентичность проекта для контекста baseline |
 | `--malware-intel off\|osv\|github\|both` | Сверка точных версий по malware advisories; `off` |
 | `--malware-max-packages N` | Лимит уникальных координат пакетов для advisories; `100` |
 | `--malware-max-requests N` | Лимит запросов к advisory API; `120` |

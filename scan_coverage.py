@@ -16,6 +16,7 @@ class Coverage:
         self.languages = {}
         self.resolved_commit = None
         self.resolved_tree = None
+        self.raw_hashes = {}
 
     def record(self, path, status, *, directory=False, size=0):
         (self.directories if directory else self.files)[status] += 1

@@ -1,10 +1,12 @@
 """Rule-specific metrics on labeled inert source strings; never execute fixtures."""
 from collections import defaultdict
+from hashlib import sha256
 import json
 from pathlib import Path
 import statistics
 import time
 import tracemalloc
+import textwrap
 
 import protestware_check as scanner
 import safe_io
@@ -21,6 +23,13 @@ def load(path):
                 not isinstance(case.get('allow_domains', []), list) or any(not isinstance(x, str) for x in case.get('allow_domains', []))):
             raise ValueError('Invalid or duplicate corpus case')
         seen.add(case['id'])
+        provenance = case.get('provenance')
+        if provenance is not None:
+            if (not isinstance(provenance, dict) or not isinstance(provenance.get('fragment'), str) or
+                    any(not isinstance(provenance.get(key), str) for key in ('prefix', 'suffix', 'fragment_sha256')) or
+                    sha256(provenance['fragment'].encode()).hexdigest() != provenance['fragment_sha256'] or
+                    provenance['prefix'] + textwrap.dedent(provenance['fragment'].replace('\r\n', '\n')) + provenance['suffix'] != case['code']):
+                raise ValueError('Corpus fragment provenance/content mismatch')
     return data['cases']
 
 
@@ -68,5 +77,5 @@ def evaluate(cases, *, measure=False, scan=None):
                             'peak_traced_python_bytes': peak}, 'results': details}
 
 
-def status(report):
-    return 2 if report['overall']['errors'] else int(bool(report['overall']['fp'] or report['overall']['fn']))
+def status(report, *, report_only=False):
+    return 2 if report['overall']['errors'] else int(not report_only and bool(report['overall']['fp'] or report['overall']['fn']))

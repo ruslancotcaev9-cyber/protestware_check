@@ -7,6 +7,9 @@ import argparse
 import ast
 import safe_io
 import scan_policy
+import analysis_context
+import go_build_info
+from hashlib import sha256
 from advisory_cache import AdvisoryCache
 
 import ast_analysis
@@ -32,7 +35,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -205,6 +208,7 @@ def iter_local(root: Path, max_bytes: int, exclude: list[str], warnings: list[st
                 continue
             if coverage is not None:
                 coverage.record(relative, "scanned", size=len(content))
+                coverage.raw_hashes[relative] = sha256(content).hexdigest()
             yield relative, content.decode("utf-8-sig", errors="replace")
 
 
@@ -306,7 +310,7 @@ def python_code_only_lines(content: str) -> list[str]:
 
 def scan_text(path: str, content: str, political_terms: list[str], allowed_domains: list[str],
               ast_mode: str = "auto", ast_warnings: list[str] | None = None,
-              ast_stats: dict[str, int] | None = None) -> list[dict[str, Any]]:
+              ast_stats: dict[str, int] | None = None, context=None) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
     lines = content.splitlines()
     suffix = Path(path).suffix.lower()
@@ -374,6 +378,8 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
         except (SyntaxError, ValueError, MemoryError):
             pass
     ast_findings = ast_analysis.scan_python(path, content, allowed_domains, tree=python_tree) if python_tree is not None else None
+    if context is not None:
+        context.add(path, content, python_tree)
     if suffix == '.py' and ast_mode == 'off' and ast_stats is not None:
         ast_stats['disabled'] = ast_stats.get('disabled', 0) + 1
     if suffix == ".py" and ast_findings is None and ast_mode != "off":
@@ -467,7 +473,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
                  max_files: int = 10000, max_total_bytes: int = 100_000_000,
                  coverage: Coverage | None = None, advisory_snapshot=None,
                  malware_max_pages: int = 10, malware_retries: int = 1,
-                 malware_time_budget: float = 120) -> dict[str, Any]:
+                 malware_time_budget: float = 120, go_builds=None, analysis_settings=None) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     scanned = 0
     total_bytes = 0
@@ -476,6 +482,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
     manifests: dict[str, str] = {}
     references: list[tuple[str, str, int, str]] = []
     coverage = coverage if coverage is not None else Coverage()
+    context = analysis_context.Collector()
     if repository and watchlists is not None:
         references.append((repository.casefold(), "(repository)", 0, repository))
     for name in package_repos or []:
@@ -492,7 +499,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
         try:
             previous_stats = ast_stats.copy()
             results.extend(scan_text(path, content, political_terms, allowed_domains,
-                                     ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats))
+                                     ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats, context=context))
         except RecursionError as error:
             raise ScanError(f"Analysis nesting limit exceeded: {path}") from error
         status = next((key for key in ("partial", "degraded", "parsed", "disabled")
@@ -506,10 +513,16 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
             references.extend((repo, path, line, evidence)
                               for repo, line, evidence in threat_intel.scan_manifests(path, content))
     ingestion_complete = not warnings
+    for build in go_builds or []:
+        for path, checksum in coverage.raw_hashes.items():
+            relevant = any(go_build_info.within(path, root) for root in build['module_roots']) and (
+                Path(path).suffix.lower() in go_build_info.NATIVE or Path(path).name in go_build_info.METADATA)
+            if (path in build['inputs'] and build['inputs'][path] != checksum) or (relevant and path not in build['inputs']):
+                raise ScanError('Go build-info no longer matches the inputs observed during analysis')
     dependencies = dependency_analysis.analyze_dependencies(
         manifests, mode=dependency_mode, max_packages=dependency_max_packages,
         max_depth=dependency_max_depth, max_requests=dependency_max_requests,
-        explicit_packages=explicit_packages)
+        explicit_packages=explicit_packages, go_builds=go_builds)
     if not ingestion_complete:
         dependencies["summary"]["complete"] = False
         dependencies["summary"].setdefault("warnings", []).append("Source files were skipped or unreadable; dependency coverage is unknown")
@@ -544,13 +557,25 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
     technical = [f for f in results if f["severity"] != "info"]
     risk = max((technical_item["severity"] for technical_item in technical),
                key=lambda s: SEVERITIES[s], default="none")
+    settings = {'ast_mode': ast_mode, 'profile': coverage.profile, 'allowed_domains': sorted(allowed_domains),
+                'political_terms': sorted(political_terms), 'dependency_mode': dependency_mode,
+                'dependency_limits': [dependency_max_packages, dependency_max_depth, dependency_max_requests],
+                'explicit_packages': sorted(explicit_packages or []), 'package_repos': sorted(package_repos or []),
+                'repository': repository, 'malware_mode': malware_mode,
+                'malware_limits': [malware_max_packages, malware_max_requests, malware_max_pages, malware_retries, malware_time_budget],
+                'source_limits': [max_files, max_total_bytes],
+                'watchlists': {key: value for key, value in (watchlists or {}).items() if key != 'metadata'},
+                'extra': analysis_settings or {}}
+    review_context = context.finish(settings, dependencies, polyglot=ast_mode != 'off' and any(
+        extension in polyglot_ast.SUPPORTED for extension in coverage.languages))
     return {"tool": "protestware-check", "version": VERSION, "source": source, "files_scanned": scanned,
+            'analysis_context': review_context,
             "scan": {"complete": ingestion_complete}, "coverage": coverage.as_dict(),
             "risk": risk, "code_risk": code_risk, "summary": levels, "findings": results,
             "watchlists": watchlists["metadata"] if watchlists else {"mode": "off"},
             "malware_intel": advisory_check["metadata"],
             "dependencies": {"summary": dependencies["summary"], "packages": dependencies["packages"],
-                             "mode": dependencies["mode"]},
+                             "mode": dependencies["mode"], 'go_builds': dependencies.get('go_builds', [])},
             "warnings": warnings, "ast": {"mode": ast_mode, **ast_stats,
                                          "complete": ast_stats["degraded"] == 0 and ast_stats["partial"] == 0 and
                                                      ast_stats["parsed"] > 0 and ast_mode != "off"}}
@@ -606,7 +631,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write-baseline", type=Path, help="Export finding fingerprints to a separate JSON file")
     comparison = parser.add_mutually_exclusive_group()
     comparison.add_argument("--only-new", action="store_true", default=None,
-                            help="Apply the risk threshold to findings absent from the explicit baseline")
+                            help="Apply the risk threshold to new findings and known findings whose review context changed")
     comparison.add_argument("--all-findings", dest="only_new", action="store_false")
     parser.add_argument("--allow-domain", action="append", default=[], help="Trusted domain and subdomains; repeatable")
     parser.add_argument("--exclude", action="append", default=[], help="Additional file/directory glob; repeatable")
@@ -629,6 +654,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dependency-max-requests", type=int, default=300)
     parser.add_argument("--dependency-strict", action="store_true",
                         help="Exit 2 when dependency analysis is incomplete")
+    parser.add_argument('--go-build-info', action='append', type=Path, default=[], help='Explicit trusted Go build-info export; repeat for separate profiles')
+    parser.add_argument('--source-revision', help='Expected source revision for imported Go exports')
+    parser.add_argument('--project-id', help='Stable project identity to bind reviewed baselines across CI workspaces')
     parser.add_argument("--malware-intel", choices=("off", "osv", "github", "both"), default="off",
                         help="Opt-in version-specific malware advisories (OSV/OpenSSF and GitHub)")
     parser.add_argument("--malware-max-packages", type=int, default=100,
@@ -672,6 +700,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--package requires --dependencies lock or registry")
     if args.dependency_strict and args.dependencies == "off":
         parser.error("--dependency-strict requires dependency analysis")
+    if args.go_build_info and (args.repo or args.dependencies != 'lock' or not args.source_revision or not go_build_info.REVISION.fullmatch(args.source_revision)):
+        parser.error('--go-build-info requires local input, lock mode and an exact --source-revision')
+    if args.project_id and (len(args.project_id) > 256 or any(ord(ch) < 32 for ch in args.project_id)):
+        parser.error('Invalid --project-id')
     if args.malware_max_packages < 1 or args.malware_max_requests < 1:
         parser.error("malware-intel limits must be positive")
     if args.malware_intel != "off" and args.dependencies == "off":
@@ -686,7 +718,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error('--advisory-offline requires --advisory-cache, local input, lock dependencies and no live watchlists')
     if args.advisory_cache and not args.advisory_offline and not args.repo and args.advisory_cache.resolve().is_relative_to(args.path.resolve()):
         parser.error('Writable advisory cache must be outside the scanned source')
-    inputs = [path.resolve() for path in (args.policy, args.baseline, args.advisory_cache) if path is not None]
+    inputs = [path.resolve() for path in (args.policy, args.baseline, args.advisory_cache, *args.go_build_info) if path is not None]
     outputs = [path.resolve() for path in (args.output, args.write_baseline) if path is not None]
     if any(path in inputs for path in outputs):
         parser.error('Outputs must differ from policy, baseline and snapshot inputs')
@@ -695,6 +727,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--allow-domain expects a DNS domain, e.g. api.example.org")
     phrases = [s.casefold() for s in POLITICAL_TERMS]
     try:
+        go_builds = [go_build_info.load(path, args.path, args.source_revision, max_files=args.max_files,
+                                        max_bytes=args.max_bytes, max_total_bytes=args.max_total_bytes) for path in args.go_build_info]
         snapshot = AdvisoryCache(args.advisory_cache, mode='offline' if args.advisory_offline else 'readwrite',
                                  max_age=args.advisory_cache_max_age) if args.advisory_cache else None
         if args.political_terms_file:
@@ -726,7 +760,9 @@ def main(argv: list[str] | None = None) -> int:
                               malware_max_requests=args.malware_max_requests,
                               max_files=args.max_files, max_total_bytes=args.max_total_bytes, coverage=coverage,
                               advisory_snapshot=snapshot, malware_max_pages=args.malware_max_pages,
-                              malware_retries=args.malware_retries, malware_time_budget=args.malware_time_budget)
+                              malware_retries=args.malware_retries, malware_time_budget=args.malware_time_budget,
+                              go_builds=go_builds, analysis_settings={'project_id': args.project_id,
+                                  'exclude': sorted(args.exclude), 'max_bytes': args.max_bytes})
         if snapshot is not None:
             snapshot.save()
         scan_policy.apply(report, policy, baseline_values=baseline_values, only_new=args.only_new,

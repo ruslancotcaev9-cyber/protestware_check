@@ -23,7 +23,7 @@ MANIFEST_NAMES = {
     "uv.lock", "pipfile", "pipfile.lock", "requirements.txt", "setup.cfg", "setup.py",
     "cargo.toml", "cargo.lock", "go.mod", "gemfile", "gemfile.lock", ".gitmodules",
     "deno.json", "deno.lock", "mix.exs", "mix.lock", "gopkg.toml", "gopkg.lock",
-    "go.sum", "pylock.toml", "requirements-resolver.txt",
+    "go.sum", "go.work", "go.work.sum", "pylock.toml", "requirements-resolver.txt",
     "packages.lock.json", "directory.packages.props",
 }
 REQUIREMENTS_NAME = re.compile(r"(?:requirements[-_\w]*\.(?:txt|in)|.*\.requirements\.txt)", re.I)

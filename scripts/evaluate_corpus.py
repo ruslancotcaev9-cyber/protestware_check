@@ -1,5 +1,6 @@
 """Evaluate labeled source strings without importing or running them."""
 import argparse
+from hashlib import sha256
 import json
 from pathlib import Path
 import sys
@@ -14,11 +15,14 @@ def main():
     parser.add_argument('--corpus', type=Path, default=Path(__file__).resolve().parents[1] / 'tests/corpus/cases.json')
     parser.add_argument('--output', type=Path)
     parser.add_argument('--measure', action='store_true')
+    parser.add_argument('--report-only', action='store_true', help='Record FP/FN without failing the gate; analysis errors still fail')
     args = parser.parse_args()
     try:
         if args.output and args.output.resolve() == args.corpus.resolve():
             raise ValueError('Corpus input and output must differ')
         report = corpus_evaluation.evaluate(corpus_evaluation.load(args.corpus), measure=args.measure)
+        report['evaluation_mode'] = 'report-only' if args.report_only else 'regression-gate'
+        report['corpus_sha256'] = sha256(safe_io.read_regular(args.corpus, 2_000_000)).hexdigest()
         text = json.dumps(report, indent=2) + '\n'
         if args.output:
             safe_io.atomic_write(args.output, text)
@@ -26,7 +30,7 @@ def main():
         for result in report['results']:
             if result['outcome'] in {'errors', 'fp', 'fn'}:
                 print('CORPUS_CASE=' + json.dumps(result))
-        return corpus_evaluation.status(report)
+        return corpus_evaluation.status(report, report_only=args.report_only)
     except (ValueError, OSError, UnicodeError, RecursionError) as error:
         print(f'Corpus evaluation failed: {error}', file=sys.stderr)
         return 2

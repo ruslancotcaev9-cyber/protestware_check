@@ -4,6 +4,22 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — unreleased (2026-11-11)
+
+- Export baseline schema 2 with selected source, rules/backend, configuration,
+  dependency graph and policy digests. Reopen known findings when this conservative
+  project context changes, including added calls with identical evidence. Preserve
+  fingerprint v1 and Python comment/line-shift stability. Reject legacy baseline
+  filtering until reviewed migration; keep incomplete-analysis gate priority.
+- Import explicit trusted Go listing JSON for production build profiles without
+  invoking Go. Validate revisions, bounded local inputs/digests, embed scope, paths
+  and package closure; retain selected used modules, replacements, relationships
+  and build provenance. Add a data-only exporter and real Go CI round-trip.
+- Add 12 attributed external source fragments from six projects, pinned revisions
+  and licenses. Keep evaluation FP/FN visible separately from strict regression
+  metrics; parser errors still fail CI. No production accuracy claim is made.
+- Document migration, trusted producer responsibilities and unsupported Go profiles.
+
 ## [1.2.0] — unreleased (2026-11-11)
 
 - Add source/artifact selection profiles and bounded file/directory coverage
