@@ -105,6 +105,7 @@ class TreeAnalyzer:
         self.invocations = 0
         self.diagnostics: set[str] = set()
         self.go_deletions = set()
+        self.js_deletions = set()
 
     def raw(self, node) -> str:
         return self.bytes[node.start_byte:node.end_byte].decode('utf-8', 'replace')
@@ -258,8 +259,10 @@ class TreeAnalyzer:
                    '.cs': r'(?:System\s*\.\s*IO\s*\.\s*)?(?:File|Directory)\s*\.\s*Delete'}
         pattern = deletes.get(ext)
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
-            pattern = r'(?:fs\s*\.\s*(?:rm|rmSync|unlink|unlinkSync|rmdir|rmdirSync)|Deno\s*\.\s*remove)'
+            pattern = r'Deno\s*\.\s*remove'
         deletion = node.start_byte in self.go_deletions if ext == '.go' else bool(pattern and re.match(r'^(?:' + pattern + r')\s*\(', visible))
+        if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
+            deletion = deletion or node.start_byte in self.js_deletions
         if branch and deletion:
             flow = Flow(sources=(('geographic-condition', int(branch)),),
                         trace=(('condition', int(branch), 'RU/BY geographic branch'),))
@@ -434,6 +437,17 @@ def scan_tree(path, content, allow):
                 if len(analyzer.findings) > previous:
                     analyzer.findings[-1]['resolved_symbol'] = symbol
         analyzer.index_functions(tree.root_node)
+        if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
+            from js_bindings import resolve
+            deletions, diagnostics = resolve(content, tree.root_node)
+            analyzer.diagnostics.update(diagnostics)
+            analyzer.js_deletions = set(deletions)
+            for node, symbols, possible in deletions.values():
+                previous = len(analyzer.findings)
+                analyzer.emit('FS_DELETE', 'filesystem', 'medium', node,
+                              'Node AST: filesystem deletion via ' + ', '.join(symbols) + '; review path and purpose')
+                if len(analyzer.findings) > previous:
+                    analyzer.findings[-1].update(resolved_symbol=symbols[0], binding_certainty='possible' if possible else 'resolved')
         analyzer.walk(tree.root_node, {})
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             from js_behavior import scan_js_behavior
