@@ -16,8 +16,8 @@ class ExternalCorpusTests(unittest.TestCase):
         self.assertEqual(len(cases), 24)
         self.assertEqual(len({c['language'] for c in cases}), 6)
         self.assertEqual(sum(c['positive'] for c in cases), 12)
-        self.assertEqual(sum(c['provenance']['whole_file'] for c in cases), 8)
-        self.assertEqual(len({c['provenance']['group'] for c in cases}), 14)
+        self.assertEqual(sum(c['provenance']['whole_file'] for c in cases), 10)
+        self.assertEqual(len({c['provenance']['group'] for c in cases}), 16)
         for case in cases:
             p = case['provenance']
             self.assertIsNotNone(re.fullmatch('[a-f0-9]{40}', p['revision']))
@@ -26,6 +26,10 @@ class ExternalCorpusTests(unittest.TestCase):
             license_path = ROOT / p['license_path']
             self.assertTrue(license_path.resolve().is_relative_to(ROOT / 'tests/corpus/licenses'))
             self.assertEqual(sha256(license_path.read_bytes()).hexdigest(), p['license_sha256'])
+            if p.get('binding_context'):
+                context = p['binding_context']
+                self.assertEqual(sha256(context['text'].encode()).hexdigest(), context['sha256'])
+                self.assertIn(context['text'].replace('\r\n', '\n').strip(), case['code'])
 
     def test_report_only_does_not_hide_analysis_errors(self):
         for errors, expected in ((0, 0), (1, 2)):
@@ -41,7 +45,7 @@ class ExternalCorpusTests(unittest.TestCase):
     def test_promoted_v1_has_no_shared_source_files_with_fresh_evaluation(self):
         old = corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
         fresh = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
-        self.assertEqual(len(old), 14)
+        self.assertEqual(len(old), 22)
         key = lambda c: (c['provenance']['repository'], c['provenance']['path'])
         self.assertTrue(set(map(key, old)).isdisjoint(set(map(key, fresh))))
         self.assertTrue({c['id'] for c in old}.isdisjoint({c['id'] for c in fresh}))
