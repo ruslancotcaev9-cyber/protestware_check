@@ -383,10 +383,23 @@ class Worker(Resolver):
                         key = child.child_by_field_name('key')
                         label = string(self.raw(key)) if key.type == 'string' else self.name(key)
                         if key.type not in {'property_identifier', 'identifier', 'string', 'number'}:
+                            self.project.invalid_objects.add(identifier)
+                            self.unit.diagnostics.add('JS object spread/computed member identity is unresolved')
                             continue
                         fields[label] = self.value(child.child_by_field_name('value'), state, depth + 1)
                     elif child.type == 'shorthand_property_identifier':
                         fields[self.name(child)] = self.lookup(self.name(child), state)
+                    elif child.type == 'method_definition':
+                        key = child.child_by_field_name('name')
+                        if key is not None and key.type in {'property_identifier', 'identifier', 'string'}:
+                            label = string(self.raw(key)) if key.type == 'string' else self.name(key)
+                            fields[label] = UNKNOWN if re.match(r'\s*(?:get|set)\s', self.raw(child)) else self.value(child, state, depth + 1)
+                        else:
+                            self.project.invalid_objects.add(identifier)
+                            self.unit.diagnostics.add('JS object spread/computed member identity is unresolved')
+                    elif child.type == 'spread_element':
+                        self.project.invalid_objects.add(identifier)
+                        self.unit.diagnostics.add('JS object spread/computed member identity is unresolved')
                 self.project.objects[identifier] = fields
             return frozenset({identifier})
         if node.type == 'call_expression':
@@ -559,16 +572,19 @@ class Worker(Resolver):
             if (operator == '&&' and value == frozenset({'bool:false'})) or (operator == '||' and value == frozenset({'bool:true'})):
                 self.walk(left, state, depth + 1)
                 return
-        if kind == 'assignment_expression':
-            left, right = node.child_by_field_name('left'), node.child_by_field_name('right')
-            if left.type in {'member_expression', 'subscript_expression'}:
-                self.walk(right, state, depth + 1)
+        if kind in {'assignment_expression', 'augmented_assignment_expression', 'update_expression'} or (
+                kind == 'unary_expression' and self.raw(node.child_by_field_name('operator')) == 'delete'):
+            left = node.child_by_field_name('left') or node.child_by_field_name('argument')
+            right = node.child_by_field_name('right')
+            if left is not None and left.type in {'member_expression', 'subscript_expression'}:
+                if right is not None:
+                    self.walk(right, state, depth + 1)
                 obj = self.value(left.child_by_field_name('object'), state)
                 key = self.name(left.child_by_field_name('property')) if left.type == 'member_expression' else string(self.raw(left.child_by_field_name('index')))
                 for target in obj:
                     if target in self.project.objects:
                         if self.owner is None and node.parent.type == 'expression_statement' and node.parent.parent.type == 'program' and key:
-                            values = self.value(right, state)
+                            values = self.value(right, state) if kind == 'assignment_expression' else UNKNOWN
                             if target == self.unit.module_object or target == self.project.ref('object', self.unit.path, 'exports'):
                                 values = self.project.alias(values, (step(self.unit.path, node, 'export', key),))
                             self.project.objects[target][key] = values

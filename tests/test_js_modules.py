@@ -115,6 +115,10 @@ class JavaScriptProjectTests(unittest.TestCase):
                     "const disk=require('fs'); disk.rmSync=()=>{}; exports.erase=disk.rmSync"):
             project = self.project(api, "const disk=require('./api'); disk.erase(path)", ext='cjs')
             self.assertFalse(self.calls(project, 'main.cjs'))
+        for change in ('delete disk.erase', 'disk.erase++', 'disk.erase+=safe'):
+            project = self.project("const disk={erase:require('fs').rmSync}; " + change + '; module.exports=disk',
+                                   "require('./api').erase(path)", ext='cjs')
+            self.assertFalse(self.calls(project, 'main.cjs'), change)
 
     def test_unknown_third_party_and_factories_are_not_whitelisted(self):
         for api in ("export {rmSync as erase} from 'graceful-fs'", "import {rmSync} from 'fs'; const factory=()=>rmSync; export const erase=factory()"):
@@ -131,6 +135,16 @@ class JavaScriptProjectTests(unittest.TestCase):
                                "import {erase} from './api.js'; erase(path)")
         self.assertFalse(self.calls(project))
         self.assertTrue(project.diagnostics('main.ts'))
+
+    def test_object_spread_computed_and_duplicate_members_cannot_preserve_a_replaced_api(self):
+        for members in ('erase:rmSync,...safe', 'erase:rmSync,[name]:safe', 'erase:rmSync,erase(){}',
+                        'erase:rmSync,get erase(){return safe}'):
+            project = self.project("import {rmSync} from 'fs'; export const disk={" + members + '}',
+                                   "import {disk} from './api.js'; disk.erase(path)")
+            self.assertFalse(self.calls(project), members)
+        project = self.project("import {rmSync} from 'fs'; export const disk={erase(p){rmSync(p)}}",
+                               "import {disk} from './api.js'; disk.erase(path)")
+        self.assertTrue(self.calls(project))
 
     def test_only_selected_source_text_is_read_and_target_code_is_never_executed(self):
         with patch('builtins.open', side_effect=AssertionError('No target reads')), \
