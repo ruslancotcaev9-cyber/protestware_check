@@ -25,7 +25,10 @@ not evidence of a published release.
       optional live malware-advisory smoke test when applicable.
 - [ ] Verify the real Go export/import job. Review all three corpus artifacts:
       strict regression FP/FN block the gate; external evaluation records FP/FN
-      without blocking, while parser errors still block. Review known misses.
+      without blocking, while fatal/degraded evaluation errors still block.
+      Inspect auto-mode partial/syntax-recovery diagnostics separately. Review
+      known misses and the candidate-label ledger; do not call pending labels
+      independently verified. See docs/CORPUS_REVIEW_GUIDE.md.
 - [ ] Check baseline schema 2 migration and Go producer trust/profile limits;
       confirm that examples pin an existing reviewed scanner commit.
 - [ ] Validate JSON schemas and frozen compatibility fixtures with

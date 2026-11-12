@@ -76,7 +76,7 @@ def evaluate(cases, *, measure=False, scan=None):
             group = groups[(case['language'], case['rule'])]
             stats, warnings = {}, []
             mode = case.get('ast_mode', 'required')
-            repository = case.get('provenance', {}).get('repository')
+            repository = (case.get('provenance') or {}).get('repository')
             cohort = case.get('cohort', 'unspecified')
             scope = case.get('operation_scope', 'unspecified')
             try:
@@ -115,7 +115,7 @@ def evaluate(cases, *, measure=False, scan=None):
                         for c in cases if c.get('provenance')}
     return {'schema': 1, 'tool_version': scanner.VERSION, 'cases': len(cases),
             'source_groups': len(groups_of_source),
-            'whole_file_cases': sum(bool(c.get('provenance', {}).get('whole_file')) for c in cases),
+            'whole_file_cases': sum(bool((c.get('provenance') or {}).get('whole_file')) for c in cases),
             'repositories': len(repositories),
             'metrics_valid': not bool(total['errors']), 'overall': _metrics(total),
             'by_language_and_rule': [{'language': key[0], 'rule': key[1], **_metrics(value)} for key, value in sorted(groups.items())],

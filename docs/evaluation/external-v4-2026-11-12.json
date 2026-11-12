@@ -1,0 +1,1583 @@
+{
+  "schema": 1,
+  "tool_version": "1.4.0",
+  "cases": 72,
+  "source_groups": 64,
+  "whole_file_cases": 58,
+  "repositories": 15,
+  "metrics_valid": true,
+  "overall": {
+    "tp": 30,
+    "fp": 0,
+    "tn": 36,
+    "fn": 6,
+    "errors": 0,
+    "precision": 1.0,
+    "recall": 0.8333333333333334,
+    "false_positive_rate": 0.0
+  },
+  "by_language_and_rule": [
+    {
+      "language": "C#",
+      "rule": "CS_FS_DELETE",
+      "tp": 6,
+      "fp": 0,
+      "tn": 6,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Go",
+      "rule": "GO_FS_DELETE",
+      "tp": 6,
+      "fp": 0,
+      "tn": 6,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "JavaScript",
+      "rule": "FS_DELETE",
+      "tp": 4,
+      "fp": 0,
+      "tn": 6,
+      "fn": 2,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.6666666666666666,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Python",
+      "rule": "FS_DELETE",
+      "tp": 6,
+      "fp": 0,
+      "tn": 6,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "SQL",
+      "rule": "SQL_DESTRUCTIVE",
+      "tp": 6,
+      "fp": 0,
+      "tn": 6,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "TypeScript",
+      "rule": "FS_DELETE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 6,
+      "fn": 4,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_repository": [
+    {
+      "repository": "cli/cli",
+      "tp": 3,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "repository": "dotnet/aspnetcore",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "dotnet/runtime",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "golang/go",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "isaacs/rimraf",
+      "tp": 0,
+      "fp": 0,
+      "tn": 4,
+      "fn": 4,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "jprichardson/node-fs-extra",
+      "tp": 2,
+      "fp": 0,
+      "tn": 4,
+      "fn": 2,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "microsoft/TypeScript",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "microsoft/vscode",
+      "tp": 2,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "nodejs/node",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "pallets/click",
+      "tp": 1,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "postgres/postgres",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "pypa/pip",
+      "tp": 3,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "repository": "python/cpython",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "spf13/afero",
+      "tp": 1,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "sqlfluff/sqlfluff",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_cohort": [
+    {
+      "cohort": "new-v4",
+      "tp": 18,
+      "fp": 0,
+      "tn": 24,
+      "fn": 6,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.75,
+      "false_positive_rate": 0.0
+    },
+    {
+      "cohort": "retained-v3",
+      "tp": 12,
+      "fp": 0,
+      "tn": 12,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_operation_scope": [
+    {
+      "scope": "legacy-not-classified",
+      "tp": 12,
+      "fp": 0,
+      "tn": 12,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "local-wrapper",
+      "tp": 1,
+      "fp": 0,
+      "tn": 0,
+      "fn": 5,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.16666666666666666,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "native-call",
+      "tp": 16,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "no-target-operation",
+      "tp": 0,
+      "fp": 0,
+      "tn": 24,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "third-party-wrapper",
+      "tp": 1,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "false_positive_rate": null
+    }
+  ],
+  "by_ast_mode": [
+    {
+      "mode": "auto",
+      "tp": 18,
+      "fp": 0,
+      "tn": 24,
+      "fn": 6,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.75,
+      "false_positive_rate": 0.0
+    },
+    {
+      "mode": "required",
+      "tp": 12,
+      "fp": 0,
+      "tn": 12,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_status": [
+    {
+      "status": "parsed",
+      "tp": 26,
+      "fp": 0,
+      "tn": 32,
+      "fn": 6,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.8125,
+      "false_positive_rate": 0.0
+    },
+    {
+      "status": "partial",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "analysis": {
+    "by_status": {
+      "parsed": 64,
+      "partial": 8
+    },
+    "complete": false,
+    "successful_fraction": 1.0,
+    "partial_cases": 8
+  },
+  "performance": {
+    "measured": true,
+    "elapsed_seconds": 3.115007618000007,
+    "median_case_seconds": 0.021213821499998176,
+    "peak_traced_python_bytes": 2795138
+  },
+  "results": [
+    {
+      "id": "golang-go-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "golang/go",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "golang-go-v2-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "golang/go",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "golang-go-v2-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "golang/go",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "golang-go-v2-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "golang/go",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "dotnet-runtime-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "dotnet/runtime",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "dotnet-runtime-v2-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "dotnet/runtime",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "dotnet-runtime-v2-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "dotnet/runtime",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "dotnet-runtime-v2-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "dotnet/runtime",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "postgres/postgres",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "postgres/postgres",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-cpython-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "python/cpython",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-cpython-v2-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "python/cpython",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-cpython-v2-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "python/cpython",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-cpython-v2-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "python/cpython",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-5",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "postgres/postgres",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-6",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "postgres/postgres",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v3-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "nodejs/node",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v3-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "nodejs/node",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v3-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nodejs/node",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v3-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nodejs/node",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-vscode-v3-5",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "microsoft/vscode",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-vscode-v3-6",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "microsoft/vscode",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-vscode-v3-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "microsoft/vscode",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-TypeScript-v3-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "microsoft/TypeScript",
+      "cohort": "retained-v3",
+      "operation_scope": "legacy-not-classified",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "afero-whole-v4-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "spf13/afero",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "cli-whole-v4-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "cli/cli",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "cli-whole-v4-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "cli/cli",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "cli-whole-v4-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "cli/cli",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "afero-whole-v4-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "spf13/afero",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "afero-whole-v4-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "spf13/afero",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "afero-whole-v4-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "spf13/afero",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "afero-whole-v4-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "spf13/afero",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic afero-whole-v4-5.go: AST partial analysis: afero-whole-v4-5.go: Tree-sitter taint recursive call reached"
+        ]
+      }
+    },
+    {
+      "id": "aspnetcore-whole-v4-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "dotnet/aspnetcore",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic aspnetcore-whole-v4-1.cs: AST partial analysis: aspnetcore-whole-v4-1.cs: Tree-sitter taint recursive call reached"
+        ]
+      }
+    },
+    {
+      "id": "aspnetcore-whole-v4-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "dotnet/aspnetcore",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "aspnetcore-whole-v4-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "dotnet/aspnetcore",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "aspnetcore-whole-v4-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "dotnet/aspnetcore",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic aspnetcore-whole-v4-4.cs: AST partial analysis: aspnetcore-whole-v4-4.cs: Tree-sitter taint recursive call reached; syntax recovery"
+        ]
+      }
+    },
+    {
+      "id": "aspnetcore-whole-v4-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "dotnet/aspnetcore",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "aspnetcore-whole-v4-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "dotnet/aspnetcore",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "aspnetcore-whole-v4-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "dotnet/aspnetcore",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "aspnetcore-whole-v4-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "dotnet/aspnetcore",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "fs-extra-whole-v4-1",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "new-v4",
+      "operation_scope": "third-party-wrapper",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "fs-extra-whole-v4-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "text-heuristic"
+      ],
+      "expected_positive": true,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "new-v4",
+      "operation_scope": "local-wrapper",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic fs-extra-whole-v4-2.js: AST partial analysis: fs-extra-whole-v4-2.js: Tree-sitter taint recursive call reached"
+        ]
+      }
+    },
+    {
+      "id": "fs-extra-whole-v4-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "text-heuristic"
+      ],
+      "expected_positive": true,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "new-v4",
+      "operation_scope": "third-party-wrapper",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic fs-extra-whole-v4-3.js: AST partial analysis: fs-extra-whole-v4-3.js: Tree-sitter taint call depth limit reached; Tree-sitter taint invocation budget reached; Tree-sitter taint recursive call reached"
+        ]
+      }
+    },
+    {
+      "id": "fs-extra-whole-v4-4",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "new-v4",
+      "operation_scope": "local-wrapper",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "fs-extra-whole-v4-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "fs-extra-whole-v4-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "fs-extra-whole-v4-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "fs-extra-whole-v4-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rimraf-whole-v4-1",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "new-v4",
+      "operation_scope": "local-wrapper",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rimraf-whole-v4-2",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "new-v4",
+      "operation_scope": "local-wrapper",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rimraf-whole-v4-3",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "new-v4",
+      "operation_scope": "local-wrapper",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rimraf-whole-v4-4",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "new-v4",
+      "operation_scope": "local-wrapper",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rimraf-whole-v4-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rimraf-whole-v4-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rimraf-whole-v4-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rimraf-whole-v4-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sqlfluff-whole-v4-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "sqlfluff/sqlfluff",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sqlfluff-whole-v4-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "sqlfluff/sqlfluff",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sqlfluff-whole-v4-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "sqlfluff/sqlfluff",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sqlfluff-whole-v4-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "sqlfluff/sqlfluff",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sqlfluff-whole-v4-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "sqlfluff/sqlfluff",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sqlfluff-whole-v4-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "sqlfluff/sqlfluff",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic sqlfluff-whole-v4-6.sql: AST partial syntax recovery: sqlfluff-whole-v4-6.sql"
+        ]
+      }
+    },
+    {
+      "id": "sqlfluff-whole-v4-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "sqlfluff/sqlfluff",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic sqlfluff-whole-v4-7.sql: AST partial syntax recovery: sqlfluff-whole-v4-7.sql"
+        ]
+      }
+    },
+    {
+      "id": "sqlfluff-whole-v4-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "sqlfluff/sqlfluff",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic sqlfluff-whole-v4-8.sql: AST partial syntax recovery: sqlfluff-whole-v4-8.sql"
+        ]
+      }
+    },
+    {
+      "id": "click-whole-v4-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "pallets/click",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pip-whole-v4-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "pypa/pip",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pip-whole-v4-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "pypa/pip",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pip-whole-v4-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "pypa/pip",
+      "cohort": "new-v4",
+      "operation_scope": "native-call",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "click-whole-v4-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pallets/click",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "click-whole-v4-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pallets/click",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "click-whole-v4-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pallets/click",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "click-whole-v4-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pallets/click",
+      "cohort": "new-v4",
+      "operation_scope": "no-target-operation",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    }
+  ],
+  "suite": {
+    "suite": "external-evaluation-v4",
+    "detector_reference_commit": "3525be8f88b0d48a823c1466043d2d3612a2e3db",
+    "label_scope": "Observable deletion/destructive SQL operations, including statically documented local/third-party wrappers; operation presence, not malware or runtime reachability.",
+    "review": "Candidate labels assigned by assistant from pinned source; no independent human adjudication. All labels pending independent review.",
+    "policy": "Keep all 24 v3 cases; add 48 complete source files from eight other projects. No detection-rule tuning. Keep consumed source files out of external evaluation. New cases measure default auto mode, retain partial-analysis diagnostics; unavailable/invalid required backends still error. Retained cases keep required mode.",
+    "sampling": "Purposive, not random: four positive and four negative new whole files per language. Negatives are rule-specific, not security verdicts. Shared project code and helpers remain correlated.",
+    "parent_corpus_sha256": "c73f43948020686b78fbb1d9352ad38b4e56f60d6b1d850e9e146d6dbfde93be"
+  },
+  "evaluation_mode": "report-only",
+  "corpus_sha256": "3dfb819fc9e3d5d316b02f25edf86d8b1f62ad5de2c97f40f83c3585c1f07f13",
+  "label_review": {
+    "status": "pending",
+    "counts": {
+      "pending": 72,
+      "confirmed": 0,
+      "disputed": 0
+    },
+    "identity_verified": false,
+    "basis": "Claims in a checksum-bound review file; authenticate reviewer and independence in the trusted review process."
+  }
+}

@@ -3,6 +3,7 @@ from collections import Counter
 from datetime import datetime
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 from urllib.parse import quote
 
@@ -76,13 +77,17 @@ def worksheet(cases, corpus_sha256):
     def cell(value):
         return str(value).replace('|', '\\|').replace('\n', ' ')
     for case in cases:
-        p = case['provenance']
+        p = case.get('provenance')
         proof = case.get('label_evidence')
-        line = proof[0]['line'] if proof else p['first_line']
-        url = f"https://github.com/{p['repository']}/blob/{p['revision']}/{quote(p['path'])}#L{line}"
+        if p:
+            line = proof[0]['line'] if proof else p['first_line']
+            url = f"https://github.com/{p['repository']}/blob/{p['revision']}/{quote(p['path'])}#L{line}"
+            source = f"[{cell(p['repository'] + ':' + p['path'])}]({url})"
+        else:
+            source = cell(case['path'])
         rows = [case['id'] + ' / ' + case['rule'], 'операция есть' if case['positive'] else 'целевой операции нет',
                 case.get('ast_mode', 'required') + ' / ' + case.get('cohort', 'unspecified'),
-                f"[{cell(p['repository'] + ':' + p['path'])}]({url})", cell(case.get('rationale', ''))]
+                source, cell(case.get('rationale', ''))]
         lines.append('| ' + ' | '.join(rows) + ' |')
     return '\n'.join(lines) + '\n'
 
@@ -92,6 +97,11 @@ def prepare_files(corpus, output, worksheet_path=None):
     targets = [Path(output), *([Path(worksheet_path)] if worksheet_path is not None else [])]
     if len({p.resolve() for p in targets}) != len(targets) or any(p.exists() or p.is_symlink() or p.resolve() == Path(corpus).resolve() for p in targets):
         raise ValueError('Review outputs must be distinct, new files; existing review work is never overwritten')
-    safe_io.atomic_write(output, json.dumps(prepare(document['cases'], checksum), ensure_ascii=False, indent=2) + '\n')
+    def write_new(path, text):
+        # Exclusive creation also protects work created after the preflight check.
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, 'w', encoding='utf-8') as stream:
+            stream.write(text)
+    write_new(output, json.dumps(prepare(document['cases'], checksum), ensure_ascii=False, indent=2) + '\n')
     if worksheet_path is not None:
-        safe_io.atomic_write(worksheet_path, worksheet(document['cases'], checksum))
+        write_new(worksheet_path, worksheet(document['cases'], checksum))

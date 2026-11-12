@@ -25,6 +25,7 @@ def case(identifier='one', positive=True):
 class EvaluationCoverageTests(unittest.TestCase):
     def test_grouped_metrics_and_configuration_are_not_inferred_from_results(self):
         cases = [case('one'), case('two', False)]
+        cases[0]['provenance'] = None
         cases[0]['ast_mode'] = 'auto'
         cases[1]['cohort'] = 'retained-v3'
         def scan(path, text, terms, domains, *, ast_mode, ast_stats, ast_warnings):
@@ -129,9 +130,13 @@ class ReviewLedgerTests(unittest.TestCase):
             corpus = root / 'corpus.json'
             corpus.write_text(json.dumps({'schema': 1, 'cases': self.cases}))
             output = root / 'review.json'
-            corpus_review.prepare_files(corpus, output)
+            worksheet = root / 'review.md'
+            corpus_review.prepare_files(corpus, output, worksheet)
+            self.assertIn('one.py', worksheet.read_text())
             before = output.read_bytes()
             with self.assertRaisesRegex(ValueError, 'never overwritten'):
+                corpus_review.prepare_files(corpus, output)
+            with patch.object(Path, 'exists', return_value=False), self.assertRaises(FileExistsError):
                 corpus_review.prepare_files(corpus, output)
             self.assertEqual(output.read_bytes(), before)
 
@@ -147,11 +152,12 @@ class ReviewLedgerTests(unittest.TestCase):
             with contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(review_cli(['validate', '--corpus', str(corpus), '--review', str(invalid)]), 2)
 
-    def test_repository_review_binds_every_candidate_without_approval(self):
+    def test_repository_review_binds_every_candidate_without_authenticating_identity(self):
         corpus = ROOT / 'tests/corpus/external.json'
         doc, checksum = evaluation.load_document(corpus)
         summary = corpus_review.load(ROOT / 'tests/corpus/external-review.json', doc['cases'], checksum)
-        self.assertEqual(summary['counts'], {'pending': 72, 'confirmed': 0, 'disputed': 0})
+        self.assertEqual(sum(summary['counts'].values()), 72)
+        self.assertIn(summary['status'], {'pending', 'disputed', 'claimed-complete'})
         self.assertFalse(summary['identity_verified'])
 
     def test_worksheet_contains_pinned_sources_but_no_approval(self):

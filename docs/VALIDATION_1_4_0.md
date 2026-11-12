@@ -1,5 +1,7 @@
 # Проверка 1.4.0 — 12.11.2026
 
+Исходная контрактная проверка; новая [внешняя оценка v4](EVALUATION_V4_2026-11-12.md) содержит расширенные данные и известные пропуски.
+
 Код и контракты: [`743eba375a18dbe40dee1002b4bc375409537c3a`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/743eba375a18dbe40dee1002b4bc375409537c3a).
 [CI](https://github.com/ruslancotcaev9-cyber/protestware_check/actions/runs/43170428490)
 прошёл **403 unit-теста без пропусков** на Python 3.11 с AST-грамматиками,

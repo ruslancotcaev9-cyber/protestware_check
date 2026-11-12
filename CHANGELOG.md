@@ -4,6 +4,21 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## External evaluation v4 — 2026-11-12 (1.4.0 detector unchanged)
+
+- Expand from 24 to 72 external cases: 48 complete files, eight more repositories;
+  total 58 whole-file cases, 64 source groups and 15 projects. Pin sources,
+  licenses, proposed operation evidence and wrapper context before measurement.
+- Freeze detector/dependency SHA-256 values. Keep old required-mode cases and
+  explicitly select default auto for new files; separate cohorts, repositories,
+  operation scopes, AST modes/statuses, diagnostics and fallback provenance.
+- Add checksum-bound candidate-label review and a source worksheet. Pending
+  records never approve labels, existing review files cannot be overwritten,
+  and reviewer identity/independence is not authenticated by JSON fields.
+- Verify 421 tests without skips. Strict regressions remain clean; expanded
+  external results are TP=30/TN=36/FP=0/FN=6, with eight partial analyses and no
+  fatal evaluation errors. Preserve original CI JSON and all known misses.
+
 ## [1.4.0] — unreleased (2026-11-12)
 
 - Add independent native report schema 1 and five offline JSON Schema Draft

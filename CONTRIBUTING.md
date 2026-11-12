@@ -99,9 +99,10 @@ as a side effect of a documentation update.
 
 `tests.yml` also runs a real Go listing round-trip on our own benign fixture and
 three separate corpus evaluations. The 48 own cases and 22 promoted external
-cases gate on FP/FN. The 24-case external evaluation replaces 8 consumed JS/TS
-cases and retains 16 other-language cases. It records FP/FN in report-only mode;
-parser errors still fail. Retain source revisions, fragment hashes and
+cases gate on FP/FN. The 72-case external evaluation retains 24 v3 cases and
+adds 48 whole files from eight other projects. Old cases keep required mode; new
+cases use explicitly frozen auto mode, with partial diagnostics retained.
+FP/FN are report-only; fatal/degraded analysis errors still fail. Retain source revisions, fragment hashes and
 third-party licenses. Record source-file groups: fragments of the same upstream
 file are correlated and do not constitute independent observations.
 When tuning a rule against an external example, move that example to regression
@@ -118,3 +119,17 @@ Retain frozen compatibility fixtures instead of silently regenerating them with
 the new writer. New required fields, changed types or incompatible enum changes
 require a new schema version. Full CI installs requirements-contracts.txt;
 core scanning and GitLab gating do not depend on the optional validator.
+
+## External evaluation and proposed labels
+
+Do not tune detectors against the frozen v4 set. detector-freeze.json checks the
+native source/dependency hashes; regression fixtures and external source groups
+remain separate. Reuse for rule development requires promotion/rotation of the
+consumed source and related wrapper context. Record mode changes before running
+evaluation; do not hide partial AST results or treat fallback as binding proof.
+The original JSON report is retained in docs/evaluation.
+
+All v4 labels were assistant-proposed. The checksum-bound review ledger and
+worksheet support independent human review; a filled name is not authenticated
+identity. Pending/disputed records are not approval, and disputed labels never
+rewrite themselves. See [review guide](docs/CORPUS_REVIEW_GUIDE.md).
