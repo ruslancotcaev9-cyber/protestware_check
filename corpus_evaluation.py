@@ -1,6 +1,6 @@
 """Rule-specific metrics on labeled inert source strings; never execute fixtures."""
 from collections import defaultdict
-from hashlib import sha256
+from hashlib import sha1, sha256
 from pathlib import PurePosixPath
 import statistics
 import time
@@ -27,6 +27,25 @@ def load_document(path):
         seen.add(case['id'])
         if case.get('ast_mode', 'required') not in ('auto', 'required'):
             raise ValueError('Invalid corpus AST mode')
+        if 'project_files' in case:
+            helpers = case['project_files']
+            if (not isinstance(helpers, list) or len(helpers) > 64 or
+                    not _project_path(case['path'])):
+                raise ValueError('Invalid corpus project inputs')
+            paths, size = {case['path']}, len(case['code'].encode())
+            for helper in helpers:
+                if (not isinstance(helper, dict) or set(helper) != {'path', 'code', 'sha256', 'git_blob_sha'} or
+                        not _project_path(helper['path']) or helper['path'] in paths or
+                        not isinstance(helper['code'], str) or len(helper['code']) > 100000):
+                    raise ValueError('Invalid/duplicate corpus helper')
+                helper_raw = helper['code'].encode()
+                if (sha256(helper_raw).hexdigest() != helper['sha256'] or
+                        sha1(b'blob ' + str(len(helper_raw)).encode() + b'\0' + helper_raw).hexdigest() != helper['git_blob_sha']):
+                    raise ValueError('Corpus helper checksum mismatch')
+                paths.add(helper['path'])
+                size += len(helper_raw)
+            if size > 500000:
+                raise ValueError('Corpus project byte budget exceeded')
         for field in ('cohort', 'operation_scope'):
             if field in case and (not isinstance(case[field], str) or not re.fullmatch(r'[a-z0-9-]{1,64}', case[field])):
                 raise ValueError('Invalid corpus grouping')
@@ -46,7 +65,15 @@ def load_document(path):
             if (type(provenance.get('first_line')) is not int or type(provenance.get('last_line')) is not int or
                     not 1 <= provenance['first_line'] <= provenance['last_line'] <= 10_000_000):
                 raise ValueError('Invalid corpus source lines')
+            if 'project_files' in case and (case['path'] != provenance['path'] or not provenance.get('whole_file')):
+                raise ValueError('Project primary file must retain its complete original path/content')
     return data, sha256(raw).hexdigest()
+
+
+def _project_path(value):
+    return (isinstance(value, str) and 0 < len(value) <= 4096 and not value.startswith('/') and
+            not any(ord(c) < 32 for c in value) and not any(c in value for c in '\\:') and
+            '..' not in PurePosixPath(value).parts and str(PurePosixPath(value)) == value)
 
 
 def load(path):
@@ -80,8 +107,17 @@ def evaluate(cases, *, measure=False, scan=None):
             cohort = case.get('cohort', 'unspecified')
             scope = case.get('operation_scope', 'unspecified')
             try:
-                findings = scan(case['path'], case['code'], [], case.get('allow_domains', []),
-                                ast_mode=mode, ast_stats=stats, ast_warnings=warnings)
+                if 'project_files' in case:
+                    files = [(case['path'], case['code']), *((item['path'], item['code']) for item in case['project_files'])]
+                    report = scanner.build_report('inert-corpus-project', files, [], case.get('allow_domains', []), [],
+                                                  dependency_mode='off', ast_mode=mode)
+                    stats.update(report['ast'])
+                    warnings.extend(report['warnings'])
+                    # Helpers establish identities; only the labeled primary file is scored.
+                    findings = [item for item in report['findings'] if item['file'] == case['path']]
+                else:
+                    findings = scan(case['path'], case['code'], [], case.get('allow_domains', []),
+                                    ast_mode=mode, ast_stats=stats, ast_warnings=warnings)
                 if stats.get('degraded'):
                     raise scanner.ScanError('AST backend unavailable or source syntax unsupported; evaluation incomplete')
                 detected = any(item['rule'] == case['rule'] for item in findings)
@@ -95,7 +131,8 @@ def evaluate(cases, *, measure=False, scan=None):
                               'error' if outcome == 'errors' else 'not-reported')
             analysis_counts[ast_status] += 1
             detail.update(expected_positive=case['positive'], repository=repository, cohort=cohort,
-                          operation_scope=scope, ast={'mode': mode, 'status': ast_status, 'warnings': warnings})
+                          operation_scope=scope, input_kind='project' if 'project_files' in case else 'single-file',
+                          ast={'mode': mode, 'status': ast_status, 'warnings': warnings})
             if repository is not None:
                 repositories[repository][outcome] += 1
             cohorts[cohort][outcome] += 1

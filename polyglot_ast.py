@@ -400,7 +400,7 @@ def _parser(language):
         raise RuntimeError(f'grammar {language}: {type(exc).__name__}: {exc}') from exc
 
 
-def scan_tree(path, content, allow):
+def scan_tree(path, content, allow, module_project=None):
     ext = Path(path).suffix.lower()
     if ext == '.sass':
         return scan_sass(path, content, allow), None
@@ -411,7 +411,9 @@ def scan_tree(path, content, allow):
         if ext == '.sql':
             from sql_operations import parser_source
             parser_content = parser_source(content)
-        tree = _parser(GRAMMARS[ext]).parse(parser_content.encode('utf-8'))
+        tree = module_project.tree(path) if module_project is not None else None
+        if tree is None:
+            tree = _parser(GRAMMARS[ext]).parse(parser_content.encode('utf-8'))
         if tree is None:
             return [], f'AST parser returned no tree for {path}'
         if ext in {'.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx'}:
@@ -437,6 +439,7 @@ def scan_tree(path, content, allow):
                 if len(analyzer.findings) > previous:
                     analyzer.findings[-1]['resolved_symbol'] = symbol
         analyzer.index_functions(tree.root_node)
+        module_calls = {}
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             from js_bindings import resolve
             deletions, diagnostics = resolve(content, tree.root_node)
@@ -448,7 +451,26 @@ def scan_tree(path, content, allow):
                               'Node AST: filesystem deletion via ' + ', '.join(symbols) + '; review path and purpose')
                 if len(analyzer.findings) > previous:
                     analyzer.findings[-1].update(resolved_symbol=symbols[0], binding_certainty='possible' if possible else 'resolved')
+            if module_project is not None:
+                module_calls, diagnostics = module_project.calls(path)
+                analyzer.diagnostics.update(diagnostics)
+                analyzer.js_deletions.update(module_calls)
+                for node, symbol, route in module_calls.values():
+                    previous = len(analyzer.findings)
+                    analyzer.emit('FS_DELETE', 'filesystem', 'medium', node,
+                                  'Node AST: local module chain reaches ' + symbol + '; review path and purpose')
+                    item = (analyzer.findings[-1] if len(analyzer.findings) > previous else
+                            next((f for f in analyzer.findings if f['rule'] == 'FS_DELETE' and f['line'] == node.start_point[0] + 1), None))
+                    if item is not None:
+                        item.update(resolved_symbol=symbol, binding_certainty='possible', dataflow=route,
+                                    module_analysis='selected-text-only')
         analyzer.walk(tree.root_node, {})
+        for item in analyzer.findings:
+            if item['rule'] == 'AST_GEO_ACTION':
+                match = next((entry for entry in module_calls.values() if entry[0].start_point[0] + 1 == item['line']), None)
+                if match is not None:
+                    item['dataflow'] = [*(hop for hop in item.get('dataflow', []) if hop['kind'] == 'condition'), *match[2]][:25]
+                    item.update(resolved_symbol=match[1], module_analysis='selected-text-only')
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             from js_behavior import scan_js_behavior
             diagnostics = []

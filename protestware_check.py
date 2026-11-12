@@ -36,7 +36,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request
 
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -311,7 +311,7 @@ def python_code_only_lines(content: str) -> list[str]:
 
 def scan_text(path: str, content: str, political_terms: list[str], allowed_domains: list[str],
               ast_mode: str = "auto", ast_warnings: list[str] | None = None,
-              ast_stats: dict[str, int] | None = None, context=None) -> list[dict[str, Any]]:
+              ast_stats: dict[str, int] | None = None, context=None, module_project=None) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
     lines = content.splitlines()
     suffix = Path(path).suffix.lower()
@@ -417,7 +417,8 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
     tree_findings: list[dict[str, Any]] = []
     parsed = False
     if suffix in polyglot_ast.SUPPORTED and ast_mode != "off":
-        tree_findings, diagnostic = polyglot_ast.scan_tree(path, content, allowed_domains)
+        tree_findings, diagnostic = (polyglot_ast.scan_tree(path, content, allowed_domains, module_project=module_project)
+                                     if module_project is not None else polyglot_ast.scan_tree(path, content, allowed_domains))
         parsed = diagnostic is None or diagnostic.startswith("AST partial ")
         if ast_stats is not None:
             name = "partial" if diagnostic and parsed else "degraded" if diagnostic else "parsed"
@@ -494,6 +495,8 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
         owner, repo = github_coordinates(name)
         if watchlists is not None:
             references.append((f"{owner}/{repo}".casefold(), "(package)", 0, name))
+    # Snapshot only the selected, already decoded text, under the original ingestion budgets.
+    selected = []
     for path, content in files:
         if coverage.enumeration == 'provided':
             coverage.record(path, 'scanned', size=len(content.encode('utf-8')))
@@ -501,10 +504,18 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
         total_bytes += len(content.encode("utf-8"))
         if scanned > max_files or total_bytes > max_total_bytes:
             raise ScanError("Total source file/byte budget exceeded; scan is incomplete")
+        selected.append((path, content))
+    module_project = None
+    if ast_mode != 'off':
+        from js_modules import Project, SUFFIXES
+        if any(Path(path).suffix.lower() in SUFFIXES for path, _ in selected):
+            module_project = Project(selected)
+    for path, content in selected:
         try:
             previous_stats = ast_stats.copy()
             results.extend(scan_text(path, content, political_terms, allowed_domains,
-                                     ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats, context=context))
+                                     ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats, context=context,
+                                     module_project=module_project))
         except RecursionError as error:
             raise ScanError(f"Analysis nesting limit exceeded: {path}") from error
         status = next((key for key in ("partial", "degraded", "parsed", "disabled")
@@ -582,6 +593,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
             "dependencies": {"summary": dependencies["summary"], "packages": dependencies["packages"],
                              "mode": dependencies["mode"], 'go_builds': dependencies.get('go_builds', [])},
             "warnings": warnings, "ast": {"mode": ast_mode, **ast_stats,
+                                         **({'modules': module_project.metadata()} if module_project is not None else {}),
                                          "complete": ast_stats["degraded"] == 0 and ast_stats["partial"] == 0 and
                                                      ast_stats["parsed"] > 0 and ast_mode != "off"}}
 
