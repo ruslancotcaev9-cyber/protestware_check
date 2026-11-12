@@ -1,6 +1,6 @@
 # Руководство пользователя protestware-check
 
-Актуально для кода **v1.3.2 в `main`, unreleased**. [Указатель документации](README.md) · [На главную](../README.md) · [Политика безопасности](../SECURITY.md) · [Технический справочник](TECHNICAL_REFERENCE.md).
+Актуально для кода **v1.4.0 в `main`, unreleased**. [Указатель документации](README.md) · [На главную](../README.md) · [Политика безопасности](../SECURITY.md) · [Технический справочник](TECHNICAL_REFERENCE.md).
 
 ## 1. Назначение и модель угроз
 
@@ -184,7 +184,7 @@ python protestware_check.py --path ../application --profile artifact \
 
 ## 4. Справочник CLI
 
-Таблица охватывает все прикладные параметры CLI 1.3.2; `-h`/`--help` показывает
+Таблица охватывает все прикладные параметры CLI 1.4.0; `-h`/`--help` показывает
 встроенную справку. Явные CLI-значения `--profile`, `--fail-on` и переключателя
 `--only-new`/`--all-findings` имеют приоритет над политикой; `--exclude` и
 `--allow-domain` дополняют списки политики. По умолчанию политика и baseline
@@ -254,7 +254,13 @@ python protestware_check.py --path ../application --allow-domain api.example.org
 
 ## 5. Интерпретация отчётов и CI
 
-**JSON:** `tool`, `version`, `source`, `files_scanned`, `risk`, `code_risk`, `summary`,
+Начиная с 1.4.0 полный JSON-отчёт содержит `schema: 1`; поле `version` продолжает
+обозначать версию сканера. Для проверки сохранённого артефакта используйте
+`python scripts/validate_json.py report PATH` после установки
+`requirements-contracts.txt`. Helper возвращает 0/2 по корректности формата,
+а не по риску. [Схемы, старые отчёты и миграция](JSON_CONTRACTS.md).
+
+**JSON:** `schema`, `tool`, `version`, `source`, `files_scanned`, `risk`, `code_risk`, `summary`,
 `findings`, `watchlists`, `dependencies`, `malware_intel`, `scan`, `coverage`, `ast`,
 `analysis_context`, `policy`, `gate`, `warnings`. В каждой находке проверяйте `rule`,
 `severity`, `file`, `line`, `message`, `evidence`; для отдельных AST/taint-правил

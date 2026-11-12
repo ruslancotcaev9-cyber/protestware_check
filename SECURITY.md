@@ -8,14 +8,14 @@ This policy is informed by the coordinated disclosure workflow used in Google's 
 
 | Version | Security fixes |
 | --- | --- |
-| Current `main` (development line: 1.3.x, unreleased) | Supported on a best-effort basis |
+| Current `main` (development line: 1.4.x, unreleased) | Supported on a best-effort basis |
 | Older versions | No guaranteed backports; please upgrade |
 
 The maintainers may change the supported release line as new versions are published. This is a community-maintained project; there is no contractual service-level agreement.
 
 Known detection gaps and dated validation evidence are recorded in the
 [technical reference](docs/TECHNICAL_REFERENCE.md) and
-[evaluation report](docs/EVALUATION_1_3_2.md). They do not establish a published
+[evaluation report](docs/VALIDATION_1_4_0.md). They do not establish a published
 release or complete detection coverage.
 
 ## Reporting a vulnerability privately

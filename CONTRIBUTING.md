@@ -22,7 +22,7 @@ Python 3.11+ is required. Create an isolated virtual environment:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements-ast.txt -r requirements-resolver.txt
+python -m pip install -r requirements-ast.txt -r requirements-resolver.txt -r requirements-contracts.txt
 python -c 'from tree_sitter_language_pack import download; download(["go","csharp","javascript","typescript","tsx","sql","html","css","scss","less","c","cpp"])'
 python -m compileall -q .
 python -m unittest discover -s tests -v
@@ -92,7 +92,7 @@ relative Markdown links, and run the existing documentation/release checks.
 Mark historical review results with their date and commit rather than implying
 that they certify later versions.
 
-Current development documentation covers 1.3.2 (unreleased). Keep the
+Current development documentation covers 1.4.0 (unreleased). Keep the
 [documentation index](docs/README.md), user guide, security support line, changelog
 and release procedure consistent with `VERSION`. Do not create or publish a release
 as a side effect of a documentation update.
@@ -107,3 +107,14 @@ file are correlated and do not constitute independent observations.
 When tuning a rule against an external example, move that example to regression
 and add fresh evaluation data; do not report the tuned example as unseen evidence.
 See the [corpus method](tests/corpus/README.md) and [open tasks](docs/ROADMAP.md).
+
+## JSON compatibility
+
+Read [JSON contracts](docs/JSON_CONTRACTS.md) before changing serialized data.
+The full native CLI report has schema 1 independently of the scanner version.
+Keep schema files, runtime guards and writer/reader tests consistent. Unknown
+versions must fail clearly; a legacy report exception is bounded to 1.3.0-1.3.2.
+Retain frozen compatibility fixtures instead of silently regenerating them with
+the new writer. New required fields, changed types or incompatible enum changes
+require a new schema version. Full CI installs requirements-contracts.txt;
+core scanning and GitLab gating do not depend on the optional validator.

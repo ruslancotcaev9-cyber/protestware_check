@@ -4,6 +4,22 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] — unreleased (2026-11-12)
+
+- Add independent native report schema 1 and five offline JSON Schema Draft
+  2020-12 contracts for reports, current/legacy baselines, Go build-info and
+  GitLab status. Document additive changes and explicit version migration.
+- Add validate_json.py with bundled schemas, no network retrieval, redacted
+  validation diagnostics and optional pinned validator dependencies. Preserve
+  standard-library-only core scanning and GitLab gating.
+- Reject duplicate JSON members, non-finite numbers and excessive nesting at
+  artifact input boundaries. Check report counts/risk/gate consistency. Recognize
+  only known schemaless 1.3.0-1.3.2 reports and preserve their original byte digest.
+- Freeze actual legacy report/baseline fixtures and add 27 contract tests. Verify
+  403 tests without skips and unchanged 48/22/24 corpora without FP/FN or errors.
+- Keep baseline schema 2, fingerprint version 1 and Go/status schema 1. Changed
+  validator code reopens baseline review through the ruleset context.
+
 ## [1.3.2] — unreleased (2026-11-11)
 
 - Resolve Node filesystem deletion through fs.promises, fs/promises, ESM/CommonJS

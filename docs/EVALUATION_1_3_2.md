@@ -1,5 +1,7 @@
 # Проверка 1.3.2 — 11.11.2026
 
+Историческая оценка детекторов; текущая [проверка 1.4.0](VALIDATION_1_4_0.md).
+
 Проверенный код и примеры: [`f95f0c191b80a988c38a5ca52dbf1c87427805c1`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/f95f0c191b80a988c38a5ca52dbf1c87427805c1).
 [CI](https://github.com/ruslancotcaev9-cyber/protestware_check/actions/runs/43046213571)
 прошёл **376 unit-тестов без пропусков**, advisory-регрессии и реальный Go
