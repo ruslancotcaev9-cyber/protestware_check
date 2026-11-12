@@ -4,6 +4,20 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] — unreleased (2026-11-12)
+
+- Add bounded selected-text-only local JS/TS module links: ESM/CommonJS,
+  reexports, direct wrappers and explicit callback-parameter calls. Never load
+  or execute target modules. Report missing/ambiguous paths, cycles and budgets.
+- Preserve cross-file FS_DELETE/AST_GEO_ACTION traces in JSON and SARIF; expose
+  ast.modules metadata. Required mode refuses diagnosed partial module graphs.
+- Transfer eight consumed rimraf source files plus pinned helper context to
+  project regression. Score only the primary file; validate helper hashes and
+  paths. Archive v4 corpus/review/freeze; keep 64 retained external cases and a
+  fresh checksum-bound pending review ledger. No fresh held-out sample claimed.
+- Preserve report schema 1/baseline 2/Go and status 1. Rule context changes reopen
+  baseline findings. Document memory/budget costs and unresolved factory paths.
+
 ## External evaluation v4 — 2026-11-12 (1.4.0 detector unchanged)
 
 - Expand from 24 to 72 external cases: 48 complete files, eight more repositories;

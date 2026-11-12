@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "corpus_sha256": "3dfb819fc9e3d5d316b02f25edf86d8b1f62ad5de2c97f40f83c3585c1f07f13",
+  "corpus_sha256": "5c7206dccfd93467b079b7549891c8c2ab45dd66e93e62cecb85d31fa905a393",
   "policy": "Pending candidate labels are not independent review. Reviewer identity/independence must be established outside this file by the trusted review process.",
   "cases": [
     {
@@ -476,86 +476,6 @@
     {
       "id": "fs-extra-whole-v4-8",
       "case_sha256": "acd56d0877efde12c8f2c101e48191978a3667df8eb19eb3c20db2b6c49b628e",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "rimraf-whole-v4-1",
-      "case_sha256": "ead89fa0777f2eaba9c7909543d674b4037e9ff1cbe8d6e95ecf60da63600b4c",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "rimraf-whole-v4-2",
-      "case_sha256": "17d243b9fcdea0111146aba6a6acfc56c422395b570d214d61c498d773317a0a",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "rimraf-whole-v4-3",
-      "case_sha256": "fb7e9d8987588b5e4724d5329b30db92ea1a59291d0c90b6fdda88a40c25e9a0",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "rimraf-whole-v4-4",
-      "case_sha256": "82608f61614b21587cb8f487d417dbf8d80c13217bfd3988e8b62dfccccdd06e",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "rimraf-whole-v4-5",
-      "case_sha256": "464a9c9e2a9f3ac0af908639db268c9b8d812630a27d20a29f70c568d97bcc82",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "rimraf-whole-v4-6",
-      "case_sha256": "c00ff06b6a5a3a141e4835fa2a162908faf57d0793fa004695cf14a91043f2b8",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "rimraf-whole-v4-7",
-      "case_sha256": "a57f9eef000150b062287350d248fb527015793ebfe9988f629837b4136fe3ca",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "rimraf-whole-v4-8",
-      "case_sha256": "d5d6ee89535fc81d711a0d1a6534ae3fdbba19d4b3083cf7413107a31d21693e",
       "proposed_positive": false,
       "decision": "pending",
       "reviewer": null,
