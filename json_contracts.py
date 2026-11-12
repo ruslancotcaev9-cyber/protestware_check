@@ -168,4 +168,3 @@ def validate(document, kind, *, allow_legacy_report=False):
         go_build_info.validate(value)
     elif type(value['schema']) is not int or type(value['scanner_exit_code']) is not int:
         raise ValueError('Invalid GitLab status version/code type')
-
