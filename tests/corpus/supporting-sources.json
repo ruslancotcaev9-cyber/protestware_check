@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "policy": "Review context only; not passed to single-file detection. Static wrapper provenance does not establish runtime reachability.",
+  "sources": {
+    "fs-extra-bridge": {
+      "repository": "jprichardson/node-fs-extra",
+      "revision": "55a555ff693105615155f4543646a6b121af1a07",
+      "path": "lib/fs/index.js",
+      "git_blob_sha": "2dae81843a0d0b89ab5dd2b23488ed2a825a48a9",
+      "text": "'use strict'\n// This is adapted from https://github.com/normalize/mz\n// Copyright (c) 2014-2016 Jonathan Ong me@jongleberry.com and Contributors\nconst u = require('universalify').fromCallback\nconst fs = require('graceful-fs')\n\nconst api = [\n  'access',\n  'appendFile',\n  'chmod',\n  'chown',\n  'close',\n  'copyFile',\n  'cp',\n  'fchmod',\n  'fchown',\n  'fdatasync',\n  'fstat',\n  'fsync',\n  'ftruncate',\n  'futimes',\n  'glob',\n  'lchmod',\n  'lchown',\n  'lutimes',\n  'link',\n  'lstat',\n  'mkdir',\n  'mkdtemp',\n  'open',\n  'opendir',\n  'readdir',\n  'readFile',\n  'readlink',\n  'realpath',\n  'rename',\n  'rm',\n  'rmdir',\n  'stat',\n  'statfs',\n  'symlink',\n  'truncate',\n  'unlink',\n  'utimes',\n  'writeFile'\n].filter(key => {\n  // Some commands are not available on some systems. Ex:\n  // fs.cp was added in Node.js v16.7.0\n  // fs.statfs was added in Node v19.6.0, v18.15.0\n  // fs.glob was added in Node.js v22.0.0\n  // fs.lchown is not available on at least some Linux\n  return typeof fs[key] === 'function'\n})\n\n// Export cloned fs:\nObject.assign(exports, fs)\n\n// Universalify async methods:\napi.forEach(method => {\n  exports[method] = u(fs[method])\n})\n\n// We differ from mz/fs in that we still ship the old, broken, fs.exists()\n// since we are a drop-in replacement for the native module\nexports.exists = function (filename, callback) {\n  if (typeof callback === 'function') {\n    return fs.exists(filename, callback)\n  }\n  return new Promise(resolve => {\n    return fs.exists(filename, resolve)\n  })\n}\n\n// fs.read(), fs.write(), fs.readv(), & fs.writev() need special treatment due to multiple callback args\n\nexports.read = function (fd, buffer, offset, length, position, callback) {\n  if (typeof callback === 'function') {\n    return fs.read(fd, buffer, offset, length, position, callback)\n  }\n  return new Promise((resolve, reject) => {\n    fs.read(fd, buffer, offset, length, position, (err, bytesRead, buffer) => {\n      if (err) return reject(err)\n      resolve({ bytesRead, buffer })\n    })\n  })\n}\n\n// Function signature can be\n// fs.write(fd, buffer[, offset[, length[, position]]], callback)\n// OR\n// fs.write(fd, string[, position[, encoding]], callback)\n// We need to handle both cases, so we use ...args\nexports.write = function (fd, buffer, ...args) {\n  if (typeof args[args.length - 1] === 'function') {\n    return fs.write(fd, buffer, ...args)\n  }\n\n  return new Promise((resolve, reject) => {\n    fs.write(fd, buffer, ...args, (err, bytesWritten, buffer) => {\n      if (err) return reject(err)\n      resolve({ bytesWritten, buffer })\n    })\n  })\n}\n\n// Function signature is\n// s.readv(fd, buffers[, position], callback)\n// We need to handle the optional arg, so we use ...args\nexports.readv = function (fd, buffers, ...args) {\n  if (typeof args[args.length - 1] === 'function') {\n    return fs.readv(fd, buffers, ...args)\n  }\n\n  return new Promise((resolve, reject) => {\n    fs.readv(fd, buffers, ...args, (err, bytesRead, buffers) => {\n      if (err) return reject(err)\n      resolve({ bytesRead, buffers })\n    })\n  })\n}\n\n// Function signature is\n// s.writev(fd, buffers[, position], callback)\n// We need to handle the optional arg, so we use ...args\nexports.writev = function (fd, buffers, ...args) {\n  if (typeof args[args.length - 1] === 'function') {\n    return fs.writev(fd, buffers, ...args)\n  }\n\n  return new Promise((resolve, reject) => {\n    fs.writev(fd, buffers, ...args, (err, bytesWritten, buffers) => {\n      if (err) return reject(err)\n      resolve({ bytesWritten, buffers })\n    })\n  })\n}\n\n// fs.realpath.native sometimes not available if fs is monkey-patched\nif (typeof fs.realpath.native === 'function') {\n  exports.realpath.native = u(fs.realpath.native)\n} else {\n  process.emitWarning(\n    'fs.realpath.native is not a function. Is fs being monkey-patched?',\n    'Warning', 'fs-extra-WARN0003'\n  )\n}\n",
+      "sha256": "62ceb1a4526cf820140c4d7fbf86ca0a330108a1d7929daa3db69e565fd58367",
+      "license_path": "tests/corpus/licenses/jprichardson-node-fs-extra.txt",
+      "license_sha256": "c6a7de1428955aa5a692f4d3a3d3ede658d959616944713337cda296736442e1",
+      "license_url": "https://github.com/jprichardson/node-fs-extra/blob/55a555ff693105615155f4543646a6b121af1a07/LICENSE"
+    },
+    "fs-extra-remove": {
+      "repository": "jprichardson/node-fs-extra",
+      "revision": "55a555ff693105615155f4543646a6b121af1a07",
+      "path": "lib/remove/index.js",
+      "git_blob_sha": "da746c7bedd2d5390d4fa05493799e0412a63213",
+      "text": "'use strict'\n\nconst fs = require('graceful-fs')\nconst u = require('universalify').fromCallback\n\nfunction remove (path, callback) {\n  fs.rm(path, { recursive: true, force: true }, callback)\n}\n\nfunction removeSync (path) {\n  fs.rmSync(path, { recursive: true, force: true })\n}\n\nmodule.exports = {\n  remove: u(remove),\n  removeSync\n}\n",
+      "sha256": "0ac7807ffba679e0d8fee03d3879da7f3d99bc16e8db6c6494c8eaf9ec5608b6",
+      "license_path": "tests/corpus/licenses/jprichardson-node-fs-extra.txt",
+      "license_sha256": "c6a7de1428955aa5a692f4d3a3d3ede658d959616944713337cda296736442e1",
+      "license_url": "https://github.com/jprichardson/node-fs-extra/blob/55a555ff693105615155f4543646a6b121af1a07/LICENSE"
+    },
+    "rimraf-fs": {
+      "repository": "isaacs/rimraf",
+      "revision": "e4f6f89612781e194d06c605a05f61e2a7633663",
+      "path": "src/fs.ts",
+      "git_blob_sha": "869b9221e159a1fa9400386419cdf22500f2af1c",
+      "text": "import type { Dirent } from 'fs'\nimport type fs from 'fs'\nimport { readdirSync as rdSync } from 'fs'\nimport fsPromises from 'fs/promises'\n\n// sync ones just take the sync version from node\n// readdir forces withFileTypes: true\n\nexport {\n  chmodSync,\n  mkdirSync,\n  renameSync,\n  rmdirSync,\n  rmSync,\n  statSync,\n  lstatSync,\n  unlinkSync,\n} from 'fs'\n\nexport const readdirSync = (path: fs.PathLike): Dirent[] =>\n  rdSync(path, { withFileTypes: true })\n\nexport const promises = {\n  chmod: fsPromises.chmod,\n  mkdir: fsPromises.mkdir,\n  readdir: (path: fs.PathLike) =>\n    fsPromises.readdir(path, { withFileTypes: true }),\n  rename: fsPromises.rename,\n  rm: fsPromises.rm,\n  rmdir: fsPromises.rmdir,\n  stat: fsPromises.stat,\n  lstat: fsPromises.lstat,\n  unlink: fsPromises.unlink,\n}\n",
+      "sha256": "46a520c08b69b8e57f66c626a85f16e0569262acebbf10f259a88e24afac394c",
+      "license_path": "tests/corpus/licenses/isaacs-rimraf.txt",
+      "license_sha256": "8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004",
+      "license_url": "https://github.com/isaacs/rimraf/blob/e4f6f89612781e194d06c605a05f61e2a7633663/LICENSE.md"
+    },
+    "rimraf-eperm": {
+      "repository": "isaacs/rimraf",
+      "revision": "e4f6f89612781e194d06c605a05f61e2a7633663",
+      "path": "src/fix-eperm.ts",
+      "git_blob_sha": "85ed6aabaa378c2f9b242284e065b1eba1f4ba03",
+      "text": "import { errorCode } from './error.js'\nimport { chmodSync, promises } from './fs.js'\nimport { ignoreENOENT, ignoreENOENTSync } from './ignore-enoent.js'\nconst { chmod } = promises\n\nexport const fixEPERM =\n  (fn: (path: string) => Promise<unknown>) =>\n  async (path: string): Promise<void> => {\n    try {\n      return void (await ignoreENOENT(fn(path)))\n    } catch (er) {\n      if (errorCode(er) === 'EPERM') {\n        if (\n          !(await ignoreENOENT(\n            chmod(path, 0o666).then(() => true),\n            er,\n          ))\n        ) {\n          return\n        }\n        return void (await fn(path))\n      }\n      throw er\n    }\n  }\n\nexport const fixEPERMSync =\n  (fn: (path: string) => unknown) =>\n  (path: string): void => {\n    try {\n      return void ignoreENOENTSync(() => fn(path))\n    } catch (er) {\n      if (errorCode(er) === 'EPERM') {\n        if (!ignoreENOENTSync(() => (chmodSync(path, 0o666), true), er)) {\n          return\n        }\n        return void fn(path)\n      }\n      throw er\n    }\n  }\n",
+      "sha256": "e0bed67cb893085098728d3765e6593fce954d7fefb133358f2595a09f7937e1",
+      "license_path": "tests/corpus/licenses/isaacs-rimraf.txt",
+      "license_sha256": "8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004",
+      "license_url": "https://github.com/isaacs/rimraf/blob/e4f6f89612781e194d06c605a05f61e2a7633663/LICENSE.md"
+    },
+    "rimraf-retry": {
+      "repository": "isaacs/rimraf",
+      "revision": "e4f6f89612781e194d06c605a05f61e2a7633663",
+      "path": "src/retry-busy.ts",
+      "git_blob_sha": "7b48f1d6f54bedd5f5ac7a97325249fae9d19687",
+      "text": "// note: max backoff is the maximum that any *single* backoff will do\n\nimport { setTimeout } from 'timers/promises'\nimport type { RimrafAsyncOptions, RimrafOptions } from './index.js'\nimport { isFsError } from './error.js'\n\nexport const MAXBACKOFF = 200\nexport const RATE = 1.2\nexport const MAXRETRIES = 10\nexport const codes = new Set(['EMFILE', 'ENFILE', 'EBUSY'])\n\nexport const retryBusy = <T>(fn: (path: string) => Promise<T>) => {\n  const method = async (\n    path: string,\n    opt: RimrafAsyncOptions,\n    backoff = 1,\n    total = 0,\n  ) => {\n    const mbo = opt.maxBackoff || MAXBACKOFF\n    const rate = opt.backoff || RATE\n    const max = opt.maxRetries || MAXRETRIES\n    let retries = 0\n    while (true) {\n      try {\n        return await fn(path)\n      } catch (er) {\n        if (isFsError(er) && er.path === path && codes.has(er.code)) {\n          backoff = Math.ceil(backoff * rate)\n          total = backoff + total\n          if (total < mbo) {\n            await setTimeout(backoff)\n            return method(path, opt, backoff, total)\n          }\n          if (retries < max) {\n            retries++\n            continue\n          }\n        }\n        throw er\n      }\n    }\n  }\n\n  return method\n}\n\n// just retries, no async so no backoff\nexport const retryBusySync = <T>(fn: (path: string) => T) => {\n  const method = (path: string, opt: RimrafOptions) => {\n    const max = opt.maxRetries || MAXRETRIES\n    let retries = 0\n    while (true) {\n      try {\n        return fn(path)\n      } catch (er) {\n        if (\n          isFsError(er) &&\n          er.path === path &&\n          codes.has(er.code) &&\n          retries < max\n        ) {\n          retries++\n          continue\n        }\n        throw er\n      }\n    }\n  }\n  return method\n}\n",
+      "sha256": "b825e491bbd27bc80885544fa81db1f0feca243a235618b9ed83299e10545fcd",
+      "license_path": "tests/corpus/licenses/isaacs-rimraf.txt",
+      "license_sha256": "8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004",
+      "license_url": "https://github.com/isaacs/rimraf/blob/e4f6f89612781e194d06c605a05f61e2a7633663/LICENSE.md"
+    },
+    "rimraf-enoent": {
+      "repository": "isaacs/rimraf",
+      "revision": "e4f6f89612781e194d06c605a05f61e2a7633663",
+      "path": "src/ignore-enoent.ts",
+      "git_blob_sha": "2557dcb3489ebf1fcb03aabe3679c1193dbcf4b6",
+      "text": "import { errorCode } from './error.js'\n\nexport const ignoreENOENT = async <T>(p: Promise<T>, rethrow?: unknown) =>\n  p.catch(er => {\n    if (errorCode(er) === 'ENOENT') {\n      return\n    }\n    throw rethrow ?? er\n  })\n\nexport const ignoreENOENTSync = <T>(fn: () => T, rethrow?: unknown) => {\n  try {\n    return fn()\n  } catch (er) {\n    if (errorCode(er) === 'ENOENT') {\n      return\n    }\n    throw rethrow ?? er\n  }\n}\n",
+      "sha256": "9500df95ea25fab050cbe5f88803df84a720c17a28140c239f3f956f7aaa66aa",
+      "license_path": "tests/corpus/licenses/isaacs-rimraf.txt",
+      "license_sha256": "8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004",
+      "license_url": "https://github.com/isaacs/rimraf/blob/e4f6f89612781e194d06c605a05f61e2a7633663/LICENSE.md"
+    }
+  }
+}

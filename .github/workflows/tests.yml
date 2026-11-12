@@ -60,8 +60,10 @@ jobs:
         run: python scripts/evaluate_corpus.py --measure --output corpus-metrics.json
       - name: Promoted external examples as strict regression
         run: python scripts/evaluate_corpus.py --corpus tests/corpus/promoted.json --measure --output promoted-corpus-metrics.json
-      - name: Fresh external evaluation without tuning detection rules
-        run: python scripts/evaluate_corpus.py --corpus tests/corpus/external.json --report-only --measure --output external-corpus-metrics.json
+      - name: Validate external candidate-label review binding (pending labels are not approval)
+        run: python scripts/corpus_review.py validate --corpus tests/corpus/external.json --review tests/corpus/external-review.json
+      - name: Expanded external evaluation with explicit modes, coverage and candidate labels
+        run: python scripts/evaluate_corpus.py --corpus tests/corpus/external.json --review-file tests/corpus/external-review.json --report-only --measure --output external-corpus-metrics.json
       - name: Save corpus metrics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -71,5 +73,7 @@ jobs:
             corpus-metrics.json
             promoted-corpus-metrics.json
             external-corpus-metrics.json
+            tests/corpus/external-review.json
+            tests/corpus/detector-freeze.json
           if-no-files-found: error
           retention-days: 14

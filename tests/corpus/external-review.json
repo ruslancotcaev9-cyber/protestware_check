@@ -1,0 +1,727 @@
+{
+  "schema": 1,
+  "corpus_sha256": "3dfb819fc9e3d5d316b02f25edf86d8b1f62ad5de2c97f40f83c3585c1f07f13",
+  "policy": "Pending candidate labels are not independent review. Reviewer identity/independence must be established outside this file by the trusted review process.",
+  "cases": [
+    {
+      "id": "golang-go-v2-1",
+      "case_sha256": "ac9ea823795e395d686bf04d33b670883163f454f48359368599e99795bd8bba",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "golang-go-v2-2",
+      "case_sha256": "296aa72d5e1b39899375eb8160b7fdfd083a29a16e08a0c4a5d353e834c53ce8",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "golang-go-v2-3",
+      "case_sha256": "87334a676e7a821a5d3b6061c6059c7d671a81bb13435a1286f9069f98336f22",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "golang-go-v2-4",
+      "case_sha256": "99a5566277dda1f3a142930a74c3d3580621da826b3fbb86d0b825ac478e4be6",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "dotnet-runtime-v2-1",
+      "case_sha256": "28223138a1e0b7efcc26d4369bab22947167217d228bb4a127d6a15dac65b289",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "dotnet-runtime-v2-2",
+      "case_sha256": "e8764cc99d762be38b936baa4154a9619c72d96e004e27faa7bd5793deb46490",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "dotnet-runtime-v2-3",
+      "case_sha256": "1ae15fdf949ea30e3b07f2530a716f02ec036c8dbad05c751bc775252eb84bdb",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "dotnet-runtime-v2-4",
+      "case_sha256": "4a01e56daa718587557f5a47a8c04e19dbffe31f2f2f75f15749bfd1d8e9c03e",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "postgres-postgres-v2-3",
+      "case_sha256": "d0d6a64715200847910396e0b4310f6477a1b437d94ed52212ceec5661f3ffc8",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "postgres-postgres-v2-4",
+      "case_sha256": "783c8bf537c4d717f772c1abc8bb1b3077119a754fff0b03db3845480a97e7a2",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "python-cpython-v2-1",
+      "case_sha256": "80b935c42614e63622db92480c06edcb8176cb2d814ae4dbe15cb73999ecd730",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "python-cpython-v2-2",
+      "case_sha256": "5491de83c1aa288cc4f6ad762c2f28f919da8c1f3433e2dba9ccab1fb3eba219",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "python-cpython-v2-3",
+      "case_sha256": "bd82d54a32ee01126788150e4b4b6416fd20b61d6e8a18f48ad72e627c860188",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "python-cpython-v2-4",
+      "case_sha256": "0778c97d56cfa1ffd5efb55d3889cd0da5599bcb7325b1bc0ff8ed72d176f860",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "postgres-postgres-v2-5",
+      "case_sha256": "d60394bd8df31a8ec7b91613ca1a4b14785ff2418dd9f81dd02ec1e5f2911444",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "postgres-postgres-v2-6",
+      "case_sha256": "4a242297fa0876bee25d1a0ca7c96677d56dd717af17c58e5bf47fa17ee5a606",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "nodejs-node-v3-1",
+      "case_sha256": "611d31c8eddb6d5f1270753386faeae4ef372f32678e29efbb6722b8183b786b",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "nodejs-node-v3-2",
+      "case_sha256": "c60dbface0de33b10e5f82c0c0e77628d0faec09f080902d4ae8264e5d0d3f37",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "nodejs-node-v3-3",
+      "case_sha256": "96968ed4abf52ca1763b08ba06503b65050db89887d684a398677302ce09611e",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "nodejs-node-v3-4",
+      "case_sha256": "a481b2061f251894227fe3e8484e74ff9000a1478b31e4ab551c238ddff186f5",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "microsoft-vscode-v3-5",
+      "case_sha256": "34ff21637405a7290f1cb3898cefad8f091d84401f164b6f7bd8053191ef0100",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "microsoft-vscode-v3-6",
+      "case_sha256": "2994c1a8f1c4a8989c91c1e745015354a4d6d587c0ae4f74c266665b497f3427",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "microsoft-vscode-v3-7",
+      "case_sha256": "175558947c210b4c763f80b1de9795c004505e77b45f103a7edf432f0bc415b0",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "microsoft-TypeScript-v3-8",
+      "case_sha256": "56fdfa33541c023223290a1e19b04c41de6cafeb4854d7c4b26b45a94e4de511",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "afero-whole-v4-1",
+      "case_sha256": "2ab308de3c0ae896ebc660f0aaffaaf0499e9359847af4a92c4fcdf2289bb171",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "cli-whole-v4-1",
+      "case_sha256": "0bba9dcc2ef1b457bcca0a939b1c3ea74847a25903e889f18af377f6a93215d0",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "cli-whole-v4-2",
+      "case_sha256": "dca259a1691d3632b6e50d0a776873b8555cfdade438864f5d1315bcfed7d7a5",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "cli-whole-v4-3",
+      "case_sha256": "efee740b3e932f04e672ddba1fa95b4719cab0ac5504aaf56f13adc2eef71fa0",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "afero-whole-v4-2",
+      "case_sha256": "48fd0b672dbe35b02aa626091044618132c633af014627edeb95b2f9c469628d",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "afero-whole-v4-3",
+      "case_sha256": "e0a415ad141f7a3b344a3dfcf18b2750f3e0594e710092a61ea511d900e2ede3",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "afero-whole-v4-4",
+      "case_sha256": "bf70ffab7af4c9901df71eae9498723de92aecaede2fdb69eb24388555536519",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "afero-whole-v4-5",
+      "case_sha256": "667dae5efb6f23eb9bf64e5c268a0b0a02d0f97d9424ed57c78cea3910b31081",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "aspnetcore-whole-v4-1",
+      "case_sha256": "bf564d2199b525f4e452082d1085e6bdf09b1fabc79019798d6fb2ef98ee2c77",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "aspnetcore-whole-v4-2",
+      "case_sha256": "ae12299b0403d72b5445d9716911e25cd9bc5478eb1ea830fb569d321afd1c5b",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "aspnetcore-whole-v4-3",
+      "case_sha256": "c3c07a12e908439b199659a3a1c23a2e1955a5c71041440f60304e0baeca3a9b",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "aspnetcore-whole-v4-4",
+      "case_sha256": "f8b323d03cc3e9bea3765f9b243d43d106cb736abc1d0e4380bb3210dd248a27",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "aspnetcore-whole-v4-5",
+      "case_sha256": "b03d501a871de12d65c93c374320dbd07a248c05688d33a1294f02ec6e3738d6",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "aspnetcore-whole-v4-6",
+      "case_sha256": "a2ecd168dff1597dd13449a17f74d5ac022227735b22e3592e1fcd4d68ff6d86",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "aspnetcore-whole-v4-7",
+      "case_sha256": "147a510474cfda27397dccfb1fd55a1970567c108b2d34cda82b28b0d36053cf",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "aspnetcore-whole-v4-8",
+      "case_sha256": "1519f6fd13f0e3667c92be62568d976b26e3a269c9651553decd272fb4b46ecb",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "fs-extra-whole-v4-1",
+      "case_sha256": "39cb222a2a48d3ff1f141a84459030e540a4c3ebd23a7aeef554ead6b1882897",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "fs-extra-whole-v4-2",
+      "case_sha256": "49df69cf1f61fa3180e87c0106e26b7711ad8ac8eebb1f5ee7175461ec3cf900",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "fs-extra-whole-v4-3",
+      "case_sha256": "ebb254be9f43fce68e412581f244f189f02e24e906743cbd7c31d0ad69c6b32a",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "fs-extra-whole-v4-4",
+      "case_sha256": "034996925c2e7188cbac042bd6667ff3c5ec201fbf59d43109bbb2ce313c8ca4",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "fs-extra-whole-v4-5",
+      "case_sha256": "fb7fce36c5bba8cf575cdd8a4c3c97085e853fba9ff80e87935b5285dbee235a",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "fs-extra-whole-v4-6",
+      "case_sha256": "4ec2465939d19eb726ffdc028b36c5464f41fe1ff99f058644a1378743e6dcb4",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "fs-extra-whole-v4-7",
+      "case_sha256": "14371cf8dc92c7fe40f3e9e129a1df3d9897b0c4826df022695f0957c97daace",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "fs-extra-whole-v4-8",
+      "case_sha256": "acd56d0877efde12c8f2c101e48191978a3667df8eb19eb3c20db2b6c49b628e",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rimraf-whole-v4-1",
+      "case_sha256": "ead89fa0777f2eaba9c7909543d674b4037e9ff1cbe8d6e95ecf60da63600b4c",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rimraf-whole-v4-2",
+      "case_sha256": "17d243b9fcdea0111146aba6a6acfc56c422395b570d214d61c498d773317a0a",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rimraf-whole-v4-3",
+      "case_sha256": "fb7e9d8987588b5e4724d5329b30db92ea1a59291d0c90b6fdda88a40c25e9a0",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rimraf-whole-v4-4",
+      "case_sha256": "82608f61614b21587cb8f487d417dbf8d80c13217bfd3988e8b62dfccccdd06e",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rimraf-whole-v4-5",
+      "case_sha256": "464a9c9e2a9f3ac0af908639db268c9b8d812630a27d20a29f70c568d97bcc82",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rimraf-whole-v4-6",
+      "case_sha256": "c00ff06b6a5a3a141e4835fa2a162908faf57d0793fa004695cf14a91043f2b8",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rimraf-whole-v4-7",
+      "case_sha256": "a57f9eef000150b062287350d248fb527015793ebfe9988f629837b4136fe3ca",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rimraf-whole-v4-8",
+      "case_sha256": "d5d6ee89535fc81d711a0d1a6534ae3fdbba19d4b3083cf7413107a31d21693e",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqlfluff-whole-v4-1",
+      "case_sha256": "22de1e77cc9660674f1376c5a085d6e8fa9f653f99b0dd924d000fc0780b744c",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqlfluff-whole-v4-2",
+      "case_sha256": "973f1b257247097a07139af3ff964e3ca3d399b8b2a0bcb12e287bb12a7b6956",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqlfluff-whole-v4-3",
+      "case_sha256": "058aca276172b735b897e6bcb2944be515c67384448f8d1c5bd136d54afa5718",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqlfluff-whole-v4-4",
+      "case_sha256": "9370ee9e66d5fe8620d52675757c4a6498eeb0e15966ca220c9bc6e2017c3111",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqlfluff-whole-v4-5",
+      "case_sha256": "3c2b1d55e6f49221da5242d85932a6bf604f13fe3976341b1a89466b0dbd9f8c",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqlfluff-whole-v4-6",
+      "case_sha256": "d7682b3884c23db3ed9d88ad1604b460496fd46faae511222c6c2d9a810f3ca5",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqlfluff-whole-v4-7",
+      "case_sha256": "d3ba27591fa0b29ddf796c7caea4f1b1f355f40b303f46280a80b2724271c797",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqlfluff-whole-v4-8",
+      "case_sha256": "f5bb470771e3207ad368f0323f7df94f8c859a1edf5f06da7716b91db99a272d",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "click-whole-v4-1",
+      "case_sha256": "c1e92dd9b307b119eeef706632fc906520d5c7fd82f63d407f0e3dc94c06c19a",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pip-whole-v4-1",
+      "case_sha256": "8357f2b4c97bc046c1f01202a17f70ced864887a68b12458cd05b8865bcffaa9",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pip-whole-v4-2",
+      "case_sha256": "4dc63962fc3e38900d95c1b26a3e16a004a572edbc21210354893a8eac035123",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pip-whole-v4-3",
+      "case_sha256": "1a21a47de5f912824a38bc1bfcab6b459e2d8fd228f1592543dca1d12607d150",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "click-whole-v4-2",
+      "case_sha256": "80335f96fee58626cd3475ad258fc038c438a10026400720a725df3faf4189a8",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "click-whole-v4-3",
+      "case_sha256": "16d376a85b1fb873d996a70a3a736d0ba1c3de305f773c39acd0b1827144b682",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "click-whole-v4-4",
+      "case_sha256": "ef1d459127f8b4bb059b719a56c4ae390519ba61df804736a6d53a366cca1dba",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "click-whole-v4-5",
+      "case_sha256": "49f286d5444d8e0e78fbd7e5818f9a8037db86beab218fbefb6e50e2740ef83a",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    }
+  ]
+}
