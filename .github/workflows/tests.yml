@@ -39,7 +39,9 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install AST and resolver dependencies
-        run: python -m pip install -r requirements-resolver.txt -r requirements-ast.txt
+        run: python -m pip install -r requirements-resolver.txt -r requirements-ast.txt -r requirements-contracts.txt
+      - name: Verify contract dependency before running tests
+        run: python -c "from jsonschema import Draft202012Validator; from referencing import Registry"
       - name: Download grammar files (retry transient upstream errors)
         run: |
           for attempt in 1 2 3 4 5 6; do

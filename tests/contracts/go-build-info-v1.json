@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "source_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "profile": {
+    "goos": "linux",
+    "goarch": "amd64",
+    "go_version": "go1.22.0",
+    "mod_mode": "readonly",
+    "tags": [],
+    "targets": [
+      "./..."
+    ],
+    "cgo_enabled": false
+  },
+  "module_roots": [
+    "."
+  ],
+  "asset_roots": [],
+  "extra_inputs": [
+    "main.go"
+  ],
+  "inputs": {
+    "go.mod": "2a0bc453efb5fab8d7b6174c1b38e34090b43e1608c6ebf1acc6f08426c3382e",
+    "main.go": "627b2bb0696511ea62e04801b87731b9cfeb3548d93ec332f5c4bd3f8c0392a3"
+  },
+  "modules": [
+    {
+      "path": "example.test/app",
+      "version": "",
+      "main": true,
+      "indirect": false,
+      "manifest": "go.mod"
+    }
+  ],
+  "packages": [
+    {
+      "path": "example.test/app",
+      "module": "example.test/app",
+      "standard": false,
+      "dep_only": false,
+      "imports": [
+        "fmt"
+      ]
+    },
+    {
+      "path": "fmt",
+      "module": null,
+      "standard": true,
+      "dep_only": true,
+      "imports": []
+    }
+  ]
+}

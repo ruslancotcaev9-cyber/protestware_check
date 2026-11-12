@@ -8,16 +8,18 @@ import tempfile
 import protestware_check as scanner
 import report_formats
 import safe_io
+import json_contracts
 
 
 def _report(path):
     raw = safe_io.read_regular(path, 25_000_000)
-    report = json.loads(raw)
+    report = json_contracts.report_version(json_contracts.loads(raw), allow_legacy=True)
     if (not isinstance(report, dict) or report.get('tool') != 'protestware-check' or
             not isinstance(report.get('findings'), list) or not isinstance(report.get('scan'), dict) or
             not isinstance(report.get('gate'), dict) or type(report['gate'].get('exit_code')) is not int or
             report['gate']['exit_code'] not in (0, 1, 2)):
         raise ValueError('Invalid scanner JSON report')
+    json_contracts.report_semantics(report)
     return raw, report
 
 
@@ -53,7 +55,7 @@ def scan(source, output_dir, scanner_args=()):
 def gate(directory):
     directory = Path(directory)
     try:
-        status = json.loads(safe_io.read_regular(directory / 'status.json', 10000))
+        status = json_contracts.load(directory / 'status.json', 'gitlab-status')
         if (not isinstance(status, dict) or type(status.get('schema')) is not int or status['schema'] != 1 or
                 type(status.get('scanner_exit_code')) is not int or status['scanner_exit_code'] not in (0, 1, 2) or
                 type(status.get('report_available')) is not bool):

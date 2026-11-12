@@ -7,6 +7,7 @@ import tomllib
 
 import safe_io
 import analysis_context
+import json_contracts
 
 LEVELS = {'info': 0, 'low': 1, 'medium': 2, 'high': 3}
 FINGERPRINT = re.compile(r'[a-f0-9]{64}')
@@ -118,7 +119,7 @@ def parse_baseline(doc):
 def load_baseline(path):
     if path is None:
         return None
-    return parse_baseline(json.loads(safe_io.read_regular(path, 5_000_000)))
+    return parse_baseline(json_contracts.load(path, 'baseline'))
 
 
 def baseline(report):

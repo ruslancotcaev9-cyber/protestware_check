@@ -1,0 +1,161 @@
+{
+  "tool": "protestware-check",
+  "version": "1.3.2",
+  "source": "compatibility fixture",
+  "files_scanned": 1,
+  "analysis_context": {
+    "schema": 1,
+    "source_digest": "5c3b93d633aafea89187674c94031f9585b89ae99e99193a2ee16ac22bfafeb2",
+    "source_files": 1,
+    "ruleset_digest": "fc503ccc0b94410b7860216f7ac2932c6cd83640833e3e7b83e513aced470c61",
+    "configuration_digest": "bc4636bd31fb0a2a4250f82a050eff2dfb373775282e757b1f9655c2de819e59",
+    "dependencies_digest": "49b939c06073defc6b05c3f2c5a43e5c62feaccf2cbe72d698b0da64d19b64fc"
+  },
+  "scan": {
+    "complete": true
+  },
+  "coverage": {
+    "profile": "source",
+    "enumeration": "provided",
+    "files_observed": 1,
+    "files_selected": 1,
+    "files_analyzed": 1,
+    "file_counts": {
+      "scanned": 1
+    },
+    "pruned_directories": {},
+    "pruned_subtree_file_counts_unknown": false,
+    "input_bytes_read": 92,
+    "analysis_utf8_bytes": 92,
+    "samples": [],
+    "samples_truncated": false,
+    "ast_by_extension": {
+      ".py": {
+        "parsed": 1
+      }
+    },
+    "resolved_commit": null,
+    "resolved_tree": null
+  },
+  "risk": "high",
+  "code_risk": "high",
+  "summary": {
+    "info": 0,
+    "low": 0,
+    "medium": 2,
+    "high": 1
+  },
+  "findings": [
+    {
+      "rule": "GEO_TARGET",
+      "category": "geolocation",
+      "severity": "medium",
+      "file": "sample.py",
+      "line": 3,
+      "evidence": "if country == \"RU\":\n        shutil.rmtree(\"fixture\")",
+      "message": "AST: \u0443\u0441\u043b\u043e\u0432\u043d\u043e\u0435 \u0432\u0435\u0442\u0432\u043b\u0435\u043d\u0438\u0435 \u043f\u043e \u0433\u0435\u043e\u0433\u0440\u0430\u0444\u0438\u0447\u0435\u0441\u043a\u043e\u043c\u0443 \u043f\u0440\u0438\u0437\u043d\u0430\u043a\u0443 RU/BY",
+      "analysis": "ast",
+      "fingerprint": "d33d4e3d3d753b0b50c05612746028666bafe8cd8c6925fa44a1b74f770bc144",
+      "baseline_state": "new",
+      "effective_severity": "medium",
+      "confidence": "medium",
+      "policy_decision": "active"
+    },
+    {
+      "rule": "FS_DELETE",
+      "category": "filesystem",
+      "severity": "medium",
+      "file": "sample.py",
+      "line": 4,
+      "evidence": "shutil.rmtree(\"fixture\")",
+      "message": "\u041f\u043e\u0442\u0435\u043d\u0446\u0438\u0430\u043b\u044c\u043d\u043e\u0435 \u0443\u0434\u0430\u043b\u0435\u043d\u0438\u0435 \u0444\u0430\u0439\u043b\u0430 \u0438\u043b\u0438 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430",
+      "analysis": "ast",
+      "fingerprint": "b48f2fde50cefb7c81ce7879101735d4d79ebb5e10f527929a941984429eb3cb",
+      "baseline_state": "new",
+      "effective_severity": "medium",
+      "confidence": "medium",
+      "policy_decision": "active"
+    },
+    {
+      "rule": "GEO_ACTION",
+      "category": "correlation",
+      "severity": "high",
+      "file": "sample.py",
+      "line": 4,
+      "evidence": "shutil.rmtree(\"fixture\")",
+      "message": "AST: FS_DELETE \u043d\u0430\u0445\u043e\u0434\u0438\u0442\u0441\u044f \u0432 \u0432\u0435\u0442\u0432\u0438 \u0433\u0435\u043e\u0433\u0440\u0430\u0444\u0438\u0447\u0435\u0441\u043a\u043e\u0433\u043e \u0443\u0441\u043b\u043e\u0432\u0438\u044f (\u0441\u0442\u0440\u043e\u043a\u0430 3)",
+      "analysis": "ast",
+      "fingerprint": "cf9f70246c5cbed5b82c8ea8a69f49f078765779074744543da07e0f48cfd9e5",
+      "baseline_state": "new",
+      "effective_severity": "high",
+      "confidence": "medium",
+      "policy_decision": "active"
+    }
+  ],
+  "watchlists": {
+    "mode": "off"
+  },
+  "malware_intel": {
+    "mode": "off",
+    "checked_packages": 0,
+    "network_requests": 0,
+    "eligible_packages": 0,
+    "skipped_unknown_version": 0,
+    "skipped_unverified_origin": 0,
+    "inventory_complete": false,
+    "complete": true,
+    "sources": [],
+    "retrieved_at_utc": null,
+    "retry_requests": 0,
+    "query_pages": 0,
+    "offline": false
+  },
+  "dependencies": {
+    "summary": {
+      "count": 0,
+      "complete": false
+    },
+    "packages": [],
+    "mode": "off",
+    "go_builds": []
+  },
+  "warnings": [],
+  "ast": {
+    "mode": "auto",
+    "parsed": 1,
+    "partial": 0,
+    "degraded": 0,
+    "disabled": 0,
+    "complete": true
+  },
+  "policy": {
+    "configuration_sha256": null,
+    "only_new": false,
+    "baseline_loaded": false,
+    "counts": {
+      "active": 3,
+      "baseline": 0,
+      "suppressed": 0,
+      "disabled": 0
+    },
+    "risk": "high",
+    "warnings": [],
+    "review_context": {
+      "schema": 1,
+      "source_digest": "5c3b93d633aafea89187674c94031f9585b89ae99e99193a2ee16ac22bfafeb2",
+      "source_files": 1,
+      "ruleset_digest": "fc503ccc0b94410b7860216f7ac2932c6cd83640833e3e7b83e513aced470c61",
+      "configuration_digest": "bc4636bd31fb0a2a4250f82a050eff2dfb373775282e757b1f9655c2de819e59",
+      "dependencies_digest": "49b939c06073defc6b05c3f2c5a43e5c62feaccf2cbe72d698b0da64d19b64fc",
+      "policy_digest": "05ebbae805c1cfae5f019f78c8f49942d5513135eded81952f1b54684090472d"
+    },
+    "baseline_context_match": null,
+    "baseline_context_changes": []
+  },
+  "gate": {
+    "exit_code": 1,
+    "fail_on": "high",
+    "reasons": [],
+    "require_complete": false
+  }
+}

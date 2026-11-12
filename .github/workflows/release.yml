@@ -36,7 +36,7 @@ jobs:
           PY
           fi
       - name: Install scanner test dependencies
-        run: python3 -m pip install -r requirements-resolver.txt -r requirements-ast.txt
+        run: python3 -m pip install -r requirements-resolver.txt -r requirements-ast.txt -r requirements-contracts.txt
       - name: Download grammar files
         run: python3 -c "from tree_sitter_language_pack import download; download(['go','csharp','javascript','typescript','tsx','sql','html','css','scss','less','c','cpp'])"
       - name: Run complete tests

@@ -1,12 +1,12 @@
 """Import/export a trusted Go listing as data. Never invokes Go or target code."""
 from collections import deque
 from hashlib import sha256
-import json
 import os
 from pathlib import Path, PurePosixPath
 import re
 
 import safe_io
+import json_contracts
 from analysis_context import digest
 
 HEX = re.compile(r'[a-f0-9]{64}')
@@ -85,9 +85,9 @@ def read_inputs(root, roots, assets, extras, *, max_files=10000, max_bytes=1_000
 
 def objects(path, *, maximum):
     text = safe_io.read_regular(path, 25_000_000).decode('utf-8-sig')
-    decoder, position, result = json.JSONDecoder(), 0, []
+    decoder, position, result = json_contracts.decoder(), 0, []
     if text.lstrip().startswith('['):
-        result = json.loads(text)
+        result = json_contracts.loads(text)
     else:
         while position < len(text):
             if text[position].isspace():
@@ -161,7 +161,7 @@ def export(root, revision, module_file, package_file, environment_file, *, tags=
     root = Path(root).resolve()
     if not REVISION.fullmatch(revision):
         raise ValueError('Expected an exact source revision')
-    environment = json.loads(safe_io.read_regular(environment_file, 100000))
+    environment = json_contracts.loads(safe_io.read_regular(environment_file, 100000))
     if not isinstance(environment, dict):
         raise ValueError('Invalid Go environment JSON')
     if not isinstance(environment.get('GOFLAGS', ''), str) or environment.get('GOFLAGS', '').strip():
@@ -377,7 +377,7 @@ def logical_digest(data):
 def load(path, source_root, expected_revision, **limits):
     raw = safe_io.read_regular(path, 25_000_000)
     try:
-        data = json.loads(raw)
+        data = json_contracts.loads(raw)
         validate(data)
     except (TypeError, KeyError, RecursionError) as error:
         raise ValueError('Malformed or excessively nested Go build-info') from error

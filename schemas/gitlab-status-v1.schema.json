@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:protestware-check:schema:gitlab-status-v1",
+  "title": "GitLab report/gate handoff, schema 1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "scanner_exit_code": {
+      "enum": [
+        0,
+        1,
+        2
+      ]
+    },
+    "report_available": {
+      "type": "boolean"
+    },
+    "report_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "scanner_exit_code",
+    "report_available",
+    "report_sha256"
+  ],
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "report_available": {
+            "const": true
+          }
+        },
+        "required": [
+          "report_available"
+        ]
+      },
+      "then": {
+        "properties": {
+          "report_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "report_sha256": {
+            "type": "null"
+          },
+          "scanner_exit_code": {
+            "const": 2
+          }
+        }
+      }
+    }
+  ],
+  "description": "A digest binds exact report bytes, not producer identity. The gate verifies artifact consistency and fails closed on missing/invalid data; CI producer/configuration must be trusted."
+}

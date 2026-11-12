@@ -1,0 +1,20 @@
+{
+  "schema": 2,
+  "fingerprint_version": 1,
+  "tool_version": "1.3.2",
+  "context": {
+    "schema": 1,
+    "source_digest": "5c3b93d633aafea89187674c94031f9585b89ae99e99193a2ee16ac22bfafeb2",
+    "source_files": 1,
+    "ruleset_digest": "fc503ccc0b94410b7860216f7ac2932c6cd83640833e3e7b83e513aced470c61",
+    "configuration_digest": "bc4636bd31fb0a2a4250f82a050eff2dfb373775282e757b1f9655c2de819e59",
+    "dependencies_digest": "49b939c06073defc6b05c3f2c5a43e5c62feaccf2cbe72d698b0da64d19b64fc",
+    "policy_digest": "05ebbae805c1cfae5f019f78c8f49942d5513135eded81952f1b54684090472d"
+  },
+  "created_at_utc": "2026-11-12T06:39:51.299937+00:00",
+  "fingerprints": [
+    "b48f2fde50cefb7c81ce7879101735d4d79ebb5e10f527929a941984429eb3cb",
+    "cf9f70246c5cbed5b82c8ea8a69f49f078765779074744543da07e0f48cfd9e5",
+    "d33d4e3d3d753b0b50c05612746028666bafe8cd8c6925fa44a1b74f770bc144"
+  ]
+}

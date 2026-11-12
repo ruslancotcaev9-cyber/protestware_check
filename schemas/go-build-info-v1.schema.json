@@ -1,0 +1,370 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:protestware-check:schema:go-build-info-v1",
+  "title": "Trusted normalized production Go listing, schema 1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "source_revision": {
+      "type": "string",
+      "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"
+    },
+    "profile": {
+      "$ref": "#/$defs/profile"
+    },
+    "module_roots": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4096,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[:\\\\\\u0000-\\u001f]).+$"
+      },
+      "minItems": 1,
+      "maxItems": 20000,
+      "uniqueItems": true
+    },
+    "asset_roots": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4096,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[:\\\\\\u0000-\\u001f]).+$"
+      },
+      "maxItems": 20000,
+      "uniqueItems": true
+    },
+    "extra_inputs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4096,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[:\\\\\\u0000-\\u001f]).+$"
+      },
+      "maxItems": 20000,
+      "uniqueItems": true
+    },
+    "inputs": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 20000,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4096,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[:\\\\\\u0000-\\u001f]).+$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/module"
+      },
+      "minItems": 1,
+      "maxItems": 2000
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/package"
+      },
+      "minItems": 1,
+      "maxItems": 20000
+    }
+  },
+  "required": [
+    "schema",
+    "source_revision",
+    "profile",
+    "module_roots",
+    "asset_roots",
+    "extra_inputs",
+    "inputs",
+    "modules",
+    "packages"
+  ],
+  "additionalProperties": true,
+  "description": "Structural checks only. go_build_info.validate also checks canonical paths, exact versions, graph closure, cycles, roots and manifest binding. Import additionally verifies revision and current source input hashes. This schema makes no network calls.",
+  "$defs": {
+    "profile": {
+      "type": "object",
+      "properties": {
+        "goos": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[^\\u0000-\\u001f]+$"
+        },
+        "goarch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[^\\u0000-\\u001f]+$"
+        },
+        "go_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[^\\u0000-\\u001f]+$"
+        },
+        "mod_mode": {
+          "enum": [
+            "readonly",
+            "mod"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.]+$"
+          },
+          "maxItems": 100
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "^[^\\u0000-\\u001f]+$"
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "cgo_enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "goos",
+        "goarch",
+        "go_version",
+        "mod_mode",
+        "tags",
+        "targets",
+        "cgo_enabled"
+      ],
+      "additionalProperties": false
+    },
+    "module": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[^\\u0000-\\u001f]+$"
+        },
+        "version": {
+          "type": "string"
+        },
+        "main": {
+          "type": "boolean"
+        },
+        "indirect": {
+          "type": "boolean"
+        },
+        "manifest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[:\\\\\\u0000-\\u001f]).+$"
+        },
+        "replace": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^[^\\u0000-\\u001f]+$"
+            },
+            "version": {
+              "type": "string"
+            },
+            "local_path": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[:\\\\\\u0000-\\u001f]).+$"
+            },
+            "manifest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[:\\\\\\u0000-\\u001f]).+$"
+            }
+          },
+          "required": [
+            "path",
+            "version"
+          ],
+          "additionalProperties": true,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "version": {
+                    "const": ""
+                  }
+                },
+                "required": [
+                  "version"
+                ]
+              },
+              "then": {
+                "required": [
+                  "local_path",
+                  "manifest"
+                ]
+              },
+              "else": {
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Sum": {
+          "type": "string",
+          "pattern": "^h1:[A-Za-z0-9+/]{43}=$"
+        },
+        "GoModSum": {
+          "type": "string",
+          "pattern": "^h1:[A-Za-z0-9+/]{43}=$"
+        }
+      },
+      "required": [
+        "path",
+        "version",
+        "main",
+        "indirect"
+      ],
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "main": {
+                "const": true
+              }
+            },
+            "required": [
+              "main"
+            ]
+          },
+          "then": {
+            "properties": {
+              "version": {
+                "const": ""
+              }
+            },
+            "required": [
+              "manifest"
+            ]
+          },
+          "else": {
+            "properties": {
+              "version": {
+                "type": "string",
+                "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "package": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[^\\u0000-\\u001f]+$"
+        },
+        "module": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^[^\\u0000-\\u001f]+$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "standard": {
+          "type": "boolean"
+        },
+        "dep_only": {
+          "type": "boolean"
+        },
+        "imports": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "^[^\\u0000-\\u001f]+$"
+          },
+          "maxItems": 20000
+        }
+      },
+      "required": [
+        "path",
+        "module",
+        "standard",
+        "dep_only",
+        "imports"
+      ],
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "standard": {
+                "const": true
+              }
+            },
+            "required": [
+              "standard"
+            ]
+          },
+          "then": {
+            "properties": {
+              "module": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "module": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024,
+                "pattern": "^[^\\u0000-\\u001f]+$"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

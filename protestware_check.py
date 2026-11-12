@@ -9,6 +9,7 @@ import safe_io
 import scan_policy
 import analysis_context
 import go_build_info
+import json_contracts
 from hashlib import sha256
 from advisory_cache import AdvisoryCache
 
@@ -35,7 +36,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request
 
-VERSION = "1.3.2"
+VERSION = "1.4.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -572,7 +573,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
                 'extra': analysis_settings or {}}
     review_context = context.finish(settings, dependencies, polyglot=ast_mode != 'off' and any(
         extension in polyglot_ast.SUPPORTED for extension in coverage.languages))
-    return {"tool": "protestware-check", "version": VERSION, "source": source, "files_scanned": scanned,
+    return {"schema": json_contracts.REPORT_SCHEMA, "tool": "protestware-check", "version": VERSION, "source": source, "files_scanned": scanned,
             'analysis_context': review_context,
             "scan": {"complete": ingestion_complete}, "coverage": coverage.as_dict(),
             "risk": risk, "code_risk": code_risk, "summary": levels, "findings": results,
