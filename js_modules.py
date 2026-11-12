@@ -141,11 +141,12 @@ class Project:
             return UNKNOWN
         candidates = {target} if suffix else set()
         is_ts = PurePosixPath(unit.path).suffix.lower() in TYPESCRIPT
-        if is_ts and suffix in {'.js', '.jsx', '.mjs', '.cjs'}:
+        if is_ts and suffix == '.js':
             candidates.update(target[:-len(suffix)] + ext for ext in ('.ts', '.tsx'))
         if not suffix and (require or is_ts):
-            candidates.update(target + ext for ext in SUFFIXES)
-            candidates.update(target + '/index' + ext for ext in SUFFIXES)
+            extensions = {'.js', '.jsx', '.ts', '.tsx'} if is_ts else {'.js'}
+            candidates.update(target + ext for ext in extensions)
+            candidates.update(target + '/index' + ext for ext in extensions)
         found = sorted(candidates.intersection(self.units))
         if len(found) != 1:
             unit.diagnostics.add('JS local module is absent from selected files or ambiguous')

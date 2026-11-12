@@ -59,7 +59,7 @@ class JavaScriptProjectTests(unittest.TestCase):
             ("module.exports={}; exports.erase=require('fs').rmSync", "const disk=require('./api'); disk.erase(path)", False),
         ):
             with self.subTest(api=api):
-                self.assertEqual(bool(self.calls(self.project(api, main, ext='cjs'), 'main.cjs')), expected)
+                self.assertEqual(bool(self.calls(self.project(api, main.replace('./api', './api.cjs'), ext='cjs'), 'main.cjs')), expected)
 
     def test_extension_and_index_resolution_is_bounded_and_unambiguous(self):
         project = Project([('lib/index.ts', "export {rmSync} from 'fs'"), ('main.ts', "import {rmSync} from './lib'; rmSync(path)")])
@@ -71,6 +71,13 @@ class JavaScriptProjectTests(unittest.TestCase):
         # Native ESM requires an explicit file extension; no speculative JS index lookup.
         project = self.project("export {rmSync} from 'fs'", "import {rmSync} from './api'; rmSync(path)", ext='js')
         self.assertFalse(self.calls(project, 'main.js'))
+        for specifier in ('./api.mjs', './api.cjs', './api.jsx'):
+            project = self.project("export {rmSync} from 'fs'", "import {rmSync} from '" + specifier + "'; rmSync(path)")
+            self.assertFalse(self.calls(project), specifier)
+        project = self.project("exports.erase=require('fs').rmSync", "require('./api').erase(path)", ext='cjs')
+        self.assertFalse(self.calls(project, 'main.cjs'))
+        project = Project([('lib/index.js', "exports.erase=require('fs').rmSync"), ('main.cjs', "require('./lib').erase(path)")])
+        self.assertTrue(self.calls(project, 'main.cjs'))
 
     def test_star_export_conflicts_do_not_choose_an_arbitrary_sink(self):
         project = Project([('a.ts', "export {rmSync as erase} from 'fs'"),
@@ -105,7 +112,7 @@ class JavaScriptProjectTests(unittest.TestCase):
         for api in ("import {rmSync} from 'fs'; export let erase=rmSync; erase=fake",
                     "if(flag){exports.erase=require('fs').rmSync}"):
             ext = 'cjs' if 'exports.' in api else 'ts'
-            main = "const {erase}=require('./api'); erase(path)" if ext == 'cjs' else "import {erase} from './api.js'; erase(path)"
+            main = "const {erase}=require('./api.cjs'); erase(path)" if ext == 'cjs' else "import {erase} from './api.js'; erase(path)"
             project = self.project(api, main, ext=ext)
             self.assertFalse(self.calls(project, 'main.' + ext))
             self.assertTrue(project.diagnostics('main.' + ext))
@@ -113,17 +120,17 @@ class JavaScriptProjectTests(unittest.TestCase):
     def test_local_and_native_property_replacement_removes_identity(self):
         for api in ("const disk={erase:require('fs').rmSync}; disk.erase=()=>{}; module.exports=disk",
                     "const disk=require('fs'); disk.rmSync=()=>{}; exports.erase=disk.rmSync"):
-            project = self.project(api, "const disk=require('./api'); disk.erase(path)", ext='cjs')
+            project = self.project(api, "const disk=require('./api.cjs'); disk.erase(path)", ext='cjs')
             self.assertFalse(self.calls(project, 'main.cjs'))
         for change in ('delete disk.erase', 'disk.erase++', 'disk.erase+=safe'):
             project = self.project("const disk={erase:require('fs').rmSync}; " + change + '; module.exports=disk',
-                                   "require('./api').erase(path)", ext='cjs')
+                                   "require('./api.cjs').erase(path)", ext='cjs')
             self.assertFalse(self.calls(project, 'main.cjs'), change)
 
     def test_unknown_third_party_and_factories_are_not_whitelisted(self):
         for api in ("export {rmSync as erase} from 'graceful-fs'", "import {rmSync} from 'fs'; const factory=()=>rmSync; export const erase=factory()"):
             self.assertFalse(self.calls(self.project(api, "import {erase} from './api.js'; erase(path)")))
-        self.assertFalse(self.calls(self.project("module.exports=require('fs').default", "require('./api').rmSync(path)", ext='cjs'), 'main.cjs'))
+        self.assertFalse(self.calls(self.project("module.exports=require('fs').default", "require('./api.cjs').rmSync(path)", ext='cjs'), 'main.cjs'))
 
     def test_same_callback_helper_can_be_called_with_another_callback(self):
         project = self.project('export function invoke(fn){fn()}',
