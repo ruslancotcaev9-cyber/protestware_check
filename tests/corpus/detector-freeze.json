@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "detector_reference_commit": "59d8805fe643d861cbd5f97aa860da14fd4ef432",
+  "detector_reference_commit": "736416469c0af9482713cf78b743bfa438f87a92",
   "files": {
     "protestware_check.py": "75a40703dab861574e5d7627ff63ba95f9810b391d1d91b82a93d23533a52875",
     "ast_analysis.py": "cc56f9878018fd7fafd5a896eee094fa5e8d215dce8b686c2470896f6091783d",
@@ -20,7 +20,7 @@
     "sql_operations.py": "16f32836b05ed3fd83ce35171daf015e9828748deae56a926b3ea9ca840aa597",
     "js_bindings.py": "ac6c25887c2f832eb10f7418300db46f2a7ecf21a2a41e636c4c76fb79a24d97",
     "json_contracts.py": "50dc4203faca6e7d2af1ac533c445310baaf9efd7c85beae5efd83513d348963",
-    "js_modules.py": "958cd5ad5629128320d13338fbe13c41329f36d0449ab35b4107c64fb8ef5f85",
+    "js_modules.py": "66dca225f0f17d8cbed47d323ba9e3b29268afc0f98879e1c0aefd60b0d7fec4",
     "safe_io.py": "1f56e89417768bc2bab061b8d37d2a9fd75a0e0304bcf99d729dab257a1cd8e3",
     "requirements-ast.txt": "dba6de3a62bd955385e5d52517b8aba3b54cf9297548164cda0ee038b71093ef",
     "requirements-resolver.txt": "9e65d9e5efe24209e9740e2d762d3e051456dab3cd4eb9574db55e75abbeb159"

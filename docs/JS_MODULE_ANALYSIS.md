@@ -16,7 +16,7 @@ Node.js, сборку или установку зависимостей. Для
 | Node API | `fs`, `node:fs`, `fs/promises`, `node:fs/promises`; удаляющие методы и Sync-формы |
 | ESM | Named/default/namespace imports, статические локальные переэкспорты, `export *`, `export * as` |
 | CommonJS | Литеральный `require`, прямые `exports.name` / `module.exports`, объекты и функции |
-| TypeScript | Уникальная подстановка `.js/.jsx/.mjs/.cjs` → `.ts/.tsx`; type-only связи не являются runtime API |
+| TypeScript | Уникальная подстановка `.js` → `.ts/.tsx`; type-only связи не являются runtime API |
 | Локальные функции | Прямые вызовы обёрток, передача функции параметром, явный вызов callback, простые значения по умолчанию |
 | Пути | Относительные пути внутри выбранного проекта; extensionless/index lookup для TS и `require` |
 
@@ -75,13 +75,15 @@ AST остаётся недоступным; `off` не строит граф.
 
 Не разрешаются сторонние пакеты по имени (`graceful-fs`, `fs-extra`), `tsconfig`
 paths, package exports, произвольные загрузчики, динамические импорты, `import =`,
-require ESM, возвращаемые функции/фабрики, Promise callback dispatch, отражение,
+require ESM, `.mts/.cts`, возвращаемые функции/фабрики, Promise callback dispatch, отражение,
 виртуальные вызовы и произвольные изменения через другие функции. Слияние ветвей,
 мутации и циклы обрабатываются консервативно и могут терять возможные пути.
 Полнота AST означает отсутствие зарегистрированной ошибки прохода в его области,
 а не полное семантическое покрытие языка. Межфайловой анализ ограничен файловыми
 операциями; сетевой taint по-прежнему ограничен одним файлом.
 
+Для JavaScript/CJS поиск без расширения ограничен `.js`/`index.js`; `.cjs/.mjs`
+требуют точного имени. Подстановка `.mjs/.cjs` в `.ts/.tsx` не выполняется.
 Правила выбора путей намеренно ограничены. Основание для явных расширений:
 [Node ESM](https://nodejs.org/api/esm.html#mandatory-file-extensions);
 для подстановки расширений — [TypeScript](https://www.typescriptlang.org/docs/handbook/modules/reference.html#file-extension-substitution).
