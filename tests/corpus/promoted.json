@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "promoted-regression-v2",
-  "detector_reference_commit": "c75f5c74e773851154b1c238b53e82c98006bc47",
+  "detector_reference_commit": "5e0149de47f17f03ff8ae30a141b612265b94be0",
   "label_scope": "rule-observable operations, not malware classification",
   "review": "labels assigned by project maintainer assistant; no independent human adjudication",
   "policy": "Consumed external examples are regression only. Eight rimraf primary files keep their original complete content and candidate labels, with pinned local helper files added as project context. Score only primary-file findings. No independent quality estimate.",

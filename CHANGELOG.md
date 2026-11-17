@@ -4,6 +4,16 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] — unreleased (2026-11-17)
+
+- Add bounded JS callable/object return summaries and captured environments,
+  composition and local ESM/CommonJS factories. Separate creation from invocation.
+- Preserve factory/return/capture traces in JSON/SARIF and additive closures metadata.
+- Keep closure/return/context/work budgets and explicit unsupported async/generator
+  returns and result mutation. Never execute target code or load extra modules.
+- Preserve corpus inputs/labels/modes and archive 1.5.1 snapshots. No fresh independent
+  quality sample or human review is claimed. Report/baseline/Go/status schemas unchanged.
+
 ## [1.5.1] — unreleased (2026-11-17)
 
 - Compute recursive JS filesystem summaries to a bounded monotone fixed point.

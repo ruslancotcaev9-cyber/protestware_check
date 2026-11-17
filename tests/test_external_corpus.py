@@ -120,6 +120,12 @@ class ExternalCorpusTests(unittest.TestCase):
             after = corpus_evaluation.load(ROOT / 'tests/corpus' / name)
             self.assertEqual(before, after)
 
+    def test_factory_analysis_keeps_all_1_5_1_inputs_and_candidate_labels(self):
+        for name, archived in (('external.json', 'external-corpus-v5-1.5.1.json'),
+                               ('promoted.json', 'promoted-corpus-v1.5.1.json')):
+            self.assertEqual(corpus_evaluation.load(ROOT/'tests/corpus'/name),
+                             corpus_evaluation.load(ROOT/'docs/evaluation'/archived))
+
 
 if __name__ == '__main__':
     unittest.main()

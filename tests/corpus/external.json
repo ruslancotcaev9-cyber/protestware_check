@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "external-retained-v5",
-  "detector_reference_commit": "c75f5c74e773851154b1c238b53e82c98006bc47",
+  "detector_reference_commit": "5e0149de47f17f03ff8ae30a141b612265b94be0",
   "label_scope": "Observable deletion/destructive SQL operations, including statically documented local/third-party wrappers; operation presence, not malware or runtime reachability.",
   "review": "Candidate labels assigned by assistant from pinned source; no independent human adjudication. All labels pending independent review.",
   "policy": "Retained 64 v4 examples after transferring all eight consumed rimraf source files and their helper context to regression. No fresh held-out examples added. Results describe retained candidate labels only; not an independent new sample.",
