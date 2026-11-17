@@ -15,8 +15,11 @@ def step(path, node, kind, message):
 
 
 def trace_dict(items):
-    bounded = items if len(items) <= 24 else (*items[:23], items[-1])
-    return [{'file': path, 'line': line, 'kind': kind, 'message': message} for path, line, kind, message in bounded]
+    return [{'file': path, 'line': line, 'kind': kind, 'message': message} for path, line, kind, message in bounded_trace(items)]
+
+
+def bounded_trace(items):
+    return tuple(items) if len(items) <= 24 else (*items[:23], items[-1])
 
 
 @dataclass
@@ -38,7 +41,8 @@ class Unit:
 
 class Project:
     def __init__(self, files, *, max_modules=256, max_bytes=10_000_000,
-                 max_nodes=500_000, max_edges=2048, max_depth=24, max_contexts=2048):
+                 max_nodes=500_000, max_edges=2048, max_depth=24, max_contexts=2048,
+                 max_summary_steps=40000):
         self.units, self.refs, self.ref_keys, self.objects, self.functions = {}, {}, {}, {}, {}
         self.queue, self.edges = deque(), defaultdict(set)
         self.max_nodes, self.max_edges, self.max_depth, self.max_contexts = max_nodes, max_edges, max_depth, max_contexts
@@ -47,6 +51,10 @@ class Project:
         self.global_diagnostics = set()
         self.effect_cache, self.results_cache = {}, {}
         self.invalid_objects = set()
+        self.context_data, self.dependents = {}, defaultdict(set)
+        self.pending, self.scheduled = deque(), set()
+        self.summary_owner = None
+        self.summary_steps, self.max_summary_steps = 0, max_summary_steps
         total = 0
         for path, source in files:
             if PurePosixPath(path).suffix.lower() not in SUFFIXES or path.endswith('.d.ts'):
@@ -86,6 +94,7 @@ class Project:
                 except (ValueError, RuntimeError, RecursionError):
                     unit.diagnostics.add('JS module function indexing budget exceeded')
             self.check_import_cycles()
+            self.solve_effects()
             # Finish bounded summaries before scan_text records per-file completeness.
             for path in self.units:
                 self.calls(path)
@@ -110,7 +119,7 @@ class Project:
         return self.ref_keys[key]
 
     def alias(self, values, route):
-        return frozenset({self.ref('alias', tuple(sorted(values)), tuple(route))})
+        return frozenset({self.ref('alias', tuple(sorted(values)), bounded_trace(route))})
 
     def property(self, values, key):
         return frozenset({self.ref('property', tuple(sorted(values)), key)}) if key else UNKNOWN
@@ -188,6 +197,9 @@ class Project:
                 output.extend(self.resolve(item[1], bindings, visited, (*route, *item[2])))
             elif kind == 'parameter':
                 output.extend(self.resolve(bindings.get(value, UNKNOWN), bindings, visited, route))
+            elif kind == 'unknown-property':
+                self.units[item[1]].diagnostics.add(f'JS queried object property may be overridden by spread/computed member at {item[1]}:{item[3]}')
+                output.append(('', route))
             elif kind == 'binding':
                 unit, name = self.units[item[1]], item[2]
                 if name in unit.mutable:
@@ -236,10 +248,16 @@ class Project:
                     return []
                 return matches[0] if matches else []
         if item and item[0] in {'object', 'module-object'} and base not in self.invalid_objects:
-            return self.resolve(self.objects[base].get(key, UNKNOWN), bindings, seen, route)
+            fields = self.objects[base]
+            return self.resolve(fields.get(key, fields.get(None, UNKNOWN)), bindings, seen, route)
         return []
 
-    def effects(self, values, arguments, bindings=None, active=()):
+    def schedule(self, key):
+        if key not in self.scheduled:
+            self.scheduled.add(key)
+            self.pending.append(key)
+
+    def effects(self, values, arguments, bindings=None):
         bindings = bindings or {}
         found = {}
         for value, route in self.resolve(values, bindings):
@@ -247,7 +265,6 @@ class Project:
                 found.setdefault(value, route)
             elif value in self.functions:
                 function = self.functions[value]
-                unit = self.units[function['path']]
                 parameters = function.get('parameters', [])
                 incoming = dict(bindings)
                 for index, token in enumerate(parameters):
@@ -255,29 +272,56 @@ class Project:
                     incoming[token] = frozenset().union(*(self.alias({v}, hops) if hops else {v}
                                                          for v, hops in self.resolve(source, bindings))) or UNKNOWN
                 key = (value, tuple(sorted((token, tuple(sorted(vals))) for token, vals in incoming.items())))
-                if key in active or len(active) >= self.max_depth:
-                    unit.diagnostics.add('JS module call recursion/depth limit reached')
-                    continue
                 if key not in self.effect_cache:
-                    self.contexts += 1
-                    if self.contexts > self.max_contexts:
+                    if self.contexts >= self.max_contexts:
                         self.global_diagnostics.add('JS module call context budget exceeded')
                         continue
-                    effects = {}
-                    for event in function['events']:
-                        for symbol, hops in self.event_effects(event, incoming, (*active, key)).items():
-                            effects.setdefault(symbol, hops)
-                    self.effect_cache[key] = effects
-                declaration = step(unit.path, function['node'], 'call', 'local function wrapper')
+                    self.contexts += 1
+                    self.effect_cache[key] = {}
+                    self.context_data[key] = incoming
+                    self.schedule(key)
+                if self.summary_owner is not None:
+                    self.dependents[key].add(self.summary_owner)
+                declaration = step(function['path'], function['node'], 'call', 'local function wrapper')
                 for symbol, hops in self.effect_cache[key].items():
-                    found.setdefault(symbol, (*route, declaration, *hops))
+                    found.setdefault(symbol, bounded_trace((*route, declaration, *hops)))
         return found
 
-    def event_effects(self, event, bindings=None, active=()):
+    def solve_effects(self):
+        # Seed every syntactic call, as in the file-level operation-presence scan.
+        for unit in self.units.values():
+            for event in unit.events:
+                self.event_effects(event)
+        for function in self.functions.values():
+            for event in function['events']:
+                self.event_effects(event)
+        # Only add witnessed native effects. Cycles with no sink stabilize empty;
+        # newly discovered effects re-enqueue callers, including recursive callers.
+        while self.pending:
+            key = self.pending.popleft()
+            self.scheduled.remove(key)
+            self.summary_owner = key
+            try:
+                effects = self.effect_cache[key]
+                previous = len(effects)
+                for event in self.functions[key[0]]['events']:
+                    self.summary_steps += 1
+                    if self.summary_steps > self.max_summary_steps:
+                        self.global_diagnostics.add('JS module summary work budget exceeded')
+                        return
+                    for symbol, hops in self.event_effects(event, self.context_data[key]).items():
+                        effects.setdefault(symbol, hops)
+                if len(effects) > previous:
+                    for caller in self.dependents[key]:
+                        self.schedule(caller)
+            finally:
+                self.summary_owner = None
+
+    def event_effects(self, event, bindings=None):
         unit, node, callee, args, blocked = event
-        effects = self.effects(callee, args, bindings, active)
-        return {symbol: (step(unit.path, node, 'call', symbol), *hops,
-                         *((step(unit.path, node, 'sink', symbol),) if not hops or hops[-1][2] != 'sink' else ()))
+        effects = self.effects(callee, args, bindings)
+        return {symbol: bounded_trace((step(unit.path, node, 'call', symbol), *hops,
+                         *((step(unit.path, node, 'sink', symbol),) if not hops or hops[-1][2] != 'sink' else ())))
                 for symbol, hops in effects.items()
                 if not any(symbol == prefix or symbol.startswith(prefix + '.') for prefix in blocked)}
 
@@ -338,6 +382,7 @@ class Project:
     def metadata(self):
         return {'mode': 'selected-text-only', 'modules': len(self.units), 'bytes': self.bytes,
                 'import_edges': sum(map(len, self.edges.values())), 'function_contexts': self.contexts,
+                'summary_steps': self.summary_steps,
                 'complete': not self.global_diagnostics and not any(u.diagnostics for u in self.units.values())}
 
 
@@ -358,7 +403,8 @@ class Worker(Resolver):
         output = set()
         for value in values:
             if value in self.project.objects and value not in self.project.invalid_objects:
-                output.update(self.project.objects[value].get(key, UNKNOWN))
+                fields = self.project.objects[value]
+                output.update(fields.get(key, fields.get(None, UNKNOWN)))
             else:
                 output.update(self.project.property({value}, key))
         return frozenset(output) or UNKNOWN
@@ -384,8 +430,7 @@ class Worker(Resolver):
                         key = child.child_by_field_name('key')
                         label = string(self.raw(key)) if key.type == 'string' else self.name(key)
                         if key.type not in {'property_identifier', 'identifier', 'string', 'number'}:
-                            self.project.invalid_objects.add(identifier)
-                            self.unit.diagnostics.add('JS object spread/computed member identity is unresolved')
+                            self.unknown_fields(fields, child)
                             continue
                         fields[label] = self.value(child.child_by_field_name('value'), state, depth + 1)
                     elif child.type == 'shorthand_property_identifier':
@@ -396,11 +441,17 @@ class Worker(Resolver):
                             label = string(self.raw(key)) if key.type == 'string' else self.name(key)
                             fields[label] = UNKNOWN if re.match(r'\s*(?:get|set)\s', self.raw(child)) else self.value(child, state, depth + 1)
                         else:
-                            self.project.invalid_objects.add(identifier)
-                            self.unit.diagnostics.add('JS object spread/computed member identity is unresolved')
+                            self.unknown_fields(fields, child)
                     elif child.type == 'spread_element':
-                        self.project.invalid_objects.add(identifier)
-                        self.unit.diagnostics.add('JS object spread/computed member identity is unresolved')
+                        values = self.value(child.named_children[0], state, depth + 1) if child.named_children else UNKNOWN
+                        target = next(iter(values)) if len(values) == 1 else None
+                        if target in self.project.objects and target not in self.project.invalid_objects:
+                            spread = self.project.objects[target]
+                            if None in spread:
+                                self.unknown_fields(fields, child)
+                            fields.update(spread)
+                        else:
+                            self.unknown_fields(fields, child)
                 self.project.objects[identifier] = fields
             return frozenset({identifier})
         if node.type == 'call_expression':
@@ -412,6 +463,12 @@ class Worker(Resolver):
             # Function return values/factories are deliberately not inferred.
             return UNKNOWN
         return super().value(node, state, depth)
+
+    def unknown_fields(self, fields, node):
+        unknown = frozenset({self.project.ref('unknown-property', self.unit.path, node.start_byte, node.start_point[0] + 1)})
+        for key in list(fields):
+            fields[key] = unknown
+        fields[None] = unknown
 
     def predeclare(self, node, state, hoisted=False):
         super().predeclare(node, state, hoisted)

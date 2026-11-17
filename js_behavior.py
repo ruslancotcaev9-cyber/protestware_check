@@ -104,30 +104,28 @@ class BehaviorAnalyzer:
 
     def network_path(self, body, stack=None, budget=80000):
         """Return a short call path to a real network sink (not arbitrary text)."""
-        active = set(stack or ())
-        todo = [body]
+        visited = set(stack or ())
+        todo = [(body, body, ())]
         count = 0
         while todo:
-            node = todo.pop()
+            node, root, route = todo.pop()
             count += 1
             if count > budget:
                 self.diagnostics.add('JavaScript network path node budget reached')
                 return None
-            if node is not body and node.type in FUNCTION_TYPES:
+            if node is not root and node.type in FUNCTION_TYPES:
                 continue  # function declarations are not executed when merely encountered
             if node.type in CALL_TYPES:
                 callee = self._callee(node)
                 if DIRECT_NETWORK.fullmatch(callee):
-                    return [(node.start_point[0] + 1, 'sink', f'network call {callee}')]
-                if callee in self.functions and (callee in active or len(active) >= 6):
-                    reason = 'recursive call' if callee in active else 'call depth limit'
-                    self.diagnostics.add(f'JavaScript network path {reason} reached')
-                elif callee in self.functions:
+                    return [*route[:23], (node.start_point[0] + 1, 'sink', f'network call {callee}')]
+                if callee in self.functions and callee not in visited:
+                    visited.add(callee)
                     other = self.functions[callee]
-                    path = self.network_path(other.body, active | {callee}, budget=max(200, budget // 2))
-                    if path:
-                        return [(node.start_point[0] + 1, 'call', f'call {callee}'), *path]
-            todo.extend(reversed(node.named_children))
+                    todo.extend((child, root, route) for child in reversed(node.named_children))
+                    todo.append((other.body, other.body, (*route[:23], (node.start_point[0] + 1, 'call', f'call {callee}'))))
+                    continue
+            todo.extend((child, root, route) for child in reversed(node.named_children))
         return None
 
     def _is_unbounded(self, node):

@@ -169,13 +169,95 @@ class JavaScriptProjectTests(unittest.TestCase):
     def test_cycles_recursion_and_budgets_are_visible(self):
         project = self.project("export * from './main.js'", "export * from './api.js'; import {erase} from './api.js'; erase(path)")
         self.assertTrue(project.diagnostics('main.ts'))
-        for limits in ({'max_modules': 1}, {'max_bytes': 1}, {'max_nodes': 1}, {'max_edges': 0}, {'max_contexts': 0}):
+        for limits in ({'max_modules': 1}, {'max_bytes': 1}, {'max_nodes': 1}, {'max_edges': 0}, {'max_contexts': 0}, {'max_summary_steps': 0}):
             project = self.project("export function erase(){require('fs').rmSync(path)}", "import {erase} from './api.js'; erase(path)", **limits)
             self.calls(project)
             self.assertTrue(project.diagnostics('main.ts'), limits)
         project = self.project("export function erase(){erase()}", "import {erase} from './api.js'; erase(path)")
         self.assertFalse(self.calls(project))
-        self.assertTrue(project.diagnostics('main.ts'))
+        self.assertFalse(project.diagnostics('main.ts'))
+
+    def test_recursive_summaries_propagate_sinks_to_all_callers(self):
+        api = "import {rmSync} from 'fs'; export function a(){b()} function b(){a();rmSync(path)}"
+        project = self.project(api, "import {a} from './api.js'; a()")
+        found = self.calls(project)
+        self.assertTrue(found)
+        self.assertFalse(project.diagnostics('main.ts'))
+        self.assertEqual(next(iter(found.values()))[1], 'node:fs.rmSync')
+        self.assertEqual(next(iter(found.values()))[2][-1]['kind'], 'sink')
+
+    def test_recursive_callback_contexts_keep_native_and_safe_arguments_separate(self):
+        api = 'export function a(fn){b(fn)} function b(fn){a(fn);fn(path)}'
+        for argument, expected in (('rmSync', True), ('()=>{}', False)):
+            project = self.project(api, "import {a} from './api.js'; import {rmSync} from 'fs'; a(" + argument + ')')
+            self.assertEqual(bool(self.calls(project)), expected)
+            self.assertFalse(project.diagnostics('main.ts'))
+
+    def test_recursive_context_cache_does_not_leak_a_native_argument_to_another_call(self):
+        api = 'export function a(fn){b(fn)} function b(fn){a(fn);fn(path)}'
+        main = "import {a} from './api.js'; import {rmSync} from 'fs';\na(rmSync);\na(()=>{});"
+        project = self.project(api, main)
+        self.assertEqual({node.start_point[0]+1 for node, symbol, trace in self.calls(project).values()}, {2})
+        self.assertTrue(project.metadata()['complete'])
+
+    def test_recursive_summaries_do_not_depend_on_declaration_order(self):
+        first = 'export function a(){b()}'
+        second = 'function b(){a();rmSync(path)}'
+        for declarations in (first+second, second+first):
+            project = self.project("import {rmSync} from 'fs';"+declarations, "import {a} from './api.js'; a()")
+            self.assertTrue(self.calls(project))
+            self.assertTrue(project.metadata()['complete'])
+
+    def test_mutual_recursion_without_a_sink_stabilizes_empty(self):
+        project = self.project('export function a(){b()} function b(){a()}', "import {a} from './api.js'; a()")
+        self.assertFalse(self.calls(project))
+        self.assertTrue(project.metadata()['complete'])
+        self.assertLess(project.metadata()['summary_steps'], 30)
+
+    def test_long_finite_call_chain_has_bounded_witnesses_without_python_recursion(self):
+        api = "import {rmSync} from 'fs'; export function erase(){f0()}" + ''.join(
+            'function f' + str(i) + '(){' + ('f' + str(i+1) + '()' if i < 39 else 'rmSync(path)') + '}' for i in range(40))
+        project = self.project(api, "import {erase} from './api.js'; erase(path)")
+        self.assertTrue(self.calls(project))
+        self.assertTrue(project.metadata()['complete'])
+        for effects in project.effect_cache.values():
+            self.assertTrue(all(len(hops) <= 24 for hops in effects.values()))
+
+    def test_summary_budget_preserves_observations_and_required_refuses_partial(self):
+        files = [('api.ts', "export function erase(){require('fs').rmSync(path)}"),
+                 ('main.ts', "import {erase} from './api.js'; erase(path)")]
+        project = Project(files, max_summary_steps=0)
+        self.assertTrue(project.calls('api.ts')[0])
+        self.assertIn('summary work budget', ' '.join(project.diagnostics('main.ts')))
+        with patch('js_modules.Project', return_value=project), self.assertRaisesRegex(scanner.ScanError, 'partial'):
+            scanner.build_report('inert', files, [], [], [], dependency_mode='off', ast_mode='required')
+
+    def test_unused_spread_and_options_do_not_invalidate_native_identity(self):
+        api = "import {rmSync} from 'fs'; const metadata={...unknown}; export const erase=p=>rmSync(p,{...options,force:true})"
+        project = self.project(api, "import {erase} from './api.js'; erase(path)")
+        self.assertTrue(self.calls(project))
+        self.assertTrue(project.metadata()['complete'])
+
+    def test_ordered_spread_copies_known_fields_and_later_explicit_keys_win(self):
+        for fields, expected in (('...safe,erase:rmSync', True), ('erase:rmSync,...safe', False),
+                                 ('...unknown,erase:rmSync', True)):
+            api = "import {rmSync} from 'fs'; const safe={erase:()=>{}}; export const disk={" + fields + '}'
+            project = self.project(api, "import {disk} from './api.js'; disk.erase(path)")
+            self.assertEqual(bool(self.calls(project)), expected, fields)
+            self.assertFalse(project.diagnostics('main.ts'), fields)
+
+    def test_unknown_override_of_queried_property_is_still_partial(self):
+        for fields in ('erase:rmSync,...unknown', 'erase:rmSync,[key]:safe', '...unknown'):
+            project = self.project("import {rmSync} from 'fs'; export const disk={" + fields + '}',
+                                   "import {disk} from './api.js'; disk.erase(path)")
+            self.assertFalse(self.calls(project), fields)
+            self.assertIn('queried object property', ' '.join(project.diagnostics('main.ts')))
+
+    def test_spread_snapshot_does_not_follow_later_source_property_changes(self):
+        for initial, later, expected in (('rmSync', '()=>{}', True), ('()=>{}', 'rmSync', False)):
+            api = "const {rmSync}=require('fs'); const source={erase:" + initial + '}; const disk={...source}; source.erase=' + later + '; module.exports=disk'
+            project = self.project(api, "require('./api.cjs').erase(path)", ext='cjs')
+            self.assertEqual(bool(self.calls(project, 'main.cjs')), expected)
 
     def test_duplicate_and_noncanonical_paths_are_partial(self):
         for files in ([('a.ts', ''), ('a.ts', '')], [('../a.ts', 'x')], [('/a.ts', 'x')]):
