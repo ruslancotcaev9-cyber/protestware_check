@@ -14,7 +14,9 @@ Changes to **protestware-check** are recorded here. Format follows
 - Move eight consumed fs-extra files into regression with pinned multi-repository
   helper origins; archive 1.6.0 inputs/review/freeze. Retain 56 external candidates;
   add no fresh independent evaluation or human label/model approval.
-- Document package scope, migration, remaining partials and static-only validation.
+- Verify 510 tests without skips; save original CI reports/checksums for 48/38/56
+  cases, including 10 promoted and 6 retained partials. Document package scope,
+  migration and limits without claiming independent improvement from rotation.
 
 ## [1.6.0] — unreleased (2026-11-17)
 
