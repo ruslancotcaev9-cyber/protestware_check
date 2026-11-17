@@ -15,6 +15,8 @@ Changes to **protestware-check** are recorded here. Format follows
 - Keep corpus code, helper files, labels and AST modes unchanged. Archive 1.5.0
   corpus/review/freeze inputs. Rimraf project partial cases fall from five to two
   with all four positive and four negative results retained on the same inputs.
+- Verify 464 tests without skips, unchanged regression TP/TN and external
+  outcomes/statuses; preserve original CI JSON and both residual project partials.
 - Add ast.modules.summary_steps; report schema remains 1, baseline 2, Go/status 1.
   Rule context changes reopen baseline findings. Factories and third-party APIs
   remain outside this fix; no fresh independent quality sample is claimed.

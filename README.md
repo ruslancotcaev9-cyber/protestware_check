@@ -83,7 +83,7 @@ OSV/OpenSSF и GitHub частично дублируют записи; един
 | Проверить предложенные метки корпуса | [Порядок ревью](docs/CORPUS_REVIEW_GUIDE.md), [таблица исходников](docs/CORPUS_LABEL_REVIEW_V4.md) |
 | Проверить формат JSON и совместимость артефактов | [JSON-контракты и миграция](docs/JSON_CONTRACTS.md) |
 | Понять правила, архитектуру и ограничения | [Технический справочник](docs/TECHNICAL_REFERENCE.md) |
-| Проверить результаты и известные пропуски | [Проверка 1.5.0](docs/VALIDATION_1_5_0.md), [методика корпусов](tests/corpus/README.md) |
+| Проверить результаты и известные пропуски | [Проверка 1.5.1](docs/VALIDATION_1_5_1.md), [методика корпусов](tests/corpus/README.md) |
 | Посмотреть изменения и направления развития | [Changelog](CHANGELOG.md), [план развития](docs/ROADMAP.md) |
 | Встроить инструмент в CI | [GitHub Code Scanning](examples/github-code-scanning.yml), [GitLab CI/CD](examples/gitlab-ci.yml), [пример политики](examples/policy.toml) |
 | Внести исправление или подготовить выпуск | [Contributing](CONTRIBUTING.md), [описание 1.5.1](docs/releases/v1.5.1.md), [release checklist](docs/RELEASE_CHECKLIST.md) |
@@ -115,6 +115,9 @@ JSON Schema и отдельный офлайн-валидатор для отч�
 
 Внешний набор содержит 64 сохранённых примера; новых источников нет.
 Метки предварительные, независимое человеческое ревью не выполнено.
+Полный CI: **464 теста без пропусков**; регрессии 48/30 без FP/FN.
+Внешний набор сохраняет TP=30/TN=32/FP=0/FN=2 и 8 partial.
+[Результаты 1.5.1 и ограничения](docs/VALIDATION_1_5_1.md) ·
 [Результаты предыдущей версии](docs/VALIDATION_1_5_0.md) ·
 [Данные и порядок ротации](tests/corpus/README.md).
 

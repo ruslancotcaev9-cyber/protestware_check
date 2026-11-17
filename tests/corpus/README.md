@@ -78,3 +78,6 @@ TP=30/TN=36/FP=0/FN=6, 8 partial. Исходный JSON прогона, корп
 Входы и метки 1.5.0 сохранены в docs/evaluation/external-corpus-v5.json и
 promoted-corpus-v1.5.0.json. Тест сравнивает их с текущими cases; новые метрики
 не подменяют исторические JSON. [Уточнение partial](../../docs/JS_PARTIAL_ANALYSIS.md).
+
+[Проверка 1.5.1](../../docs/VALIDATION_1_5_1.md): 464 теста без пропусков,
+проектные partial 5 → 2; исходные входы и исторические результаты сохранены.
