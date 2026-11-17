@@ -7,7 +7,7 @@
 
 Правила заморожены до полного измерения в
 [`c75f5c74e773851154b1c238b53e82c98006bc47`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/c75f5c74e773851154b1c238b53e82c98006bc47).
-[Список SHA-256](../tests/corpus/detector-freeze.json) проверяется тестом.
+[Список SHA-256](evaluation/detector-freeze-v1.5.1.json) проверяется тестом.
 Полный прогон выполнен на
 [`3a246a20ed75000f6664531949b0291eb0a81db5`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/3a246a20ed75000f6664531949b0291eb0a81db5).
 
@@ -90,9 +90,12 @@ NETWORK_FLOOD проверен на рекурсивных компонента�
 | [Перенесённые регрессии](evaluation/promoted-v1.5.1-2026-11-17.json) | `706beb0ff47332efff8d44352762ea5667e48ed088f336c910637f6d0e0e9104` |
 | [Сохранённая выборка](evaluation/retained-v5-1.5.1-2026-11-17.json) | `542d25ff5f41839b7e6ab231120096708153331abab9919fcba2d1e673ba63ab` |
 
-SHA-256 текущего внешнего корпуса:
+SHA-256 [внешнего корпуса прогона 1.5.1](evaluation/external-corpus-v5-1.5.1.json):
 `5fbd0a598f6edba62dd64620bfd6d751dffeae3bfce1f4571f34741db30e099b`.
 [Архив входов 1.5.0](evaluation/external-corpus-v5.json),
 [архив регрессий](evaluation/promoted-corpus-v1.5.0.json),
 [архив журнала](evaluation/external-review-v5.json),
 [архив правил](evaluation/detector-freeze-v1.5.0.json).
+
+Входы этого прогона также сохранены: [регрессии 1.5.1](evaluation/promoted-corpus-v1.5.1.json),
+[журнал 1.5.1](evaluation/external-review-v5-1.5.1.json).

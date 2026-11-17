@@ -127,8 +127,8 @@ class JavaScriptProjectTests(unittest.TestCase):
                                    "require('./api.cjs').erase(path)", ext='cjs')
             self.assertFalse(self.calls(project, 'main.cjs'), change)
 
-    def test_unknown_third_party_and_factories_are_not_whitelisted(self):
-        for api in ("export {rmSync as erase} from 'graceful-fs'", "import {rmSync} from 'fs'; const factory=()=>rmSync; export const erase=factory()"):
+    def test_unknown_third_party_factories_are_not_whitelisted(self):
+        for api in ("export {rmSync as erase} from 'graceful-fs'", "import {rmSync} from 'graceful-fs'; const factory=()=>rmSync; export const erase=factory()"):
             self.assertFalse(self.calls(self.project(api, "import {erase} from './api.js'; erase(path)")))
         self.assertFalse(self.calls(self.project("module.exports=require('fs').default", "require('./api.cjs').rmSync(path)", ext='cjs'), 'main.cjs'))
 

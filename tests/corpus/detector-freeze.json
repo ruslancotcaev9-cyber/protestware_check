@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "detector_reference_commit": "c75f5c74e773851154b1c238b53e82c98006bc47",
+  "detector_reference_commit": "5e0149de47f17f03ff8ae30a141b612265b94be0",
   "files": {
-    "protestware_check.py": "263beaf8861fc77258975d62af38fe8b7d1538dac53f11fc2b2ce755d46bdf9f",
+    "protestware_check.py": "5cfdf99a274e94440ba6a4751556de7ec0ec2b8edbf0ada6e4d07a9b32bb570a",
     "ast_analysis.py": "cc56f9878018fd7fafd5a896eee094fa5e8d215dce8b686c2470896f6091783d",
     "python_taint.py": "b2816973567706a7c6ea16cd6fd2313d26fc0da616ca0ebfdc301bac6a2f38d3",
     "polyglot_ast.py": "df15d8ecfb71b12c9d8f48916c704deedcef8991d96feee58d6fce874e35ef1a",
@@ -20,7 +20,7 @@
     "sql_operations.py": "16f32836b05ed3fd83ce35171daf015e9828748deae56a926b3ea9ca840aa597",
     "js_bindings.py": "ac6c25887c2f832eb10f7418300db46f2a7ecf21a2a41e636c4c76fb79a24d97",
     "json_contracts.py": "50dc4203faca6e7d2af1ac533c445310baaf9efd7c85beae5efd83513d348963",
-    "js_modules.py": "fa28a97e6f347589bc9ec5cadbb8f86df13cbd1db7f9d57011695b623b1ebfd7",
+    "js_modules.py": "8a3b8041534dcf81bcf277247ed641337205d1ba8c1a5860781fdd4bdfe06b5d",
     "safe_io.py": "1f56e89417768bc2bab061b8d37d2a9fd75a0e0304bcf99d729dab257a1cd8e3",
     "requirements-ast.txt": "dba6de3a62bd955385e5d52517b8aba3b54cf9297548164cda0ee038b71093ef",
     "requirements-resolver.txt": "9e65d9e5efe24209e9740e2d762d3e051456dab3cd4eb9574db55e75abbeb159"

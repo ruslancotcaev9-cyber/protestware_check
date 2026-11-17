@@ -42,7 +42,7 @@ class Unit:
 class Project:
     def __init__(self, files, *, max_modules=256, max_bytes=10_000_000,
                  max_nodes=500_000, max_edges=2048, max_depth=24, max_contexts=2048,
-                 max_summary_steps=40000):
+                 max_summary_steps=40000, max_closures=1024):
         self.units, self.refs, self.ref_keys, self.objects, self.functions = {}, {}, {}, {}, {}
         self.queue, self.edges = deque(), defaultdict(set)
         self.max_nodes, self.max_edges, self.max_depth, self.max_contexts = max_nodes, max_edges, max_depth, max_contexts
@@ -55,6 +55,10 @@ class Project:
         self.pending, self.scheduled = deque(), set()
         self.summary_owner = None
         self.summary_steps, self.max_summary_steps = 0, max_summary_steps
+        self.return_cache = {}
+        self.return_generation = self.closures = 0
+        self.max_closures = max_closures
+        self.indexing = True
         total = 0
         for path, source in files:
             if PurePosixPath(path).suffix.lower() not in SUFFIXES or path.endswith('.d.ts'):
@@ -93,6 +97,7 @@ class Project:
                     Worker(self, unit, identifier).function_body(function)
                 except (ValueError, RuntimeError, RecursionError):
                     unit.diagnostics.add('JS module function indexing budget exceeded')
+            self.indexing = False
             self.check_import_cycles()
             self.solve_effects()
             # Finish bounded summaries before scan_text records per-file completeness.
@@ -171,7 +176,9 @@ class Project:
         identifier = self.ref('function', unit.path, node.start_byte)
         if identifier not in self.functions:
             self.functions[identifier] = {'path': unit.path, 'node': node,
-                                          'scopes': list(state.scopes), 'events': [], 'defaults': []}
+                                          'scopes': list(state.scopes), 'events': [], 'defaults': [], 'returns': [],
+                                          'generator': 'generator' in node.type or any(c.type == '*' for c in node.children),
+                                          'deferred_return': 'generator' in node.type or any(c.type in {'async', '*'} for c in node.children)}
             self.queue.append(identifier)
         return identifier
 
@@ -188,7 +195,7 @@ class Project:
                     self.global_diagnostics.add('JS symbolic resolution cycle/depth limit reached')
                 continue
             item = self.refs.get(value)
-            if item is None or item[0] in {'function', 'object', 'module-object'}:
+            if item is None or item[0] in {'function', 'object', 'module-object', 'closure'}:
                 output.append((value, route))
                 continue
             kind = item[0]
@@ -217,10 +224,17 @@ class Project:
             elif kind == 'property':
                 for base, hops in self.resolve(item[1], bindings, visited, route):
                     output.extend(self.get_property(base, item[2], bindings, visited, hops))
+            elif kind == 'call-result':
+                output.extend(self.call_result(item[4], item[5], bindings, visited, route, item[1], item[3]))
+        if len(output) > 32:
+            self.global_diagnostics.add('JS symbolic alternative budget exceeded')
         return output[:32]
 
     def get_property(self, base, key, bindings, seen, route):
         item = self.refs.get(base)
+        if item and item[0] == 'closure':
+            captured = {token: frozenset(values) for token, values in item[2]}
+            return [(self.capture(value, captured), hops) for value, hops in self.get_property(item[1], key, captured, seen, route)]
         if item and item[0] == 'native-namespace':
             return [(item[1], route)] if key == 'default' else self.get_property(item[1], key, bindings, seen, route)
         if base in (FS, PROMISES, PROCESS):
@@ -257,65 +271,129 @@ class Project:
             self.scheduled.add(key)
             self.pending.append(key)
 
+    def capture(self, value, bindings):
+        if not bindings or (value not in self.functions and value not in self.objects):
+            return value
+        frozen = tuple(sorted((token, tuple(sorted(values))) for token, values in bindings.items()))
+        key = ('closure', value, frozen)
+        if key not in self.ref_keys:
+            if self.closures >= self.max_closures:
+                self.global_diagnostics.add('JS factory closure budget exceeded')
+                return ''
+            self.closures += 1
+        return self.ref(*key)
+
+    def context(self, value, arguments, bindings):
+        if self.indexing:
+            return None
+        incoming = dict(bindings)
+        item = self.refs.get(value)
+        if item and item[0] == 'closure':
+            value = item[1]
+            incoming.update((token, frozenset(values)) for token, values in item[2])
+        function = self.functions.get(value)
+        if function is None:
+            return None
+        for index, token in enumerate(function.get('parameters', [])):
+            source = arguments[index] if index < len(arguments) else function['defaults'][index]
+            incoming[token] = frozenset().union(*(self.alias({v}, hops) if hops else {v}
+                                                 for v, hops in self.resolve(source, bindings))) or UNKNOWN
+        key = (value, tuple(sorted((token, tuple(sorted(vals))) for token, vals in incoming.items())))
+        if key not in self.effect_cache:
+            if self.contexts >= self.max_contexts:
+                self.global_diagnostics.add('JS module call context budget exceeded')
+                return None
+            self.contexts += 1
+            self.effect_cache[key], self.return_cache[key] = {}, {}
+            self.context_data[key] = incoming
+            self.schedule(key)
+        if self.summary_owner is not None:
+            self.dependents[key].add(self.summary_owner)
+        return key
+
+    def call_result(self, values, arguments, bindings, seen, route, path, line):
+        output = []
+        for value, hops in self.resolve(values, bindings, seen, route):
+            key = self.context(value, arguments, bindings)
+            if key is None:
+                continue
+            function = self.functions[key[0]]
+            returned = self.return_cache[key]
+            if function['deferred_return']:
+                if any(v in self.functions or v in DELETIONS or self.refs.get(v, ('',))[0] == 'closure' for v in returned):
+                    self.units[path].diagnostics.add(f'JS async/generator factory result is unsupported at {path}:{line}')
+                continue
+            output.extend((v, bounded_trace((*hops, (path, line, 'factory', 'local factory result'), *trace)))
+                          for v, trace in returned.items())
+        return output
+
     def effects(self, values, arguments, bindings=None):
         bindings = bindings or {}
         found = {}
         for value, route in self.resolve(values, bindings):
             if value in DELETIONS:
                 found.setdefault(value, route)
-            elif value in self.functions:
-                function = self.functions[value]
-                parameters = function.get('parameters', [])
-                incoming = dict(bindings)
-                for index, token in enumerate(parameters):
-                    source = arguments[index] if index < len(arguments) else function['defaults'][index]
-                    incoming[token] = frozenset().union(*(self.alias({v}, hops) if hops else {v}
-                                                         for v, hops in self.resolve(source, bindings))) or UNKNOWN
-                key = (value, tuple(sorted((token, tuple(sorted(vals))) for token, vals in incoming.items())))
-                if key not in self.effect_cache:
-                    if self.contexts >= self.max_contexts:
-                        self.global_diagnostics.add('JS module call context budget exceeded')
-                        continue
-                    self.contexts += 1
-                    self.effect_cache[key] = {}
-                    self.context_data[key] = incoming
-                    self.schedule(key)
-                if self.summary_owner is not None:
-                    self.dependents[key].add(self.summary_owner)
+            else:
+                key = self.context(value, arguments, bindings)
+                if key is None:
+                    continue
+                function = self.functions[key[0]]
+                if function['generator']:
+                    self.units[function['path']].diagnostics.add('JS generator invocation requires unsupported iterator execution')
+                    continue
                 declaration = step(function['path'], function['node'], 'call', 'local function wrapper')
+                capture = (step(function['path'], function['node'], 'capture', 'captured callable environment'),) if self.refs.get(value, ('',))[0] == 'closure' else ()
                 for symbol, hops in self.effect_cache[key].items():
-                    found.setdefault(symbol, bounded_trace((*route, declaration, *hops)))
+                    found.setdefault(symbol, bounded_trace((*route, *capture, declaration, *hops)))
         return found
 
     def solve_effects(self):
-        # Seed every syntactic call, as in the file-level operation-presence scan.
-        for unit in self.units.values():
-            for event in unit.events:
+        roots = [event for unit in self.units.values() for event in unit.events]
+        roots.extend(event for fn in self.functions.values() for event in fn['events'])
+        while True:
+            generation = self.return_generation
+            for event in roots:
+                if not self.spend_summary_step():
+                    return
                 self.event_effects(event)
-        for function in self.functions.values():
-            for event in function['events']:
-                self.event_effects(event)
-        # Only add witnessed native effects. Cycles with no sink stabilize empty;
-        # newly discovered effects re-enqueue callers, including recursive callers.
-        while self.pending:
-            key = self.pending.popleft()
-            self.scheduled.remove(key)
-            self.summary_owner = key
-            try:
-                effects = self.effect_cache[key]
-                previous = len(effects)
-                for event in self.functions[key[0]]['events']:
-                    self.summary_steps += 1
-                    if self.summary_steps > self.max_summary_steps:
-                        self.global_diagnostics.add('JS module summary work budget exceeded')
-                        return
-                    for symbol, hops in self.event_effects(event, self.context_data[key]).items():
-                        effects.setdefault(symbol, hops)
-                if len(effects) > previous:
-                    for caller in self.dependents[key]:
-                        self.schedule(caller)
-            finally:
-                self.summary_owner = None
+            while self.pending:
+                key = self.pending.popleft()
+                self.scheduled.remove(key)
+                self.summary_owner = key
+                try:
+                    effects, returned = self.effect_cache[key], self.return_cache[key]
+                    previous = len(effects), len(returned)
+                    function, incoming = self.functions[key[0]], self.context_data[key]
+                    for event in function['events']:
+                        if not self.spend_summary_step():
+                            return
+                        for symbol, hops in self.event_effects(event, incoming).items():
+                            effects.setdefault(symbol, hops)
+                    for node, values in function['returns']:
+                        if not self.spend_summary_step():
+                            return
+                        for value, hops in self.resolve(values, incoming):
+                            bound = self.capture(value, incoming)
+                            if bound not in returned and len(returned) >= 32:
+                                self.global_diagnostics.add('JS factory return-value budget exceeded')
+                                continue
+                            returned.setdefault(bound, bounded_trace((step(function['path'], node, 'return', 'local return value'), *hops)))
+                    if len(returned) > previous[1]:
+                        self.return_generation += 1
+                    if (len(effects), len(returned)) != previous:
+                        for caller in self.dependents[key]:
+                            self.schedule(caller)
+                finally:
+                    self.summary_owner = None
+            if self.return_generation == generation:
+                break
+
+    def spend_summary_step(self):
+        self.summary_steps += 1
+        if self.summary_steps > self.max_summary_steps:
+            self.global_diagnostics.add('JS module summary work budget exceeded')
+            return False
+        return True
 
     def event_effects(self, event, bindings=None):
         unit, node, callee, args, blocked = event
@@ -383,6 +461,7 @@ class Project:
         return {'mode': 'selected-text-only', 'modules': len(self.units), 'bytes': self.bytes,
                 'import_edges': sum(map(len, self.edges.values())), 'function_contexts': self.contexts,
                 'summary_steps': self.summary_steps,
+                'closures': self.closures,
                 'complete': not self.global_diagnostics and not any(u.diagnostics for u in self.units.values())}
 
 
@@ -456,12 +535,14 @@ class Worker(Resolver):
             return frozenset({identifier})
         if node.type == 'call_expression':
             function, arguments = node.child_by_field_name('function'), node.child_by_field_name('arguments')
-            if self.value(function, state, depth + 1) == frozenset({'global:require'}) and arguments is not None:
-                args = arguments.named_children
+            callee = self.value(function, state, depth + 1)
+            args = [c for c in arguments.named_children if c.type != 'comment'] if arguments is not None else []
+            if callee == frozenset({'global:require'}):
                 specifier = string(self.raw(args[0])) if len(args) == 1 else None
                 return self.project.module(self.unit, specifier, node, require=True)
-            # Function return values/factories are deliberately not inferred.
-            return UNKNOWN
+            values = tuple(tuple(sorted(self.value(child, state, depth + 1))) for child in args)
+            return frozenset({self.project.ref('call-result', self.unit.path, node.start_byte, node.start_point[0]+1,
+                                               tuple(sorted(callee)), values)})
         return super().value(node, state, depth)
 
     def unknown_fields(self, fields, node):
@@ -469,6 +550,16 @@ class Worker(Resolver):
         for key in list(fields):
             fields[key] = unknown
         fields[None] = unknown
+
+    def has_call_result(self, values, seen=()):
+        for value in values:
+            if value in seen or len(seen) > 30:
+                continue
+            item = self.project.refs.get(value)
+            if item and (item[0] == 'call-result' or item[0] in {'alias', 'property'} and
+                         self.has_call_result(item[1], (*seen, value))):
+                return True
+        return False
 
     def predeclare(self, node, state, hoisted=False):
         super().predeclare(node, state, hoisted)
@@ -550,7 +641,10 @@ class Worker(Resolver):
         function['parameters'], function['defaults'] = tokens, defaults
         body = node.child_by_field_name('body')
         if body is not None:
-            self.predeclare(body, state, hoisted=True)
+            if body.type not in FUNCTIONS:
+                self.predeclare(body, state, hoisted=True)
+            if body.type != 'statement_block':
+                function['returns'].append((body, self.value(body, state)))
             self.walk(body, state)
 
     def export(self, node, state):
@@ -599,6 +693,9 @@ class Worker(Resolver):
         if self.project.nodes > self.project.max_nodes or depth > 250:
             raise ValueError('JS project node/depth budget exceeded')
         kind = node.type
+        if kind == 'return_statement' and self.owner is not None:
+            values = [c for c in node.named_children if c.type != 'comment']
+            self.project.functions[self.owner]['returns'].append((node, self.value(values[0] if values else None, state)))
         if kind in FUNCTIONS:
             self.project.function(self.unit, node, state)
             return
@@ -638,6 +735,20 @@ class Worker(Resolver):
                 if right is not None:
                     self.walk(right, state, depth + 1)
                 obj = self.value(left.child_by_field_name('object'), state)
+                if self.has_call_result(obj):
+                    # Drop subsequent aliases conservatively; earlier call-site
+                    # snapshots still retain their original symbolic value.
+                    for scope in state.scopes:
+                        for name, values in list(scope.items()):
+                            if values & obj:
+                                scope[name] = UNKNOWN
+                    for fields in self.project.objects.values():
+                        for name, values in list(fields.items()):
+                            if values & obj:
+                                fields[name] = UNKNOWN
+                    self.unit.invalid_exports = True
+                    self.unit.diagnostics.add('JS factory result property mutation is unresolved')
+                    return
                 key = self.name(left.child_by_field_name('property')) if left.type == 'member_expression' else string(self.raw(left.child_by_field_name('index')))
                 for target in obj:
                     if target in self.project.objects:
@@ -665,7 +776,7 @@ class Worker(Resolver):
         if kind == 'call_expression':
             args = node.child_by_field_name('arguments')
             event = (self.unit, node, self.value(node.child_by_field_name('function'), state),
-                     [self.value(child, state) for child in args.named_children] if args is not None else [], frozenset(state.modified))
+                     [self.value(child, state) for child in args.named_children if child.type != 'comment'] if args is not None else [], frozenset(state.modified))
             (self.unit.events if self.owner is None else self.project.functions[self.owner]['events']).append(event)
         super().walk(node, state, depth)
         self.unit.diagnostics.update(self.diagnostics)
