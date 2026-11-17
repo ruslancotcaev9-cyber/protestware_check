@@ -15,6 +15,9 @@ Changes to **protestware-check** are recorded here. Format follows
   project regression. Score only the primary file; validate helper hashes and
   paths. Archive v4 corpus/review/freeze; keep 64 retained external cases and a
   fresh checksum-bound pending review ledger. No fresh held-out sample claimed.
+- Verify 447 tests without skips; regression sets 48/30 have no FP/FN. Preserve
+  five partial promoted cases and eight partial retained cases. Retained external
+  results are TP=30/TN=32/FP=0/FN=2; save original CI JSON and limitations.
 - Preserve report schema 1/baseline 2/Go and status 1. Rule context changes reopen
   baseline findings. Document memory/budget costs and unresolved factory paths.
 
