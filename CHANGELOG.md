@@ -11,6 +11,8 @@ Changes to **protestware-check** are recorded here. Format follows
 - Preserve factory/return/capture traces in JSON/SARIF and additive closures metadata.
 - Keep closure/return/context/work budgets and explicit unsupported async/generator
   returns and result mutation. Never execute target code or load extra modules.
+- Verify 485 tests without skips and unchanged corpus outcomes/statuses; save
+  original CI JSON and resource measurements.
 - Preserve corpus inputs/labels/modes and archive 1.5.1 snapshots. No fresh independent
   quality sample or human review is claimed. Report/baseline/Go/status schemas unchanged.
 

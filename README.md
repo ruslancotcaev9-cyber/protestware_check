@@ -83,7 +83,7 @@ OSV/OpenSSF и GitHub частично дублируют записи; един
 | Проверить предложенные метки корпуса | [Порядок ревью](docs/CORPUS_REVIEW_GUIDE.md), [таблица исходников](docs/CORPUS_LABEL_REVIEW_V4.md) |
 | Проверить формат JSON и совместимость артефактов | [JSON-контракты и миграция](docs/JSON_CONTRACTS.md) |
 | Понять правила, архитектуру и ограничения | [Технический справочник](docs/TECHNICAL_REFERENCE.md) |
-| Проверить результаты и известные пропуски | [Проверка 1.5.1](docs/VALIDATION_1_5_1.md), [методика корпусов](tests/corpus/README.md) |
+| Проверить результаты и известные пропуски | [Проверка 1.6.0](docs/VALIDATION_1_6_0.md), [методика корпусов](tests/corpus/README.md) |
 | Посмотреть изменения и направления развития | [Changelog](CHANGELOG.md), [план развития](docs/ROADMAP.md) |
 | Встроить инструмент в CI | [GitHub Code Scanning](examples/github-code-scanning.yml), [GitLab CI/CD](examples/gitlab-ci.yml), [пример политики](examples/policy.toml) |
 | Внести исправление или подготовить выпуск | [Contributing](CONTRIBUTING.md), [описание 1.6.0](docs/releases/v1.6.0.md), [release checklist](docs/RELEASE_CHECKLIST.md) |
@@ -109,10 +109,12 @@ JSON Schema и отдельный офлайн-валидатор для отч�
 В 1.6.0 добавлены [сводки фабрик и возвращаемых функций JS/TS](docs/JS_FACTORY_ANALYSIS.md):
 раздельные захваченные аргументы, композиция, локальные ESM/CommonJS и трассы
 factory/return/capture в JSON/SARIF. Создание обёртки отделено от её вызова.
-Сохраняются budgets, диагностика мутаций и неподдержанных async/generator-возвратов.
+Сохраняются лимиты, диагностика мутаций и неподдержанных async/generator-возвратов.
 
 Корпусные входы, метки и режимы сохранены; новая независимая выборка не добавлялась.
-Метки ожидают человеческого ревью. [Предыдущая проверка](docs/VALIDATION_1_5_1.md) ·
+Метки ожидают человеческого ревью. Полный CI: **485 тестов без пропусков**;
+регрессии 48/30 без FP/FN. Сохранены два проектных partial, два внешних FN
+и восемь внешних partial. [Проверка 1.6.0](docs/VALIDATION_1_6_0.md) · [Предыдущая проверка](docs/VALIDATION_1_5_1.md) ·
 [Методика корпусов](tests/corpus/README.md).
 
 ## Работа с находками
