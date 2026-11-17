@@ -52,6 +52,7 @@ class BehaviorAnalyzer:
         self.findings: list[dict] = []
         self.seen: set[tuple[str, int]] = set()
         self.diagnostics: set[str] = set()
+        self.network_visits, self.network_budget = 0, 80000
 
     def raw(self, node):
         return self.source[node.start_byte:node.end_byte].decode('utf-8', 'replace')
@@ -110,7 +111,8 @@ class BehaviorAnalyzer:
         while todo:
             node, root, route = todo.pop()
             count += 1
-            if count > budget:
+            self.network_visits += 1
+            if count > budget or self.network_visits > self.network_budget:
                 self.diagnostics.add('JavaScript network path node budget reached')
                 return None
             if node is not root and node.type in FUNCTION_TYPES:
@@ -144,6 +146,8 @@ class BehaviorAnalyzer:
             if body is None:
                 continue
             trace = self.network_path(body)
+            if self.network_visits > self.network_budget:
+                break
             if trace:
                 start = node.start_point[0] + 1
                 self.emit('NETWORK_FLOOD', 'high', node,

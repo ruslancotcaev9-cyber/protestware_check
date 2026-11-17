@@ -44,6 +44,16 @@ class JavaScriptNetworkGraphTests(unittest.TestCase):
         self.assertIsNone(analyzer.network_path(root, budget=1))
         self.assertIn('node budget', ' '.join(analyzer.diagnostics))
 
+    def test_network_work_budget_is_shared_between_multiple_loops(self):
+        code = 'function send(){fetch(url)} while(true){send()} while(true){send()}'
+        tree = polyglot_ast._parser('javascript').parse(code.encode())
+        analyzer = js_behavior.BehaviorAnalyzer('sample.js', code)
+        analyzer.index(tree.root_node)
+        analyzer.network_budget = 6
+        analyzer.scan_flood(tree.root_node)
+        self.assertLessEqual(analyzer.network_visits, 7)
+        self.assertIn('node budget', ' '.join(analyzer.diagnostics))
+
 
 if __name__ == '__main__':
     unittest.main()
