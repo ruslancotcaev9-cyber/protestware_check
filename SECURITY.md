@@ -8,7 +8,7 @@ This policy is informed by the coordinated disclosure workflow used in Google's 
 
 | Version | Security fixes |
 | --- | --- |
-| Current `main` (development line: 1.4.x, unreleased) | Supported on a best-effort basis |
+| Current `main` (development line: 1.5.x, unreleased) | Supported on a best-effort basis |
 | Older versions | No guaranteed backports; please upgrade |
 
 The maintainers may change the supported release line as new versions are published. This is a community-maintained project; there is no contractual service-level agreement.

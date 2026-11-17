@@ -1,9 +1,13 @@
 # Расширенная оценка v4 — 12.11.2026
 
+Исторический прогон. Сохранены [корпус](evaluation/external-corpus-v4.json),
+[журнал меток](evaluation/external-review-v4.json) и [заморозка правил](evaluation/detector-freeze-v4.json).
+Текущий набор изменён при ротации 1.5.0; этот JSON и результаты v4 не пересчитаны.
+
 Версия сканера — **1.4.0**. Правила обнаружения не изменялись: исходный код и
 зависимости закреплены относительно
 [`3525be8f88b0d48a823c1466043d2d3612a2e3db`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/3525be8f88b0d48a823c1466043d2d3612a2e3db)
-в [detector-freeze.json](../tests/corpus/detector-freeze.json). Тест проверяет их
+в [detector-freeze.json](evaluation/detector-freeze-v4.json). Тест проверяет их
 SHA-256, чтобы обнаружения не подгонялись под новый набор.
 
 Первая оценка выполнена на коммите

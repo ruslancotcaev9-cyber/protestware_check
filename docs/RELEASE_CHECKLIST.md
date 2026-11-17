@@ -1,13 +1,13 @@
 # Release checklist
 
 **Status on 2026-11-12:** the repository is public, the code in `main`
-reports `1.4.0` (unreleased), and no GitHub Releases were returned by the release listing.
+reports `1.5.0` (unreleased), and no GitHub Releases were returned by the release listing.
 Repository visibility, the version constant, a Git tag and a published GitHub
 Release are distinct. `release.yml` creates a **draft** only; it does not change
 repository visibility. `docs/releases/v1.0.0.md` is a historical candidate note,
 not evidence of a published release.
 
-[Documentation index](README.md) · [1.4.0 development notes](releases/v1.4.0.md).
+[Documentation index](README.md) · [1.5.0 development notes](releases/v1.5.0.md).
 
 ## Before each release
 
@@ -42,13 +42,13 @@ not evidence of a published release.
 1. Integrate reviewed changes into `main` and wait for CI. Preserve unrelated work.
 2. Choose the intended release version. Match the literal `VERSION` in
    `protestware_check.py`, the changelog and the release notes to that version.
-   Do not tag current 1.4.0 code as v1.0.0 or another mismatched version.
+   Do not tag current 1.5.0 code as v1.0.0 or another mismatched version.
 3. From a trusted clean checkout of the reviewed commit, create an annotated
-   tag in `vMAJOR.MINOR.PATCH` form. For example, **only when 1.4.0 is approved**:
+   tag in `vMAJOR.MINOR.PATCH` form. For example, **only when 1.5.0 is approved**:
 
    ```bash
-   git tag -a v1.4.0 -m 'protestware-check v1.4.0'
-   git push origin v1.4.0
+   git tag -a v1.5.0 -m 'protestware-check v1.5.0'
+   git push origin v1.5.0
    ```
 
    Do not move an existing release tag or tag a commit with outstanding gates.
@@ -58,8 +58,8 @@ not evidence of a published release.
    A manual workflow run performs verification only; it does not create a release.
 5. Review archive, checksum, source SHA and notes in the draft. The workflow
    uses `docs/releases/v1.0.0.md` only for tag v1.0.0; for other tags it generates
-   notes automatically. For v1.4.0, copy the reviewed content of
-   `docs/releases/v1.4.0.md` into the draft and update its unreleased status only
+   notes automatically. For v1.5.0, copy the reviewed content of
+   `docs/releases/v1.5.0.md` into the draft and update its unreleased status only
    as part of the approved release. The workflow does not automatically select
    that file. Review migration notes and limitations before manually publishing.
 6. Monitor private vulnerability reports and issues after publication.

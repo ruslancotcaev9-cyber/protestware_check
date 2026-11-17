@@ -14,12 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 class ExternalCorpusTests(unittest.TestCase):
     def test_provenance_and_licenses_are_pinned(self):
         cases = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
-        self.assertEqual(len(cases), 72)
+        self.assertEqual(len(cases), 64)
         self.assertEqual(len({c['language'] for c in cases}), 6)
-        self.assertEqual(sum(c['positive'] for c in cases), 36)
-        self.assertEqual(sum(c['provenance']['whole_file'] for c in cases), 58)
-        self.assertEqual(len({c['provenance']['group'] for c in cases}), 64)
-        self.assertEqual(len({c['provenance']['repository'] for c in cases}), 15)
+        self.assertEqual(sum(c['positive'] for c in cases), 32)
+        self.assertEqual(sum(c['provenance']['whole_file'] for c in cases), 50)
+        self.assertEqual(len({c['provenance']['group'] for c in cases}), 56)
+        self.assertEqual(len({c['provenance']['repository'] for c in cases}), 14)
         for case in cases:
             p = case['provenance']
             self.assertIsNotNone(re.fullmatch('[a-f0-9]{40}', p['revision']))
@@ -52,16 +52,18 @@ class ExternalCorpusTests(unittest.TestCase):
     def test_promoted_v1_has_no_shared_source_files_with_fresh_evaluation(self):
         old = corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
         fresh = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
-        self.assertEqual(len(old), 22)
+        self.assertEqual(len(old), 30)
         key = lambda c: (c['provenance']['repository'], c['provenance']['path'])
-        self.assertTrue(set(map(key, old)).isdisjoint(set(map(key, fresh))))
+        consumed = set(map(key, old))
+        consumed.update((c['provenance']['repository'], f['path']) for c in old for f in c.get('project_files', []))
+        self.assertTrue(consumed.isdisjoint(set(map(key, fresh))))
         self.assertTrue({c['id'] for c in old}.isdisjoint({c['id'] for c in fresh}))
 
     def test_new_whole_files_and_retained_cases_have_explicit_modes_and_candidate_labels(self):
         cases = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
         new = [c for c in cases if c['cohort'] == 'new-v4']
         old = [c for c in cases if c['cohort'] == 'retained-v3']
-        self.assertEqual((len(new), len(old)), (48, 24))
+        self.assertEqual((len(new), len(old)), (40, 24))
         self.assertTrue(all(c['ast_mode'] == 'auto' and c['provenance']['whole_file'] for c in new))
         self.assertTrue(all(c['ast_mode'] == 'required' for c in old))
         for language in {c['language'] for c in new}:
@@ -89,10 +91,27 @@ class ExternalCorpusTests(unittest.TestCase):
 
     def test_detection_code_remains_frozen_during_evaluation(self):
         frozen = json.loads((ROOT / 'tests/corpus/detector-freeze.json').read_text())
-        self.assertEqual(frozen['detector_reference_commit'], '3525be8f88b0d48a823c1466043d2d3612a2e3db')
+        corpus = json.loads((ROOT / 'tests/corpus/external.json').read_text())
+        self.assertEqual(frozen['detector_reference_commit'], corpus['detector_reference_commit'])
         self.assertEqual(set(frozen['files']), set(analysis_context.RULE_FILES) | {'safe_io.py', 'requirements-ast.txt', 'requirements-resolver.txt'})
         for path, digest in frozen['files'].items():
             self.assertEqual(sha256((ROOT / path).read_bytes()).hexdigest(), digest, path)
+
+    def test_v4_is_archived_and_transferred_project_context_is_regression_only(self):
+        archive = ROOT / 'docs/evaluation/external-corpus-v4.json'
+        self.assertEqual(sha256(archive.read_bytes()).hexdigest(), '3dfb819fc9e3d5d316b02f25edf86d8b1f62ad5de2c97f40f83c3585c1f07f13')
+        old = corpus_evaluation.load(archive)
+        current = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
+        promoted = corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
+        moved = [c for c in promoted if 'project_files' in c]
+        self.assertEqual(len(moved), 8)
+        self.assertEqual({c['id'] for c in old} - {c['id'] for c in current}, {c['promoted_from'] for c in moved})
+        original = {c['id']: c for c in old}
+        for case in moved:
+            self.assertEqual(case['code'], original[case['promoted_from']]['code'])
+            self.assertEqual(case['positive'], original[case['promoted_from']]['positive'])
+            self.assertEqual(case['ast_mode'], 'auto')
+            self.assertEqual(case['path'], case['provenance']['path'])
 
 
 if __name__ == '__main__':

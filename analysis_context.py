@@ -11,7 +11,7 @@ RULE_FILES = ('protestware_check.py', 'ast_analysis.py', 'python_taint.py', 'pol
               'cpp_ast.py', 'js_behavior.py', 'language_analysis.py', 'dependency_analysis.py',
               'package_identity.py', 'threat_intel.py', 'malware_intel.py', 'scan_policy.py',
               'analysis_context.py', 'go_build_info.py', 'go_bindings.py', 'sql_operations.py', 'js_bindings.py',
-              'json_contracts.py')
+              'json_contracts.py', 'js_modules.py')
 DOCUMENTS = {'.md', '.mdx', '.rst'}
 
 

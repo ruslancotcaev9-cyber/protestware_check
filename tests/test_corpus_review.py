@@ -156,7 +156,7 @@ class ReviewLedgerTests(unittest.TestCase):
         corpus = ROOT / 'tests/corpus/external.json'
         doc, checksum = evaluation.load_document(corpus)
         summary = corpus_review.load(ROOT / 'tests/corpus/external-review.json', doc['cases'], checksum)
-        self.assertEqual(sum(summary['counts'].values()), 72)
+        self.assertEqual(sum(summary['counts'].values()), 64)
         self.assertIn(summary['status'], {'pending', 'disputed', 'claimed-complete'})
         self.assertFalse(summary['identity_verified'])
 
@@ -165,7 +165,7 @@ class ReviewLedgerTests(unittest.TestCase):
         text = corpus_review.worksheet(document['cases'], checksum)
         self.assertIn('Независимое ревью не выполнено', text)
         self.assertIn(checksum, text)
-        self.assertEqual(text, (ROOT / 'docs/CORPUS_LABEL_REVIEW_V4.md').read_text())
+        self.assertEqual(text, (ROOT / 'docs/CORPUS_LABEL_REVIEW_V5.md').read_text())
 
     def test_stale_review_is_rejected_before_any_detection(self):
         with tempfile.TemporaryDirectory() as folder:
