@@ -7,7 +7,7 @@
 
 Правила и зависимости заморожены в
 [`736416469c0af9482713cf78b743bfa438f87a92`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/736416469c0af9482713cf78b743bfa438f87a92),
-SHA-256 перечислены в [detector-freeze.json](../tests/corpus/detector-freeze.json).
+SHA-256 перечислены в [detector-freeze-v1.5.0.json](evaluation/detector-freeze-v1.5.0.json).
 Полный запуск выполнен для
 [`b70679d62e6c5cd3a54016b61ad8c5a47b49ff82`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/b70679d62e6c5cd3a54016b61ad8c5a47b49ff82):
 [CI](https://github.com/ruslancotcaev9-cyber/protestware_check/actions/runs/43188542440)
@@ -84,8 +84,10 @@ SHA-256 ZIP: `89819ee165bf5fdd60bd6975641fbd82dca6783006e5862006ce27dad7718f37`.
 | [Регрессия 30](evaluation/promoted-v1.5.0-2026-11-12.json) | `881563117f9e13318ce4495928c67931a07acb74930f8e22f28bf4357d283b50` |
 | [Сохранённая выборка 64](evaluation/retained-v5-2026-11-12.json) | `6511a46ab696ceab6d4eaf799feccadfe9c0d46ba20487b0d6d0aadf5a811431` |
 
-Хеш текущего внешнего корпуса:
+Хеш [внешнего корпуса прогона 1.5.0](evaluation/external-corpus-v5.json):
 `b980a1d6efe1e3b3b1397942db4af712b11a3f5948a70a69599b357bb6cbe0a3`.
+[Регрессионные входы 1.5.0](evaluation/promoted-corpus-v1.5.0.json) и
+[журнал меток](evaluation/external-review-v5.json) также сохранены.
 Исторические v4 JSON, корпус, журнал и заморозка сохранены отдельно.
 [Порядок ротации и запуска](../tests/corpus/README.md) ·
 [ревью меток](CORPUS_REVIEW_GUIDE.md).

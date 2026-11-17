@@ -4,6 +4,23 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] — unreleased (2026-11-17)
+
+- Compute recursive JS filesystem summaries to a bounded monotone fixed point.
+  Keep argument contexts separate and witnesses bounded inside the cache.
+- Model object spread in property order; diagnose queried unknown overrides
+  instead of marking every object spread/file partial. Preserve actual ambiguity.
+- Replace recursive NETWORK_FLOOD reachability with a finite named-function graph
+  search and a shared per-file node budget across loops. No target execution.
+- Keep corpus code, helper files, labels and AST modes unchanged. Archive 1.5.0
+  corpus/review/freeze inputs. Rimraf project partial cases fall from five to two
+  with all four positive and four negative results retained on the same inputs.
+- Verify 464 tests without skips, unchanged regression TP/TN and external
+  outcomes/statuses; preserve original CI JSON and both residual project partials.
+- Add ast.modules.summary_steps; report schema remains 1, baseline 2, Go/status 1.
+  Rule context changes reopen baseline findings. Factories and third-party APIs
+  remain outside this fix; no fresh independent quality sample is claimed.
+
 ## [1.5.0] — unreleased (2026-11-12)
 
 - Add bounded selected-text-only local JS/TS module links: ESM/CommonJS,

@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "detector_reference_commit": "736416469c0af9482713cf78b743bfa438f87a92",
+  "detector_reference_commit": "c75f5c74e773851154b1c238b53e82c98006bc47",
   "files": {
-    "protestware_check.py": "75a40703dab861574e5d7627ff63ba95f9810b391d1d91b82a93d23533a52875",
+    "protestware_check.py": "263beaf8861fc77258975d62af38fe8b7d1538dac53f11fc2b2ce755d46bdf9f",
     "ast_analysis.py": "cc56f9878018fd7fafd5a896eee094fa5e8d215dce8b686c2470896f6091783d",
     "python_taint.py": "b2816973567706a7c6ea16cd6fd2313d26fc0da616ca0ebfdc301bac6a2f38d3",
     "polyglot_ast.py": "df15d8ecfb71b12c9d8f48916c704deedcef8991d96feee58d6fce874e35ef1a",
     "cpp_ast.py": "4b4ee17d408bbae5b84f929ab250a3bb8f8b7dfb561a02bdae54ce14f00d7f10",
-    "js_behavior.py": "fc434ccdd29f2b3be5681fce6370a29aac028f5887922e39074f806e6f498e57",
+    "js_behavior.py": "1945de68f34c63fed10871875af926dbab701de3c4eca519f4d62ab9d113618d",
     "language_analysis.py": "2b25b40c27d5e293fab5c118b8ea02b3756cdda97b9c1598303ffd0cb432cf8f",
     "dependency_analysis.py": "0830552c6952ee502eac2c31c1b06aaccf2a2c4b1d6b679ae7a7fedda275e736",
     "package_identity.py": "eab3f69b7f88918a91f35629ebe3d2a8f3bd399b28896c3de45c2cdc86a4b555",
@@ -20,7 +20,7 @@
     "sql_operations.py": "16f32836b05ed3fd83ce35171daf015e9828748deae56a926b3ea9ca840aa597",
     "js_bindings.py": "ac6c25887c2f832eb10f7418300db46f2a7ecf21a2a41e636c4c76fb79a24d97",
     "json_contracts.py": "50dc4203faca6e7d2af1ac533c445310baaf9efd7c85beae5efd83513d348963",
-    "js_modules.py": "66dca225f0f17d8cbed47d323ba9e3b29268afc0f98879e1c0aefd60b0d7fec4",
+    "js_modules.py": "fa28a97e6f347589bc9ec5cadbb8f86df13cbd1db7f9d57011695b623b1ebfd7",
     "safe_io.py": "1f56e89417768bc2bab061b8d37d2a9fd75a0e0304bcf99d729dab257a1cd8e3",
     "requirements-ast.txt": "dba6de3a62bd955385e5d52517b8aba3b54cf9297548164cda0ee038b71093ef",
     "requirements-resolver.txt": "9e65d9e5efe24209e9740e2d762d3e051456dab3cd4eb9574db55e75abbeb159"

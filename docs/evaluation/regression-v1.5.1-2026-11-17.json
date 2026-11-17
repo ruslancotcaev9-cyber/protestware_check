@@ -1,0 +1,981 @@
+{
+  "schema": 1,
+  "tool_version": "1.5.1",
+  "cases": 48,
+  "source_groups": 0,
+  "whole_file_cases": 0,
+  "repositories": 0,
+  "metrics_valid": true,
+  "overall": {
+    "tp": 24,
+    "fp": 0,
+    "tn": 24,
+    "fn": 0,
+    "errors": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "false_positive_rate": 0.0
+  },
+  "by_language_and_rule": [
+    {
+      "language": "C#",
+      "rule": "AST_GEO_ACTION",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Go",
+      "rule": "AST_GEO_ACTION",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "JavaScript",
+      "rule": "AST_GEO_ACTION",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Python",
+      "rule": "SENSITIVE_DATA_SEND",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "SQL",
+      "rule": "SQL_DESTRUCTIVE",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "TypeScript",
+      "rule": "AST_GEO_ACTION",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_repository": [],
+  "by_cohort": [
+    {
+      "cohort": "unspecified",
+      "tp": 24,
+      "fp": 0,
+      "tn": 24,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_operation_scope": [
+    {
+      "scope": "unspecified",
+      "tp": 24,
+      "fp": 0,
+      "tn": 24,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_mode": [
+    {
+      "mode": "required",
+      "tp": 24,
+      "fp": 0,
+      "tn": 24,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_status": [
+    {
+      "status": "parsed",
+      "tp": 24,
+      "fp": 0,
+      "tn": 24,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "analysis": {
+    "by_status": {
+      "parsed": 48
+    },
+    "complete": true,
+    "successful_fraction": 1.0,
+    "partial_cases": 0
+  },
+  "performance": {
+    "measured": true,
+    "elapsed_seconds": 0.2294384610000222,
+    "median_case_seconds": 0.0029012504999990085,
+    "peak_traced_python_bytes": 903376
+  },
+  "results": [
+    {
+      "id": "go-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "go-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "go-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "go-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "go-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "go-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "go-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "go-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "csharp-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "csharp-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "csharp-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "csharp-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "csharp-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "csharp-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "csharp-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "csharp-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "javascript-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "javascript-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "javascript-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "javascript-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "javascript-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "javascript-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "javascript-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "javascript-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "typescript-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "typescript-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "typescript-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "typescript-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "typescript-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "typescript-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "typescript-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "typescript-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sql-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sql-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sql-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sql-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sql-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sql-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sql-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sql-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "python-ast-taint"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "python-ast-taint"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "python-ast-taint"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "python-ast-taint"
+      ],
+      "expected_positive": true,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": null,
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    }
+  ],
+  "suite": {},
+  "evaluation_mode": "regression-gate",
+  "corpus_sha256": "331599e2077333c02082d710327f60cf2080ca67628c0695eeb40e1e8a92dba2"
+}

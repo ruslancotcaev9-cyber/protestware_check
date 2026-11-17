@@ -1,0 +1,833 @@
+{
+  "schema": 1,
+  "tool_version": "1.5.1",
+  "cases": 30,
+  "source_groups": 20,
+  "whole_file_cases": 10,
+  "repositories": 8,
+  "metrics_valid": true,
+  "overall": {
+    "tp": 16,
+    "fp": 0,
+    "tn": 14,
+    "fn": 0,
+    "errors": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "false_positive_rate": 0.0
+  },
+  "by_language_and_rule": [
+    {
+      "language": "C#",
+      "rule": "CS_FS_DELETE",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Go",
+      "rule": "GO_FS_DELETE",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "JavaScript",
+      "rule": "FS_DELETE",
+      "tp": 3,
+      "fp": 0,
+      "tn": 3,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Python",
+      "rule": "FS_DELETE",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "SQL",
+      "rule": "SQL_DESTRUCTIVE",
+      "tp": 3,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "TypeScript",
+      "rule": "FS_DELETE",
+      "tp": 7,
+      "fp": 0,
+      "tn": 7,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_repository": [
+    {
+      "repository": "dotnet/runtime",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "golang/go",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "isaacs/rimraf",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "microsoft/TypeScript",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "microsoft/vscode",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "nodejs/node",
+      "tp": 3,
+      "fp": 0,
+      "tn": 3,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "postgres/postgres",
+      "tp": 3,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "python/cpython",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_cohort": [
+    {
+      "cohort": "promoted-v4",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "cohort": "unspecified",
+      "tp": 12,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_operation_scope": [
+    {
+      "scope": "local-wrapper",
+      "tp": 4,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "no-target-operation",
+      "tp": 0,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "unspecified",
+      "tp": 12,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_mode": [
+    {
+      "mode": "auto",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "mode": "required",
+      "tp": 12,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_status": [
+    {
+      "status": "parsed",
+      "tp": 14,
+      "fp": 0,
+      "tn": 14,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "status": "partial",
+      "tp": 2,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    }
+  ],
+  "analysis": {
+    "by_status": {
+      "parsed": 28,
+      "partial": 2
+    },
+    "complete": false,
+    "successful_fraction": 1.0,
+    "partial_cases": 2
+  },
+  "performance": {
+    "measured": true,
+    "elapsed_seconds": 2.3122158590000197,
+    "median_case_seconds": 0.006321502999998785,
+    "peak_traced_python_bytes": 3331486
+  },
+  "results": [
+    {
+      "id": "golang-go-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "golang/go",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "golang-go-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "golang/go",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "dotnet-runtime-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "dotnet/runtime",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "dotnet-runtime-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "dotnet/runtime",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-TypeScript-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "microsoft/TypeScript",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-TypeScript-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "microsoft/TypeScript",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "postgres/postgres",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "postgres/postgres",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-cpython-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "python/cpython",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-cpython-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "python/cpython",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "postgres/postgres",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "postgres/postgres",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v2-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v2-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v2-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-TypeScript-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "microsoft/TypeScript",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-vscode-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "microsoft/vscode",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-vscode-v2-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "microsoft/vscode",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-TypeScript-v2-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "microsoft/TypeScript",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic src/rimraf-windows.ts: AST partial analysis: src/rimraf-windows.ts: JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:143; JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:59",
+          "AST diagnostic src/rimraf-move-remove.ts: AST partial analysis: src/rimraf-move-remove.ts: JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:143; JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:59"
+        ]
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic src/rimraf-move-remove.ts: AST partial analysis: src/rimraf-move-remove.ts: JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:143; JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:59"
+        ]
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    }
+  ],
+  "suite": {
+    "suite": "promoted-regression-v2",
+    "detector_reference_commit": "c75f5c74e773851154b1c238b53e82c98006bc47",
+    "label_scope": "rule-observable operations, not malware classification",
+    "review": "labels assigned by project maintainer assistant; no independent human adjudication",
+    "policy": "Consumed external examples are regression only. Eight rimraf primary files keep their original complete content and candidate labels, with pinned local helper files added as project context. Score only primary-file findings. No independent quality estimate."
+  },
+  "evaluation_mode": "regression-gate",
+  "corpus_sha256": "05491dc601499fe42032d9db96217126826497769d51794a2a45ee30b77e76ff"
+}
