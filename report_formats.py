@@ -139,7 +139,7 @@ def sarif(report: dict[str, Any], *, gitlab: bool = False) -> dict[str, Any]:
                                   "properties": {"category": item.get("category", "unknown"),
                                                  "severity": item.get("severity", "info")}}
         for field in ("package", "matched_packages", "advisory_ids", "sources", "references", "version_match",
-                      "origin_match", "analysis", "resolved_symbol", "binding_certainty", "module_analysis", "repository", "evidence", "fingerprint", "confidence",
+                      "origin_match", "analysis", "resolved_symbol", "binding_certainty", "binding_basis", "package_models", "module_analysis", "repository", "evidence", "fingerprint", "confidence",
                       "effective_severity", "policy_decision", "policy_override", "policy_exception", "policy_review_required", "baseline_context_changes"):
             if field in item:
                 result["properties"][field] = item[field]
@@ -195,6 +195,8 @@ def sarif(report: dict[str, Any], *, gitlab: bool = False) -> dict[str, Any]:
     dependencies = report.get("dependencies", {})
     intelligence = report.get("malware_intel", {})
     ast_attempted = any(ast.get(key, 0) for key in ("parsed", "partial", "degraded"))
+    module_metadata = ast.get('modules',{})
+    package_models = module_metadata.get('package_models',[]) if isinstance(module_metadata,dict) else []
     coverage = {"source": report.get("scan", {}).get("complete", True),
                 "ast": not (ast.get("partial") or ast.get("degraded")) if ast_attempted else None,
                 "dependencies": dependencies.get("summary", {}).get("complete", False) if dependencies.get("mode", "off") != "off" else None,
@@ -206,7 +208,8 @@ def sarif(report: dict[str, Any], *, gitlab: bool = False) -> dict[str, Any]:
                                         "rules": definitions}},
                       "automationDetails": {"id": "protestware-check/static-analysis"},
                       "invocations": [{"executionSuccessful": all(value is not False for value in coverage.values()),
-                                       "properties": {"analysisCoverage": coverage},
+                                       "properties": {"analysisCoverage": coverage,
+                                                      **({'jsPackageModels':package_models} if package_models else {})},
                                        "toolExecutionNotifications": [
                                            {"level": "warning", "message": {"text": str(warning)}}
                                            for warning in report.get("warnings", []) +

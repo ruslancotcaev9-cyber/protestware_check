@@ -19,7 +19,13 @@ def trace_dict(items):
 
 
 def bounded_trace(items):
-    return tuple(items) if len(items) <= 24 else (*items[:23], items[-1])
+    if len(items)<=24:
+        return tuple(items)
+    head = tuple(items[:23])
+    model = next((hop for hop in items if hop[2]=='package-model'),None)
+    if model is not None and model not in head and model!=items[-1]:
+        head = (*items[:22],model)
+    return (*head,items[-1])
 
 
 @dataclass
@@ -59,8 +65,22 @@ class Project:
         self.return_generation = self.closures = 0
         self.max_closures = max_closures
         self.indexing = True
+        self.package_loader_mutated = False
+        manifests, manifest_bytes = {}, 0
+        ambiguous_inputs = set()
         total = 0
         for path, source in files:
+            if PurePosixPath(path).name == 'package.json':
+                if not self.canonical(path) or path in manifests:
+                    self.global_diagnostics.add('JS package manifest path is invalid or duplicated')
+                    ambiguous_inputs.add(path)
+                    continue
+                manifest_bytes += len(source.encode('utf-8'))
+                if len(manifests) >= 256 or manifest_bytes > 2000000:
+                    self.global_diagnostics.add('JS package manifest budget exceeded')
+                    continue
+                manifests[path] = source
+                continue
             if PurePosixPath(path).suffix.lower() not in SUFFIXES or path.endswith('.d.ts'):
                 continue
             if not self.canonical(path):
@@ -68,6 +88,7 @@ class Project:
                 continue
             if path in self.units:
                 self.global_diagnostics.add('JS module input path is duplicated')
+                ambiguous_inputs.add(path)
                 continue
             size = len(source.encode('utf-8'))
             if len(self.units) >= max_modules or total + size > max_bytes:
@@ -76,6 +97,8 @@ class Project:
             total += size
             self.units[path] = Unit(path, source)
         self.bytes = total
+        from js_packages import Packages
+        self.packages = Packages({**{p:u.source for p,u in self.units.items()},**manifests},manifests,ambiguous_inputs)
         try:
             from polyglot_ast import _parser, GRAMMARS
             for unit in self.units.values():
@@ -134,7 +157,28 @@ class Project:
             value = MODULES[specifier] if require else self.ref('native-namespace', MODULES[specifier])
             return self.alias({value}, (step(unit.path, node, 'import', specifier),))
         if not specifier or not specifier.startswith(('./', '../')):
-            return UNKNOWN
+            if self.package_loader_mutated:
+                unit.diagnostics.add('JS selected module cache/loader mutation prevents package linking')
+                return UNKNOWN
+            package, diagnostic = self.packages.resolve(unit.path,specifier,require=require)
+            if diagnostic:
+                unit.diagnostics.add(diagnostic)
+            if package is None:
+                return UNKNOWN
+            hops = [step(unit.path,node,'import',specifier),
+                    (package['manifest'] or package['entry'],1,'package-entry',package['name']+' -> '+package['entry'])]
+            if package['model']:
+                model = package['model']
+                hops.append((model['entry'],1,'package-model',model['id']))
+                return self.alias({self.ref('package-model' if require else 'package-namespace',model['root'])},hops)
+            target = package['entry']
+            if target not in self.units:
+                unit.diagnostics.add('JS package entry is not a selected JavaScript module')
+                return UNKNOWN
+            self.edges[unit.path].add(target)
+            if sum(map(len,self.edges.values()))>self.max_edges:
+                raise ValueError('JS import edge budget exceeded')
+            return self.alias({self.ref('require' if require else 'namespace',target)},hops)
         if any(c in specifier for c in '\\:%?#') or any(ord(c) < 32 for c in specifier):
             unit.diagnostics.add('JS local module specifier is unsupported')
             return UNKNOWN
@@ -195,7 +239,7 @@ class Project:
                     self.global_diagnostics.add('JS symbolic resolution cycle/depth limit reached')
                 continue
             item = self.refs.get(value)
-            if item is None or item[0] in {'function', 'object', 'module-object', 'closure'}:
+            if item is None or item[0] in {'function', 'object', 'module-object', 'closure','package-model','package-namespace'}:
                 output.append((value, route))
                 continue
             kind = item[0]
@@ -232,6 +276,10 @@ class Project:
 
     def get_property(self, base, key, bindings, seen, route):
         item = self.refs.get(base)
+        if item and item[0] == 'package-namespace':
+            return [(self.ref('package-model',item[1]),route)] if key=='default' else []
+        if item and item[0] == 'package-model':
+            return [(FS+'.'+key,route)] if key in METHODS else []
         if item and item[0] == 'closure':
             captured = {token: frozenset(values) for token, values in item[2]}
             return [(self.capture(value, captured), hops) for value, hops in self.get_property(item[1], key, captured, seen, route)]
@@ -462,7 +510,14 @@ class Project:
                 'import_edges': sum(map(len, self.edges.values())), 'function_contexts': self.contexts,
                 'summary_steps': self.summary_steps,
                 'closures': self.closures,
+                'packages':list(self.packages.used.values()), 'package_models':list(self.packages.matched.values()),
+                'package_lookups':len(self.packages.resolution_cache),
                 'complete': not self.global_diagnostics and not any(u.diagnostics for u in self.units.values())}
+
+    def models_for_trace(self, route):
+        return [{k:model[k] for k in ('id','name','version','root','revision','basis')}
+                for model in self.packages.matched.values()
+                if any(hop['kind']=='package-model' and hop['file']==model['entry'] and hop['message']==model['id'] for hop in route)]
 
 
 class Worker(Resolver):
@@ -481,6 +536,19 @@ class Worker(Resolver):
         # Local object property reads snapshot the value at the source location.
         output = set()
         for value in values:
+            if value in state.modified:
+                continue
+            modelled = [(v,hops) for v,hops in self.project.resolve({value})
+                        if self.project.refs.get(v,('',))[0] in {'package-model','package-namespace'}]
+            if modelled:
+                for model,hops in modelled:
+                    actual = self.project.ref('package-model',self.project.refs[model][1])
+                    if self.project.refs[model][0]=='package-namespace' and key!='default':
+                        self.unit.diagnostics.add('JS modelled CommonJS package named exports are unsupported')
+                    if not any(actual==prefix or actual+'.'+key==prefix for prefix in state.modified):
+                        for resolved,route in self.project.get_property(model,key,{},(),hops):
+                            output.update(self.project.alias({resolved},route))
+                continue
             if value in self.project.objects and value not in self.project.invalid_objects:
                 fields = self.project.objects[value]
                 output.update(fields.get(key, fields.get(None, UNKNOWN)))
@@ -561,6 +629,18 @@ class Worker(Resolver):
                 return True
         return False
 
+    def loader_cache_value(self, values, seen=()):
+        for value in values:
+            if value in seen or len(seen)>30:
+                continue
+            item=self.project.refs.get(value)
+            if item and item[0] in {'alias','property'}:
+                if item[0]=='property' and item[2] in {'cache','extensions'} and 'global:require' in item[1]:
+                    return True
+                if self.loader_cache_value(item[1],(*seen,value)):
+                    return True
+        return False
+
     def predeclare(self, node, state, hoisted=False):
         super().predeclare(node, state, hoisted)
         if not hoisted:
@@ -594,7 +674,13 @@ class Worker(Resolver):
 
     def index(self):
         root = self.unit.tree.root_node
-        self.unit.esm = any(node.type in {'import_statement', 'export_statement'} for node in root.named_children)
+        suffix = PurePosixPath(self.unit.path).suffix.lower()
+        module_type = self.project.packages.module_type(self.unit.path)
+        syntax_esm = any(node.type in {'import_statement','export_statement'} for node in root.named_children)
+        self.unit.esm = suffix=='.mjs' or suffix!='.cjs' and module_type=='module' or syntax_esm
+        if syntax_esm and (suffix=='.cjs' or suffix=='.js' and module_type=='commonjs'):
+            self.unit.invalid_exports = True
+            self.unit.diagnostics.add('JS source syntax conflicts with explicit CommonJS module type')
         exports = self.project.ref('object', self.unit.path, 'exports')
         module = self.project.ref('module-object', self.unit.path)
         self.project.objects[exports] = {}
@@ -735,6 +821,9 @@ class Worker(Resolver):
                 if right is not None:
                     self.walk(right, state, depth + 1)
                 obj = self.value(left.child_by_field_name('object'), state)
+                if self.loader_cache_value(obj) or self.loader_cache_value(self.value(left,state)):
+                    self.project.package_loader_mutated = True
+                    self.unit.diagnostics.add('JS selected module cache/loader mutation is unsupported')
                 if self.has_call_result(obj):
                     # Drop subsequent aliases conservatively; earlier call-site
                     # snapshots still retain their original symbolic value.
@@ -768,6 +857,12 @@ class Worker(Resolver):
                         native = [v if v in {FS, PROMISES, PROCESS} else self.project.refs[v][1]
                                   for v in resolved if v in {FS, PROMISES, PROCESS} or
                                   self.project.refs.get(v, ('',))[0] == 'native-namespace']
+                        native.extend(self.project.ref('package-model',self.project.refs[v][1]) for v in resolved
+                                      if self.project.refs.get(v,('',))[0] in {'package-model','package-namespace'})
+                        if not native and not (set(resolved)-{''}):
+                            state.modified.update(obj)
+                            self.unit.invalid_exports = True
+                            self.unit.diagnostics.add('JS unresolved namespace property mutation is unsupported')
                         if native:
                             state.modified.update(v + '.' + key if key else v for v in native)
                             self.unit.invalid_exports = True

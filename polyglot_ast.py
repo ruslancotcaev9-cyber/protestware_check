@@ -464,6 +464,9 @@ def scan_tree(path, content, allow, module_project=None):
                     if item is not None:
                         item.update(resolved_symbol=symbol, binding_certainty='possible', dataflow=route,
                                     module_analysis='selected-text-only')
+                        models = module_project.models_for_trace(route)
+                        if models:
+                            item.update(binding_basis='source-hash-model',package_models=models)
         analyzer.walk(tree.root_node, {})
         for item in analyzer.findings:
             if item['rule'] == 'AST_GEO_ACTION':
@@ -471,6 +474,9 @@ def scan_tree(path, content, allow, module_project=None):
                 if match is not None:
                     item['dataflow'] = [*(hop for hop in item.get('dataflow', []) if hop['kind'] == 'condition'), *match[2]][:25]
                     item.update(resolved_symbol=match[1], module_analysis='selected-text-only')
+                    models = module_project.models_for_trace(match[2])
+                    if models:
+                        item.update(binding_basis='source-hash-model',package_models=models)
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             from js_behavior import scan_js_behavior
             diagnostics = []
