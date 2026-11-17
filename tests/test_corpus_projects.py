@@ -39,6 +39,14 @@ class CorpusProjectTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.load(case)
 
+    def test_cross_repository_helper_provenance_is_bound_and_validated(self):
+        origin={'repository':'isaacs/node-graceful-fs','revision':'a'*40,'path':'clone.js',
+                'license_path':'tests/corpus/licenses/isaacs-node-graceful-fs.txt','license_sha256':'b'*64}
+        case=self.case();case['project_files'][0]['provenance']=origin;self.load(case)
+        for key,value in [('repository','../bad'),('revision','main'),('path','../clone.js'),('license_path','/tmp/license'),('license_sha256','x')]:
+            case=self.case();case['project_files'][0]['provenance']={**origin,key:value}
+            with self.assertRaises(ValueError):self.load(case)
+
     def test_helper_findings_cannot_satisfy_the_primary_label(self):
         report = {'findings': [{'rule': 'FS_DELETE', 'file': 'api.ts'}], 'ast': {'parsed': 2}, 'warnings': []}
         with patch('protestware_check.build_report', return_value=report):

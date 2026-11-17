@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "corpus_sha256": "b2f619c4221fec26212c62433030b8aa758c57c4bbd98cd98f0f58f95f843dbf",
+  "corpus_sha256": "b92865b71f043053d0912404d48966b08c1a68e4957bf4596a22896a72eba23a",
   "policy": "Pending candidate labels are not independent review. Reviewer identity/independence must be established outside this file by the trusted review process.",
   "cases": [
     {
@@ -396,86 +396,6 @@
     {
       "id": "aspnetcore-whole-v4-8",
       "case_sha256": "1519f6fd13f0e3667c92be62568d976b26e3a269c9651553decd272fb4b46ecb",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "fs-extra-whole-v4-1",
-      "case_sha256": "39cb222a2a48d3ff1f141a84459030e540a4c3ebd23a7aeef554ead6b1882897",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "fs-extra-whole-v4-2",
-      "case_sha256": "49df69cf1f61fa3180e87c0106e26b7711ad8ac8eebb1f5ee7175461ec3cf900",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "fs-extra-whole-v4-3",
-      "case_sha256": "ebb254be9f43fce68e412581f244f189f02e24e906743cbd7c31d0ad69c6b32a",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "fs-extra-whole-v4-4",
-      "case_sha256": "034996925c2e7188cbac042bd6667ff3c5ec201fbf59d43109bbb2ce313c8ca4",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "fs-extra-whole-v4-5",
-      "case_sha256": "fb7fce36c5bba8cf575cdd8a4c3c97085e853fba9ff80e87935b5285dbee235a",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "fs-extra-whole-v4-6",
-      "case_sha256": "4ec2465939d19eb726ffdc028b36c5464f41fe1ff99f058644a1378743e6dcb4",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "fs-extra-whole-v4-7",
-      "case_sha256": "14371cf8dc92c7fe40f3e9e129a1df3d9897b0c4826df022695f0957c97daace",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "fs-extra-whole-v4-8",
-      "case_sha256": "acd56d0877efde12c8f2c101e48191978a3667df8eb19eb3c20db2b6c49b628e",
       "proposed_positive": false,
       "decision": "pending",
       "reviewer": null,

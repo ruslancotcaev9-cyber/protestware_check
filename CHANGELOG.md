@@ -4,6 +4,20 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] — unreleased (2026-11-17)
+
+- Resolve bounded package entries from already selected JS sources/manifests;
+  honor nearest packages, builtin precedence, format boundaries and explicit budgets.
+- Model six graceful-fs 4.2.11 deletion exports only after all five pinned source
+  hashes match. Preserve model provenance in JSON/SARIF and internal partials.
+  Reject altered/missing sources, observed loader overrides and method overwrites.
+- Move eight consumed fs-extra files into regression with pinned multi-repository
+  helper origins; archive 1.6.0 inputs/review/freeze. Retain 56 external candidates;
+  add no fresh independent evaluation or human label/model approval.
+- Verify 510 tests without skips; save original CI reports/checksums for 48/38/56
+  cases, including 10 promoted and 6 retained partials. Document package scope,
+  migration and limits without claiming independent improvement from rotation.
+
 ## [1.6.0] — unreleased (2026-11-17)
 
 - Add bounded JS callable/object return summaries and captured environments,

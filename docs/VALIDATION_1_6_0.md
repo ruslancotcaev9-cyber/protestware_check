@@ -7,7 +7,7 @@
 
 Правила заморожены до полного измерения в
 [`5e0149de47f17f03ff8ae30a141b612265b94be0`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/5e0149de47f17f03ff8ae30a141b612265b94be0).
-[SHA-256 правил](../tests/corpus/detector-freeze.json) проверяет тест.
+[SHA-256 правил](evaluation/detector-freeze-v1.6.0.json) проверяет тест.
 Полный запуск выполнен на
 [`38402d7164e894e34b80dbf252aa75e9163fdcc7`](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/38402d7164e894e34b80dbf252aa75e9163fdcc7).
 
@@ -85,9 +85,13 @@ Async/generator-фабрики, Promise dispatch, полные heap-alias свя
 | [Регрессии 30](evaluation/promoted-v1.6.0-2026-11-17.json) | `f9f3258cc7cd365ecfd6812a5a4122b343f272d626b0ddf0fef9a66a41f9ffff` |
 | [Выборка 64](evaluation/retained-v5-1.6.0-2026-11-17.json) | `d9d5e1eb70dfa2907599f43f3c7370627085b3b68eb0a76829855df493930ace` |
 
-SHA-256 текущего внешнего корпуса:
+SHA-256 внешнего корпуса этого прогона:
 `b2f619c4221fec26212c62433030b8aa758c57c4bbd98cd98f0f58f95f843dbf`.
 [Архив внешних входов 1.5.1](evaluation/external-corpus-v5-1.5.1.json),
 [архив регрессий](evaluation/promoted-corpus-v1.5.1.json),
 [журнал](evaluation/external-review-v5-1.5.1.json),
 [заморозка](evaluation/detector-freeze-v1.5.1.json).
+
+[Архив входов 1.6.0](evaluation/external-corpus-v5-1.6.0.json),
+[регрессии](evaluation/promoted-corpus-v1.6.0.json),
+[журнал](evaluation/external-review-v5-1.6.0.json). Текущий корпус ротирован в 1.7.0.

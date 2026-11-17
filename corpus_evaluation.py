@@ -34,7 +34,8 @@ def load_document(path):
                 raise ValueError('Invalid corpus project inputs')
             paths, size = {case['path']}, len(case['code'].encode())
             for helper in helpers:
-                if (not isinstance(helper, dict) or set(helper) != {'path', 'code', 'sha256', 'git_blob_sha'} or
+                if (not isinstance(helper, dict) or set(helper) not in ({'path', 'code', 'sha256', 'git_blob_sha'},
+                        {'path','code','sha256','git_blob_sha','provenance'}) or
                         not _project_path(helper['path']) or helper['path'] in paths or
                         not isinstance(helper['code'], str) or len(helper['code']) > 100000):
                     raise ValueError('Invalid/duplicate corpus helper')
@@ -42,6 +43,16 @@ def load_document(path):
                 if (sha256(helper_raw).hexdigest() != helper['sha256'] or
                         sha1(b'blob ' + str(len(helper_raw)).encode() + b'\0' + helper_raw).hexdigest() != helper['git_blob_sha']):
                     raise ValueError('Corpus helper checksum mismatch')
+                if 'provenance' in helper:
+                    origin=helper['provenance']
+                    if (not isinstance(origin,dict) or set(origin)!={'repository','revision','path','license_path','license_sha256'} or
+                            not isinstance(origin['repository'],str) or
+                            not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}',origin['repository']) or
+                            not isinstance(origin['revision'],str) or not re.fullmatch('[a-f0-9]{40}',origin['revision']) or
+                            not _project_path(origin['path']) or not _project_path(origin['license_path']) or
+                            not origin['license_path'].startswith('tests/corpus/licenses/') or
+                            not isinstance(origin['license_sha256'],str) or not re.fullmatch('[a-f0-9]{64}',origin['license_sha256'])):
+                        raise ValueError('Invalid corpus helper provenance')
                 paths.add(helper['path'])
                 size += len(helper_raw)
             if size > 500000:
