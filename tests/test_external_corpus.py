@@ -14,12 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 class ExternalCorpusTests(unittest.TestCase):
     def test_provenance_and_licenses_are_pinned(self):
         cases = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
-        self.assertEqual(len(cases), 64)
+        self.assertEqual(len(cases), 56)
         self.assertEqual(len({c['language'] for c in cases}), 6)
-        self.assertEqual(sum(c['positive'] for c in cases), 32)
-        self.assertEqual(sum(c['provenance']['whole_file'] for c in cases), 50)
-        self.assertEqual(len({c['provenance']['group'] for c in cases}), 56)
-        self.assertEqual(len({c['provenance']['repository'] for c in cases}), 14)
+        self.assertEqual(sum(c['positive'] for c in cases), 28)
+        self.assertEqual(sum(c['provenance']['whole_file'] for c in cases), 42)
+        self.assertEqual(len({c['provenance']['group'] for c in cases}), 48)
+        self.assertEqual(len({c['provenance']['repository'] for c in cases}), 13)
         for case in cases:
             p = case['provenance']
             self.assertIsNotNone(re.fullmatch('[a-f0-9]{40}', p['revision']))
@@ -52,10 +52,12 @@ class ExternalCorpusTests(unittest.TestCase):
     def test_promoted_v1_has_no_shared_source_files_with_fresh_evaluation(self):
         old = corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
         fresh = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
-        self.assertEqual(len(old), 30)
+        self.assertEqual(len(old), 38)
         key = lambda c: (c['provenance']['repository'], c['provenance']['path'])
         consumed = set(map(key, old))
-        consumed.update((c['provenance']['repository'], f['path']) for c in old for f in c.get('project_files', []))
+        consumed.update((f.get('provenance', c['provenance'])['repository'],
+                         f.get('provenance', {}).get('path', f['path']))
+                        for c in old for f in c.get('project_files', []))
         self.assertTrue(consumed.isdisjoint(set(map(key, fresh))))
         self.assertTrue({c['id'] for c in old}.isdisjoint({c['id'] for c in fresh}))
 
@@ -63,7 +65,7 @@ class ExternalCorpusTests(unittest.TestCase):
         cases = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
         new = [c for c in cases if c['cohort'] == 'new-v4']
         old = [c for c in cases if c['cohort'] == 'retained-v3']
-        self.assertEqual((len(new), len(old)), (40, 24))
+        self.assertEqual((len(new), len(old)), (32, 24))
         self.assertTrue(all(c['ast_mode'] == 'auto' and c['provenance']['whole_file'] for c in new))
         self.assertTrue(all(c['ast_mode'] == 'required' for c in old))
         for language in {c['language'] for c in new}:
@@ -104,7 +106,7 @@ class ExternalCorpusTests(unittest.TestCase):
         current = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
         promoted = corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
         moved = [c for c in promoted if 'project_files' in c]
-        self.assertEqual(len(moved), 8)
+        self.assertEqual(len(moved), 16)
         self.assertEqual({c['id'] for c in old} - {c['id'] for c in current}, {c['promoted_from'] for c in moved})
         original = {c['id']: c for c in old}
         for case in moved:
@@ -113,17 +115,45 @@ class ExternalCorpusTests(unittest.TestCase):
             self.assertEqual(case['ast_mode'], 'auto')
             self.assertEqual(case['path'], case['provenance']['path'])
 
-    def test_partial_analysis_fixes_keep_all_1_5_0_inputs_and_candidate_labels(self):
+    def test_package_context_rotation_preserves_labels_and_pins_each_helper_origin(self):
+        archive = ROOT / 'docs/evaluation/external-corpus-v5-1.6.0.json'
+        self.assertEqual(sha256(archive.read_bytes()).hexdigest(),
+                         'b2f619c4221fec26212c62433030b8aa758c57c4bbd98cd98f0f58f95f843dbf')
+        old = {c['id']: c for c in corpus_evaluation.load(archive)}
+        current = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
+        for case in current:
+            self.assertEqual(case, old[case['id']])
+        moved = [c for c in corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
+                 if c.get('promoted_from') in old and c['promoted_from'] not in {v['id'] for v in current}]
+        self.assertEqual(len(moved), 8)
+        for case in moved:
+            source = old[case['promoted_from']]
+            for key in ('code', 'positive', 'ast_mode', 'provenance'):
+                self.assertEqual(case[key], source[key])
+            self.assertEqual(case['path'], source['provenance']['path'])
+            for helper in case['project_files']:
+                origin = helper['provenance']
+                self.assertEqual(sha256((ROOT / origin['license_path']).read_bytes()).hexdigest(),
+                                 origin['license_sha256'])
+                self.assertIn(origin['repository'],
+                              {'jprichardson/node-fs-extra', 'isaacs/node-graceful-fs'})
+                if helper['path'].startswith('node_modules/'):
+                    self.assertEqual(origin['repository'], 'isaacs/node-graceful-fs')
+                    self.assertEqual(helper['path'], 'node_modules/graceful-fs/' + origin['path'])
+
+    def test_partial_analysis_fixes_kept_all_1_5_0_inputs_and_candidate_labels(self):
         for name, archived in (('external.json', 'external-corpus-v5.json'),
                                ('promoted.json', 'promoted-corpus-v1.5.0.json')):
             before = corpus_evaluation.load(ROOT / 'docs/evaluation' / archived)
-            after = corpus_evaluation.load(ROOT / 'tests/corpus' / name)
+            after = corpus_evaluation.load(ROOT / 'docs/evaluation' /
+                ('external-corpus-v5-1.6.0.json' if name == 'external.json' else 'promoted-corpus-v1.6.0.json'))
             self.assertEqual(before, after)
 
     def test_factory_analysis_keeps_all_1_5_1_inputs_and_candidate_labels(self):
         for name, archived in (('external.json', 'external-corpus-v5-1.5.1.json'),
                                ('promoted.json', 'promoted-corpus-v1.5.1.json')):
-            self.assertEqual(corpus_evaluation.load(ROOT/'tests/corpus'/name),
+            self.assertEqual(corpus_evaluation.load(ROOT/'docs/evaluation'/
+                ('external-corpus-v5-1.6.0.json' if name == 'external.json' else 'promoted-corpus-v1.6.0.json')),
                              corpus_evaluation.load(ROOT/'docs/evaluation'/archived))
 
 

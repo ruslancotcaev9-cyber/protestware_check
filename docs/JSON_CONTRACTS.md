@@ -1,6 +1,6 @@
 # JSON-контракты и совместимость
 
-Актуально для кода **1.6.0, unreleased**. [Указатель](README.md) ·
+Актуально для кода **1.7.0, unreleased**. [Указатель](README.md) ·
 [Руководство](USER_GUIDE.md) · [Проверка версии](VALIDATION_1_4_0.md).
 
 ## Версии форматов
@@ -22,6 +22,12 @@ JSON-схемы описывают Draft 2020-12 и поставляются в�
 `build_report` возвращает промежуточный результат без политики/gate; сначала
 нужно вызвать `scan_policy.apply`. SARIF 2.1.0 и CycloneDX 1.6 используют свои
 стандартные форматы. Схемы advisory-снимка и метрик корпуса в этот этап не входят.
+
+С 1.7.0 аддитивно добавлены ast.modules.packages/package_models/package_lookups,
+а для находок с моделью — binding_basis/package_models. SARIF сохраняет эти
+свойства и invocation.properties.jsPackageModels. Schema остаётся 1;
+[семантика и пределы](JS_PACKAGE_ANALYSIS.md). Новые модули входят в отпечаток
+правил baseline и вызывают повторное ревью при изменении контекста.
 
 ## Проверка артефакта
 
