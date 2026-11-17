@@ -6,7 +6,7 @@ stages:
 
 variables:
   # Tested scanner code; update this SHA only after reviewing a newer commit.
-  PROTESTWARE_SCANNER_COMMIT: "736416469c0af9482713cf78b743bfa438f87a92"
+  PROTESTWARE_SCANNER_COMMIT: "c75f5c74e773851154b1c238b53e82c98006bc47"
 
 .protestware_base:
   before_script:

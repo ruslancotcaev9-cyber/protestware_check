@@ -113,6 +113,13 @@ class ExternalCorpusTests(unittest.TestCase):
             self.assertEqual(case['ast_mode'], 'auto')
             self.assertEqual(case['path'], case['provenance']['path'])
 
+    def test_partial_analysis_fixes_keep_all_1_5_0_inputs_and_candidate_labels(self):
+        for name, archived in (('external.json', 'external-corpus-v5.json'),
+                               ('promoted.json', 'promoted-corpus-v1.5.0.json')):
+            before = corpus_evaluation.load(ROOT / 'docs/evaluation' / archived)
+            after = corpus_evaluation.load(ROOT / 'tests/corpus' / name)
+            self.assertEqual(before, after)
+
 
 if __name__ == '__main__':
     unittest.main()
