@@ -4,6 +4,18 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Evaluation v7 — 2026-11-17 (code remains 1.7.0, unreleased)
+
+- Freeze protocol/upstream revisions and 24 new whole-file inputs before
+  measuring; keep detectors and the 48/38/56 existing inputs unchanged.
+- Add six source/review/CI integrity tests and separate pending label ledger.
+  Verify 516 tests without skips, Go import, pinned repositories and secret scan.
+- Publish first raw CI bytes and SHA-256: TP8/TN12/FP0/FN4/errors0, two partials.
+  Record four parsed-without-warning misses in Go os.Root/BoundOS and C#
+  FileInfo/DirectoryInfo. Preserve misses instead of tuning rules on the new set.
+- Keep purposive sampling, provisional labels and parser/backend limits explicit;
+  no independent human review or release is claimed.
+
 ## [1.7.0] — unreleased (2026-11-17)
 
 - Resolve bounded package entries from already selected JS sources/manifests;
