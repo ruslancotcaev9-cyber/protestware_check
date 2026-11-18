@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "external-retained-v6",
-  "detector_reference_commit": "09c5b64bbb9a383ac1f5b48400730c76837e02d6",
+  "detector_reference_commit": "0466c85bc3e38e58623f2e0f35c52d7d63c5f0bd",
   "label_scope": "Observable deletion/destructive SQL operations, including statically documented local/third-party wrappers; operation presence, not malware or runtime reachability.",
   "review": "Candidate labels assigned by assistant from pinned source; no independent human adjudication. All labels pending independent review.",
   "policy": "Retained 56 unchanged examples after moving all eight consumed fs-extra primary files and helper context into project regression. No fresh held-out sources. Original labels/modes remain assistant-proposed and await independent human review.",

@@ -1,48 +1,8 @@
 {
   "schema": 1,
-  "corpus_sha256": "6091eb2a5b061d72bdbd4f489024ea2faf99a8ead7abb49e14dd1af6155684cf",
+  "corpus_sha256": "e6b43c5fc2f20eb491e00b88b87e4d04f56ebcba9cd4e45839917f4a72c3c670",
   "policy": "Pending candidate labels are not independent review. Reviewer identity/independence must be established outside this file by the trusted review process.",
   "cases": [
-    {
-      "id": "go-git-go-billy-fresh-v7-1",
-      "case_sha256": "1e0dba2317008ae8838281abb677db15aacf6c480f60e7eba60366dc8d2f27fc",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "go-git-go-billy-fresh-v7-2",
-      "case_sha256": "5b6f641c80bf4c273b021aa1b7cee28e4499e6a1919dab7b993ce2a809b21d39",
-      "proposed_positive": true,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "go-git-go-billy-fresh-v7-3",
-      "case_sha256": "48c18376926f5d40d3a2baa48729425526536b57ba0068387fe2e68591f24e7a",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
-    {
-      "id": "go-git-go-billy-fresh-v7-4",
-      "case_sha256": "62a7a7e654473588381ee302bbc5cd9e3fe17a93e4b79b51b0c465f08c6c981e",
-      "proposed_positive": false,
-      "decision": "pending",
-      "reviewer": null,
-      "reviewer_type": null,
-      "reviewed_at": null,
-      "reason": ""
-    },
     {
       "id": "sqitchers-sqitch-fresh-v7-1",
       "case_sha256": "0003284726772f079971b60c0953234a00fe7d0c6f473100468e5f143c6461b8",
