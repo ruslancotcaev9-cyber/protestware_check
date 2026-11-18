@@ -470,7 +470,11 @@ class Walker:
                 self.declaration(node, scopes)
             else:
                 for name in node.children_by_field_name('name'):
-                    scopes[-1][self.u.raw(name)] = self.u.globals.get(self.u.raw(name), UNKNOWN) if kind in {'type_spec', 'type_alias'} else UNKNOWN
+                    item = self.p.types.get((self.u.group, self.u.raw(name)))
+                    top_level = (item is not None and item[0].path == self.u.path and
+                                 item[1].start_byte == node.start_byte)
+                    scopes[-1][self.u.raw(name)] = (self.u.globals.get(self.u.raw(name), UNKNOWN)
+                                                        if kind in {'type_spec', 'type_alias'} and top_level else UNKNOWN)
             return
         if kind == 'call_expression':
             self.record(node, scopes, owner)

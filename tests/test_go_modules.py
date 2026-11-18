@@ -75,6 +75,10 @@ class GoModuleTests(unittest.TestCase):
         code='package p\nimport "os"\ntype R os.Root\nfunc(R)Remove(string){}\nfunc M(r R){r.Remove("x")}'
         self.assertFalse(Project([('x.go',code)]).calls('x.go')[0])
 
+    def test_local_type_shadows_top_level_native_alias(self):
+        code='package p\nimport "os"\ntype R=os.Root\ntype Fake struct{}\nfunc M(){type R Fake;var r R;r.Remove("x")}'
+        self.assertFalse(Project([('x.go',code)]).calls('x.go')[0])
+
     def test_builtin_new_can_be_shadowed(self):
         code='package p\ntype Fake struct{}\nfunc new(string)*Fake{return nil}\nfunc(*Fake)Remove(string){}\nfunc M(){r:=new("x");r.Remove("x")}'
         self.assertFalse(Project([('x.go',code)]).calls('x.go')[0])
@@ -108,7 +112,11 @@ class GoModuleTests(unittest.TestCase):
         helper='//go:build !js\n\npackage p\nimport "os"\ntype FS struct{root *os.Root}\nfunc(f *FS)Remove(p string)error{return f.root.Remove(p)}'
         caller='//go:build !js\n\npackage p\nfunc Make()*FS{return nil}\nfunc M(){Make().Remove("x")}'
         p=self.project(caller,helper)
-        self.assertTrue(p.calls('main.go')[0], (p.metadata(), p.calls('main.go')[1]))
+        self.assertTrue(p.calls('main.go')[0], (p.metadata(), p.calls('main.go')[1],
+            {path: str(u.tree.root_node) for path,u in p.units.items()},
+            {key: repr(value) for key,value in p.types.items()},
+            {key: repr(value) for key,value in p.result_cache.items()}, repr(p.methods),
+            {path: repr(u.globals) for path,u in p.units.items()}, repr(p.seeds)))
 
     def test_missing_duplicate_and_broken_helpers_do_not_establish_links(self):
         caller='package p\nfunc Make()*FS{return nil}\nfunc M(){Make().Remove("x")}'
