@@ -105,6 +105,7 @@ class TreeAnalyzer:
         self.invocations = 0
         self.diagnostics: set[str] = set()
         self.go_deletions = set()
+        self.go_calls = {}
         self.js_deletions = set()
         self.cs_deletions = set()
         self.cs_calls = {}
@@ -272,6 +273,13 @@ class TreeAnalyzer:
                         trace=(('condition', int(branch), 'RU/BY geographic branch'),))
             self.emit('AST_GEO_ACTION', 'correlation', 'high', node,
                       'AST: filesystem deletion in a geographic branch; review reachability and intent', flow)
+            if ext == '.go' and node.start_byte in self.go_calls:
+                _, symbol, route = self.go_calls[node.start_byte]
+                item = next((f for f in self.findings if f['rule']=='AST_GEO_ACTION' and f['line']==node.start_point[0]+1), None)
+                if item is not None:
+                    item.update(resolved_symbol=symbol, binding_basis='selected-go-types', binding_certainty='possible')
+                    item['dataflow']=[*(h for h in item.get('dataflow',[]) if h['kind']=='condition'),
+                        *({'file':p,'line':line,'kind':kind,'message':message} for p,line,kind,message in route)]
             if ext == '.cs' and node.start_byte in self.cs_calls:
                 _, symbol, route = self.cs_calls[node.start_byte]
                 item = next((f for f in self.findings if f['rule'] == 'AST_GEO_ACTION' and f['line'] == node.start_point[0] + 1), None)
@@ -411,7 +419,7 @@ def _parser(language):
         raise RuntimeError(f'grammar {language}: {type(exc).__name__}: {exc}') from exc
 
 
-def scan_tree(path, content, allow, module_project=None):
+def scan_tree(path, content, allow, module_project=None, go_project=None):
     ext = Path(path).suffix.lower()
     if ext == '.sass':
         return scan_sass(path, content, allow), None
@@ -422,7 +430,7 @@ def scan_tree(path, content, allow, module_project=None):
         if ext == '.sql':
             from sql_operations import parser_source
             parser_content = parser_source(content)
-        tree = module_project.tree(path) if module_project is not None else None
+        tree = go_project.tree(path) if ext == '.go' and go_project is not None else module_project.tree(path) if module_project is not None else None
         if tree is None:
             tree = _parser(GRAMMARS[ext]).parse(parser_content.encode('utf-8'))
         if tree is None:
@@ -439,16 +447,20 @@ def scan_tree(path, content, allow, module_project=None):
             return cpp_findings, diag
         analyzer = TreeAnalyzer(path, content, allow)
         if ext == '.go':
-            from go_bindings import resolve
-            deletions, diagnostics = resolve(content, tree.root_node)
+            from go_modules import Project
+            project = go_project if go_project is not None else Project([(path,content)],trees={path:tree},strict_paths=False)
+            deletions, diagnostics = project.calls(path)
             analyzer.go_deletions = set(deletions)
+            analyzer.go_calls = deletions
             analyzer.diagnostics.update(diagnostics)
-            for node, symbol in deletions.values():
+            for node, symbol, route in deletions.values():
                 previous = len(analyzer.findings)
                 analyzer.emit('GO_FS_DELETE', 'filesystem', 'medium', node,
                               f'Go AST: imported {symbol} call; review path and purpose')
                 if len(analyzer.findings) > previous:
-                    analyzer.findings[-1]['resolved_symbol'] = symbol
+                    analyzer.findings[-1].update(resolved_symbol=symbol, binding_certainty='possible',
+                        binding_basis='selected-go-types' if symbol.startswith('os.Root.') or any(h[2]=='call' for h in route) else 'import-identity',
+                        dataflow=[{'file':p,'line':line,'kind':kind,'message':message} for p,line,kind,message in route])
         analyzer.index_functions(tree.root_node)
         if ext == '.cs':
             from csharp_bindings import resolve
