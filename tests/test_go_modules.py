@@ -192,4 +192,15 @@ class GoModuleTests(unittest.TestCase):
             self.assertFalse(p.calls(path)[1])
 
 
+
+class GoSourceFixtureTests(unittest.TestCase):
+    def test_storage_context_bytes_and_license_are_pinned(self):
+        data=json.loads((ROOT/'tests/corpus/go-source-context.json').read_text())
+        for item in data['sources'].values():
+            raw=item['text'].encode()
+            self.assertEqual(sha256(raw).hexdigest(),item['sha256'])
+            self.assertEqual(sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),item['git_blob_sha'])
+            self.assertEqual(sha256((ROOT/item['license_path']).read_bytes()).hexdigest(),item['license_sha256'])
+
+
 if __name__=='__main__':unittest.main()

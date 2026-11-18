@@ -209,7 +209,8 @@ def sarif(report: dict[str, Any], *, gitlab: bool = False) -> dict[str, Any]:
                       "automationDetails": {"id": "protestware-check/static-analysis"},
                       "invocations": [{"executionSuccessful": all(value is not False for value in coverage.values()),
                                        "properties": {"analysisCoverage": coverage,
-                                                      **({'jsPackageModels':package_models} if package_models else {})},
+                                                      **({'jsPackageModels':package_models} if package_models else {}),
+                                                      **({'goModuleAnalysis':report['ast']['go_modules']} if report.get('ast',{}).get('go_modules') else {})},
                                        "toolExecutionNotifications": [
                                            {"level": "warning", "message": {"text": str(warning)}}
                                            for warning in report.get("warnings", []) +
