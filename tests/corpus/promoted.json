@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "promoted-regression-v5",
-  "detector_reference_commit": "4ac395c02296e971902f53e476ff4c6411b82d04",
+  "detector_reference_commit": "5c4c5a23270d273678665e9d9c1194fb93a5abc6",
   "label_scope": "rule-observable operations, not malware classification",
   "review": "labels assigned by project maintainer assistant; no independent human adjudication",
   "policy": "46 consumed cases including four go-billy inputs used to develop Root and selected-package summaries. Primary texts/labels/modes preserved; helper source origins and hashes are explicit. Not an independent quality estimate.",

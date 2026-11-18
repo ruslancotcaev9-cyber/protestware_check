@@ -4,7 +4,7 @@
 [Go-анализ](GO_ROOT_ANALYSIS.md).
 
 Правила зафиксированы в коммите
-[4ac395c02296e971902f53e476ff4c6411b82d04](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/4ac395c02296e971902f53e476ff4c6411b82d04).
+[5c4c5a23270d273678665e9d9c1194fb93a5abc6](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/5c4c5a23270d273678665e9d9c1194fb93a5abc6).
 Контрольные суммы — [detector-freeze.json](../tests/corpus/detector-freeze.json).
 Полные результаты, число тестов и исходные JSON будут добавлены после прогона.
 
