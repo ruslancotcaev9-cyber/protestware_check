@@ -7,7 +7,7 @@
 
 Правила заморожены до полного измерения в
 [d032d7787576f0fdab26649d6e6ad96ddc1ad92f](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/d032d7787576f0fdab26649d6e6ad96ddc1ad92f).
-[SHA-256 правил](../tests/corpus/detector-freeze.json) проверяет тест.
+[SHA-256 правил](evaluation/detector-freeze-v1.7.0.json) проверяет тест.
 Полный запуск выполнен на
 [69fb9cbfb651f92a48dc3fb8dcef35df379762c5](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/69fb9cbfb651f92a48dc3fb8dcef35df379762c5).
 
@@ -112,3 +112,7 @@ SHA-256 текущего promoted:
 [журнал](evaluation/external-review-v5-1.6.0.json),
 [заморозка](evaluation/detector-freeze-v1.6.0.json).
 Исторические JSON измерений не переписаны.
+
+Входы этого этапа: [внешние](evaluation/external-corpus-v6-1.7.0.json),
+[регрессии](evaluation/promoted-corpus-v1.7.0.json),
+[журнал](evaluation/external-review-v6-1.7.0.json). Текущий детектор изменён в 1.8.0.

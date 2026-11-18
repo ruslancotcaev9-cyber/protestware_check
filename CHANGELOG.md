@@ -4,6 +4,19 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] — unreleased (2026-11-18)
+
+- Bind C# File/Directory and FileInfo/DirectoryInfo deletion calls through
+  observed using/type/field/local declarations and constructions. Honor scoped
+  values, aliases and selected user-type conflicts without compiling target code.
+- Preserve resolved type symbols and declaration/construction routes in
+  JSON/SARIF and geographic correlations; diagnose unknown receivers/budgets.
+- Replace C# text deletion patterns when AST binding is complete; keep explicit
+  partial fallback and limits for build context, other types and cross-file code.
+- Move four consumed Cake files to regression, retain 20 unchanged v7 cases;
+  preserve the original 24-case dataset, first JSON and 1.7.0 input/freeze archives.
+  No fresh independent quality improvement or human label approval is claimed.
+
 ## Evaluation v7 — 2026-11-17 (code remains 1.7.0, unreleased)
 
 - Freeze protocol/upstream revisions and 24 new whole-file inputs before

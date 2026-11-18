@@ -64,10 +64,10 @@ jobs:
         run: python scripts/corpus_review.py validate --corpus tests/corpus/external.json --review tests/corpus/external-review.json
       - name: Expanded external evaluation with explicit modes, coverage and candidate labels
         run: python scripts/evaluate_corpus.py --corpus tests/corpus/external.json --review-file tests/corpus/external-review.json --report-only --measure --output external-corpus-metrics.json
-      - name: Validate fresh v7 candidate-label review binding
-        run: python scripts/corpus_review.py validate --corpus tests/corpus/fresh-v7.json --review tests/corpus/fresh-v7-review.json
-      - name: Fresh v7 whole files on frozen detector (no tuning)
-        run: python scripts/evaluate_corpus.py --corpus tests/corpus/fresh-v7.json --review-file tests/corpus/fresh-v7-review.json --report-only --measure --output fresh-v7-metrics.json
+      - name: Validate retained v7 candidate-label review binding
+        run: python scripts/corpus_review.py validate --corpus tests/corpus/retained-v7.json --review tests/corpus/retained-v7-review.json
+      - name: Retained v7 whole files after consumed Cake cases are excluded
+        run: python scripts/evaluate_corpus.py --corpus tests/corpus/retained-v7.json --review-file tests/corpus/retained-v7-review.json --report-only --measure --output retained-v7-metrics.json
       - name: Record exact public corpus report bytes for archival
         if: always()
         run: |
@@ -75,13 +75,13 @@ jobs:
           import base64
           from hashlib import sha256
           from pathlib import Path
-          raw = Path('fresh-v7-metrics.json').read_bytes()
+          raw = Path('retained-v7-metrics.json').read_bytes()
           if len(raw) > 1_000_000:
               raise SystemExit('Corpus report archive byte budget exceeded')
-          print('FRESH_V7_SHA256=' + sha256(raw).hexdigest())
+          print('RETAINED_V7_SHA256=' + sha256(raw).hexdigest())
           encoded = base64.b64encode(raw).decode('ascii')
           for offset in range(0, len(encoded), 4096):
-              print('FRESH_V7_BYTES=' + encoded[offset:offset + 4096])
+              print('RETAINED_V7_BYTES=' + encoded[offset:offset + 4096])
           PY
       - name: Save corpus metrics
         if: always()
@@ -92,8 +92,8 @@ jobs:
             corpus-metrics.json
             promoted-corpus-metrics.json
             external-corpus-metrics.json
-            fresh-v7-metrics.json
-            tests/corpus/fresh-v7-review.json
+            retained-v7-metrics.json
+            tests/corpus/retained-v7-review.json
             tests/corpus/fresh-v7-selection.json
             tests/corpus/external-review.json
             tests/corpus/detector-freeze.json

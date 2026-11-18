@@ -26,7 +26,7 @@ class FreshExternalCorpusTests(unittest.TestCase):
         self.assertTrue(all(c['ast_mode'] == 'auto' and c['cohort'] == 'fresh-v7' for c in cases))
         self.assertTrue(all('project_files' not in c for c in cases))
         self.assertEqual(document['detector_reference_commit'],
-                         json.loads((ROOT / 'tests/corpus/detector-freeze.json').read_text())['detector_reference_commit'])
+                         json.loads((ROOT / 'docs/evaluation/detector-freeze-v1.7.0.json').read_text())['detector_reference_commit'])
 
     def test_complete_source_bytes_evidence_and_licenses(self):
         cases = corpus_evaluation.load(CORPUS)
@@ -52,8 +52,10 @@ class FreshExternalCorpusTests(unittest.TestCase):
                 self.assertEqual(case['label_status'], 'candidate-independent-review-pending')
 
     def test_new_repositories_and_bytes_do_not_overlap_consumed_inputs(self):
-        previous = [json.loads((ROOT / 'tests/corpus' / name).read_text())
-                    for name in ('external.json', 'promoted.json', 'supporting-sources.json')]
+        previous = [json.loads((ROOT / path).read_text()) for path in (
+            'docs/evaluation/external-corpus-v6-1.7.0.json',
+            'docs/evaluation/promoted-corpus-v1.7.0.json',
+            'tests/corpus/supporting-sources.json')]
         previous.append(json.loads((ROOT / 'docs/evaluation/external-corpus-v4.json').read_text()))
         repositories, blobs, texts = set(), set(), set()
         for document in previous:
@@ -84,7 +86,9 @@ class FreshExternalCorpusTests(unittest.TestCase):
         self.assertEqual(manifest['protocol_commit'], document['protocol_commit'])
         self.assertTrue(manifest['selection_before_results'])
         for path, digest in manifest['previous_inputs_sha256'].items():
-            self.assertEqual(sha256((ROOT / path).read_bytes()).hexdigest(), digest)
+            archive = {'tests/corpus/external.json': 'docs/evaluation/external-corpus-v6-1.7.0.json',
+                       'tests/corpus/promoted.json': 'docs/evaluation/promoted-corpus-v1.7.0.json'}.get(path, path)
+            self.assertEqual(sha256((ROOT / archive).read_bytes()).hexdigest(), digest)
         records = {item['id']: item for item in manifest['cases']}
         self.assertEqual(set(records), {case['id'] for case in document['cases']})
         for case in document['cases']:
@@ -105,17 +109,44 @@ class FreshExternalCorpusTests(unittest.TestCase):
                                       'закреплённые исходные ссылки для обёрток').replace('external-review.json', 'fresh-v7-review.json')
         self.assertEqual(worksheet, (ROOT / 'docs/CORPUS_LABEL_REVIEW_V7.md').read_text())
 
-    def test_ci_keeps_fresh_measurement_report_only_and_archives_exact_bytes(self):
+    def test_consumed_cake_cases_are_promoted_and_retained_inputs_unchanged(self):
+        original = {c['id']: c for c in corpus_evaluation.load(CORPUS)}
+        retained = corpus_evaluation.load(ROOT / 'tests/corpus/retained-v7.json')
+        self.assertEqual(len(retained), 20)
+        for case in retained:
+            self.assertEqual(case, original[case['id']])
+        consumed = [c for c in corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
+                    if c.get('promoted_from') in original]
+        self.assertEqual(len(consumed), 4)
+        for case in consumed:
+            before = original[case['promoted_from']]
+            for key in ('code', 'path', 'rule', 'positive', 'ast_mode', 'provenance', 'label_evidence'):
+                self.assertEqual(case[key], before[key])
+        self.assertEqual({c['provenance']['repository'] for c in consumed}, {'cake-build/cake'})
+        self.assertTrue({c['provenance']['repository'] for c in consumed}.isdisjoint(
+                        {c['provenance']['repository'] for c in retained}))
+
+    def test_current_retained_v7_review_has_twenty_pending_records(self):
+        document, checksum = corpus_evaluation.load_document(ROOT / 'tests/corpus/retained-v7.json')
+        summary = corpus_review.load(ROOT / 'tests/corpus/retained-v7-review.json', document['cases'], checksum)
+        self.assertEqual(summary['counts'], {'pending': 20, 'confirmed': 0, 'disputed': 0})
+        self.assertFalse(summary['identity_verified'])
+        text = corpus_review.worksheet(document['cases'], checksum).replace(
+            'supporting-sources.json для обёрток', 'закреплённые исходные ссылки для обёрток').replace(
+            'external-review.json', 'retained-v7-review.json')
+        self.assertEqual(text, (ROOT / 'docs/CORPUS_LABEL_REVIEW_RETAINED_V7.md').read_text())
+
+    def test_ci_keeps_retained_measurement_report_only_and_archives_exact_bytes(self):
         workflow = (ROOT / '.github/workflows/tests.yml').read_text()
         command = next(line for line in workflow.splitlines()
-                       if 'run: python scripts/evaluate_corpus.py --corpus tests/corpus/fresh-v7.json' in line)
+                       if 'run: python scripts/evaluate_corpus.py --corpus tests/corpus/retained-v7.json' in line)
         self.assertIn('--report-only', command)
-        self.assertIn('--review-file tests/corpus/fresh-v7-review.json', command)
+        self.assertIn('--review-file tests/corpus/retained-v7-review.json', command)
         self.assertNotIn('||', command)
         self.assertNotIn('continue-on-error', workflow)
-        self.assertIn('fresh-v7-metrics.json', workflow)
-        self.assertIn('FRESH_V7_SHA256=', workflow)
-        self.assertIn('FRESH_V7_BYTES=', workflow)
+        self.assertIn('retained-v7-metrics.json', workflow)
+        self.assertIn('RETAINED_V7_SHA256=', workflow)
+        self.assertIn('RETAINED_V7_BYTES=', workflow)
 
 
 if __name__ == '__main__':

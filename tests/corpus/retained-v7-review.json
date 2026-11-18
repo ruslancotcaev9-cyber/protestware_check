@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "corpus_sha256": "a5892a0f7476afc6fafcc38895757e010a2e767df68971067d3729791f565a78",
+  "policy": "Pending candidate labels are not independent review. Reviewer identity/independence must be established outside this file by the trusted review process.",
+  "cases": [
+    {
+      "id": "go-git-go-billy-fresh-v7-1",
+      "case_sha256": "1e0dba2317008ae8838281abb677db15aacf6c480f60e7eba60366dc8d2f27fc",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "go-git-go-billy-fresh-v7-2",
+      "case_sha256": "5b6f641c80bf4c273b021aa1b7cee28e4499e6a1919dab7b993ce2a809b21d39",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "go-git-go-billy-fresh-v7-3",
+      "case_sha256": "48c18376926f5d40d3a2baa48729425526536b57ba0068387fe2e68591f24e7a",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "go-git-go-billy-fresh-v7-4",
+      "case_sha256": "62a7a7e654473588381ee302bbc5cd9e3fe17a93e4b79b51b0c465f08c6c981e",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqitchers-sqitch-fresh-v7-1",
+      "case_sha256": "0003284726772f079971b60c0953234a00fe7d0c6f473100468e5f143c6461b8",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqitchers-sqitch-fresh-v7-2",
+      "case_sha256": "f3c2a11d235d9f61d544a05f7f15171c0f5aefb19de9bb3231d506972bcb839d",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqitchers-sqitch-fresh-v7-3",
+      "case_sha256": "5d2658a1085647fd0ab1e18b5f1d515b03d0a42882087aa1beb9e0dc7ed149ae",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "sqitchers-sqitch-fresh-v7-4",
+      "case_sha256": "a16d3a65df390c273c3d96bedd4cddbda674cfa494bcc6f441bc82c54ddeb410",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "npm-cli-fresh-v7-1",
+      "case_sha256": "df460d367e0e95df2d2d6aa23ab9da896c336353cf5dddd07239ed1342cda5bb",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "npm-cli-fresh-v7-2",
+      "case_sha256": "4f19f12bfd18f231b9bda31ac8643d7fefa2bd2bb6f25f7fe1cde833cc0e6d44",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "npm-cli-fresh-v7-3",
+      "case_sha256": "a77e3cc18689ca19ed711dea648c10c1a9b9d6d0b12c509d6d6ae5201076a653",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "npm-cli-fresh-v7-4",
+      "case_sha256": "5d255e50202398ab3ebf903489f8febda0f66ee72578802d1310ec3a0a1258a1",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "angular-angular-cli-fresh-v7-1",
+      "case_sha256": "920b43df4783e3b0e4fec0d95210bb5ec0ec507cc1a39df6913d22d570cc5049",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "angular-angular-cli-fresh-v7-2",
+      "case_sha256": "4c3e148651bd53cd39cb2e624fe27c935aba4cb32cd5403f9a10bd0ad8e39965",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "angular-angular-cli-fresh-v7-3",
+      "case_sha256": "3acf89947558b40614e5ee9db9e9737449c769376f2daf8c22e80ddb9303776d",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "angular-angular-cli-fresh-v7-4",
+      "case_sha256": "81a0a5b8167de096a95d04f7cb6ec5a1c1a52f1fb4fb3576561b03af5a86151d",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pypa-virtualenv-fresh-v7-1",
+      "case_sha256": "77133282398bb31d10fce7a6d0c45640d103e238cdc543926e4a9242c54a8baa",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pypa-virtualenv-fresh-v7-2",
+      "case_sha256": "a1d5b34169be9bf87c94190a34e1421d02da51a428674ce00ef1585306d233ad",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pypa-virtualenv-fresh-v7-3",
+      "case_sha256": "ded488c5a9c3c8e85859428d04e72cd2b22965d86b426a5de555edad5901b777",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pypa-virtualenv-fresh-v7-4",
+      "case_sha256": "387661308d2615ad8e4d2ca2e970fecf6dae6b512be790f06ae390c5f43f1d32",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    }
+  ]
+}
