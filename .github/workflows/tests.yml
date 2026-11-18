@@ -68,6 +68,10 @@ jobs:
         run: python scripts/corpus_review.py validate --corpus tests/corpus/retained-v7.json --review tests/corpus/retained-v7-review.json
       - name: Retained v7 whole files after consumed Cake and Go cases are excluded
         run: python scripts/evaluate_corpus.py --corpus tests/corpus/retained-v7.json --review-file tests/corpus/retained-v7-review.json --report-only --measure --output retained-v7-metrics.json
+      - name: Validate new v8 candidate-label review binding
+        run: python scripts/corpus_review.py validate --corpus tests/corpus/fresh-v8.json --review tests/corpus/fresh-v8-review.json
+      - name: First v8 whole-file evaluation with frozen rules and candidate labels
+        run: python scripts/evaluate_corpus.py --corpus tests/corpus/fresh-v8.json --review-file tests/corpus/fresh-v8-review.json --report-only --measure --output fresh-v8-metrics.json
       - name: Record exact public corpus report bytes for archival
         if: always()
         run: |
@@ -75,7 +79,7 @@ jobs:
           import base64
           from hashlib import sha256
           from pathlib import Path
-          for name in ('corpus-metrics.json', 'promoted-corpus-metrics.json', 'external-corpus-metrics.json'):
+          for name in ('corpus-metrics.json', 'promoted-corpus-metrics.json', 'external-corpus-metrics.json', 'fresh-v8-metrics.json'):
               report = Path(name).read_bytes()
               if len(report) > 1_000_000:
                   raise SystemExit('Corpus report archive byte budget exceeded')
@@ -101,6 +105,10 @@ jobs:
             promoted-corpus-metrics.json
             external-corpus-metrics.json
             retained-v7-metrics.json
+            fresh-v8-metrics.json
+            tests/corpus/fresh-v8.json
+            tests/corpus/fresh-v8-review.json
+            tests/corpus/fresh-v8-selection.json
             tests/corpus/retained-v7-review.json
             tests/corpus/fresh-v7-selection.json
             tests/corpus/external-review.json
