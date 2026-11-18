@@ -1,0 +1,602 @@
+{
+  "schema": 1,
+  "tool_version": "1.9.0",
+  "cases": 16,
+  "source_groups": 16,
+  "whole_file_cases": 16,
+  "repositories": 4,
+  "metrics_valid": true,
+  "overall": {
+    "tp": 8,
+    "fp": 0,
+    "tn": 8,
+    "fn": 0,
+    "errors": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "false_positive_rate": 0.0
+  },
+  "by_language_and_rule": [
+    {
+      "language": "JavaScript",
+      "rule": "FS_DELETE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Python",
+      "rule": "FS_DELETE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "SQL",
+      "rule": "SQL_DESTRUCTIVE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "TypeScript",
+      "rule": "FS_DELETE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_repository": [
+    {
+      "repository": "angular/angular-cli",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "npm/cli",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "pypa/virtualenv",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "sqitchers/sqitch",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_cohort": [
+    {
+      "cohort": "fresh-v7",
+      "tp": 8,
+      "fp": 0,
+      "tn": 8,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_operation_scope": [
+    {
+      "scope": "configuration-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "exception-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "filesystem-read-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "native-call",
+      "tp": 3,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "native-callback-call",
+      "tp": 2,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "native-instance-call",
+      "tp": 1,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "output-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "permission-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "sql-create-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "sql-drop-schema",
+      "tp": 1,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "sql-drop-table",
+      "tp": 1,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    }
+  ],
+  "by_ast_mode": [
+    {
+      "mode": "auto",
+      "tp": 8,
+      "fp": 0,
+      "tn": 8,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_status": [
+    {
+      "status": "parsed",
+      "tp": 6,
+      "fp": 0,
+      "tn": 8,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "status": "partial",
+      "tp": 2,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    }
+  ],
+  "analysis": {
+    "by_status": {
+      "parsed": 14,
+      "partial": 2
+    },
+    "complete": false,
+    "successful_fraction": 1.0,
+    "partial_cases": 2
+  },
+  "performance": {
+    "measured": true,
+    "elapsed_seconds": 1.5059515790000688,
+    "median_case_seconds": 0.05422402149999783,
+    "peak_traced_python_bytes": 2464500
+  },
+  "results": [
+    {
+      "id": "sqitchers-sqitch-fresh-v7-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "sqitchers/sqitch",
+      "cohort": "fresh-v7",
+      "operation_scope": "sql-drop-schema",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sqitchers-sqitch-fresh-v7-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "sqitchers/sqitch",
+      "cohort": "fresh-v7",
+      "operation_scope": "sql-drop-table",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sqitchers-sqitch-fresh-v7-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "sqitchers/sqitch",
+      "cohort": "fresh-v7",
+      "operation_scope": "sql-create-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "sqitchers-sqitch-fresh-v7-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "sqitchers/sqitch",
+      "cohort": "fresh-v7",
+      "operation_scope": "sql-create-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "npm-cli-fresh-v7-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "npm/cli",
+      "cohort": "fresh-v7",
+      "operation_scope": "native-callback-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "npm-cli-fresh-v7-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "npm/cli",
+      "cohort": "fresh-v7",
+      "operation_scope": "native-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "npm-cli-fresh-v7-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "npm/cli",
+      "cohort": "fresh-v7",
+      "operation_scope": "output-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "npm-cli-fresh-v7-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "npm/cli",
+      "cohort": "fresh-v7",
+      "operation_scope": "output-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "angular-angular-cli-fresh-v7-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "angular/angular-cli",
+      "cohort": "fresh-v7",
+      "operation_scope": "native-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic packages/angular/build/src/utils/delete-output-dir.ts: AST partial analysis: packages/angular/build/src/utils/delete-output-dir.ts: Tree-sitter taint recursive call reached"
+        ]
+      }
+    },
+    {
+      "id": "angular-angular-cli-fresh-v7-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "angular/angular-cli",
+      "cohort": "fresh-v7",
+      "operation_scope": "native-callback-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "angular-angular-cli-fresh-v7-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "angular/angular-cli",
+      "cohort": "fresh-v7",
+      "operation_scope": "configuration-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "angular-angular-cli-fresh-v7-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "angular/angular-cli",
+      "cohort": "fresh-v7",
+      "operation_scope": "filesystem-read-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pypa-virtualenv-fresh-v7-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "pypa/virtualenv",
+      "cohort": "fresh-v7",
+      "operation_scope": "native-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST partial analysis: src/virtualenv/util/path/_sync.py: Python taint recursive call reached"
+        ]
+      }
+    },
+    {
+      "id": "pypa-virtualenv-fresh-v7-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "pypa/virtualenv",
+      "cohort": "fresh-v7",
+      "operation_scope": "native-instance-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pypa-virtualenv-fresh-v7-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pypa/virtualenv",
+      "cohort": "fresh-v7",
+      "operation_scope": "exception-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pypa-virtualenv-fresh-v7-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pypa/virtualenv",
+      "cohort": "fresh-v7",
+      "operation_scope": "permission-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    }
+  ],
+  "suite": {
+    "suite": "retained-external-v7-after-csharp-go",
+    "detector_reference_commit": "5c4c5a23270d273678665e9d9c1194fb93a5abc6",
+    "label_scope": "Rule-specific operation presence, not malware/protestware or guaranteed reachability.",
+    "review": "Assistant-proposed candidate labels; independent human review pending.",
+    "policy": "16 unchanged v7 cases after excluding all four Cake and all four go-billy cases consumed for implementation. Original 24-case corpus, earlier retained subsets and first measurements are historical. No new independent sources in this iteration.",
+    "sampling": "Retained purposive subset: SQL, JavaScript, TypeScript, Python; four whole files per language, balanced 2/2. Assistant-proposed labels, independent human review pending.",
+    "parent_corpus_sha256": "6091eb2a5b061d72bdbd4f489024ea2faf99a8ead7abb49e14dd1af6155684cf"
+  },
+  "evaluation_mode": "report-only",
+  "corpus_sha256": "eb276c641817c569b02acbdae04792c8f917362d402466027118fb497320d7f9",
+  "label_review": {
+    "status": "pending",
+    "counts": {
+      "pending": 16,
+      "confirmed": 0,
+      "disputed": 0
+    },
+    "identity_verified": false,
+    "basis": "Claims in a checksum-bound review file; authenticate reviewer and independence in the trusted review process."
+  }
+}

@@ -23,7 +23,7 @@ not evidence of a published release.
 - [ ] Run unit tests with resolver dependencies and pre-cached AST grammars;
       verify no unexpected skips. Run the pinned behavioral regression and the
       optional live malware-advisory smoke test when applicable.
-- [ ] Verify the real Go export/import job. Review all four corpus artifacts:
+- [ ] Verify the real Go export/import job. Review all five corpus reports (including the separate v8 evaluation):
       strict regression FP/FN block the gate; external evaluation records FP/FN
       without blocking, while fatal/degraded evaluation errors still block.
       Inspect auto-mode partial/syntax-recovery diagnostics separately. Review

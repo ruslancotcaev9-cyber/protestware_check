@@ -27,10 +27,12 @@ BoundOS → RootOS → os.Root при наличии обоих выбранны
 
 ## Результаты и полнота
 
-`GO_FS_DELETE` и связанный `AST_GEO_ACTION` сохраняют `resolved_symbol`,
+`GO_FS_DELETE` сохраняет `resolved_symbol`,
 `binding_certainty=possible`, `binding_basis` и маршрут `dataflow`.
 У Root/обёрток basis — `selected-go-types`; у прежних прямых функций —
-`import-identity`. Это статическая связь API, а не доказательство исполнения,
+`import-identity`. Связанный `AST_GEO_ACTION` сохраняет условие, символ и маршрут;
+его basis в текущем Go-проходе — `selected-go-types`.
+Это статическая связь API, а не доказательство исполнения,
 достижимости пути или вредоносности проекта.
 
 JSON `ast.go_modules` содержит счётчики файлов, байтов, пакетов, посещений,

@@ -1,0 +1,743 @@
+{
+  "schema": 1,
+  "tool_version": "1.9.0",
+  "cases": 24,
+  "source_groups": 24,
+  "whole_file_cases": 24,
+  "repositories": 6,
+  "metrics_valid": true,
+  "overall": {
+    "tp": 11,
+    "fp": 0,
+    "tn": 12,
+    "fn": 1,
+    "errors": 0,
+    "precision": 1.0,
+    "recall": 0.9166666666666666,
+    "false_positive_rate": 0.0
+  },
+  "by_language_and_rule": [
+    {
+      "language": "C#",
+      "rule": "CS_FS_DELETE",
+      "tp": 1,
+      "fp": 0,
+      "tn": 2,
+      "fn": 1,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Go",
+      "rule": "GO_FS_DELETE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "JavaScript",
+      "rule": "FS_DELETE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Python",
+      "rule": "FS_DELETE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "SQL",
+      "rule": "SQL_DESTRUCTIVE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "TypeScript",
+      "rule": "FS_DELETE",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_repository": [
+    {
+      "repository": "eslint/eslint",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "nuke-build/nuke",
+      "tp": 1,
+      "fp": 0,
+      "tn": 2,
+      "fn": 1,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "pnpm/pnpm",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "pressly/goose",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "pytest-dev/pytest",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "rclone/rclone",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_cohort": [
+    {
+      "cohort": "fresh-v8",
+      "tp": 11,
+      "fp": 0,
+      "tn": 12,
+      "fn": 1,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.9166666666666666,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_operation_scope": [
+    {
+      "scope": "configuration-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "data-modification-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "existence-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "in-memory-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 5,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "known-wrapper-call",
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "native-api-call",
+      "tp": 9,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "native-sql-statement",
+      "tp": 2,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "path-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "syntax-inspection-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_mode": [
+    {
+      "mode": "auto",
+      "tp": 11,
+      "fp": 0,
+      "tn": 12,
+      "fn": 1,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.9166666666666666,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_status": [
+    {
+      "status": "parsed",
+      "tp": 11,
+      "fp": 0,
+      "tn": 12,
+      "fn": 1,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.9166666666666666,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "analysis": {
+    "by_status": {
+      "parsed": 24
+    },
+    "complete": true,
+    "successful_fraction": 1.0,
+    "partial_cases": 0
+  },
+  "performance": {
+    "measured": true,
+    "elapsed_seconds": 4.475573664999942,
+    "median_case_seconds": 0.028930154000001096,
+    "peak_traced_python_bytes": 5678906
+  },
+  "results": [
+    {
+      "id": "rclone-rclone-fresh-v8-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "rclone/rclone",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-api-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rclone-rclone-fresh-v8-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "rclone/rclone",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-api-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rclone-rclone-fresh-v8-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "rclone/rclone",
+      "cohort": "fresh-v8",
+      "operation_scope": "configuration-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "rclone-rclone-fresh-v8-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "rclone/rclone",
+      "cohort": "fresh-v8",
+      "operation_scope": "path-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "nuke-build/nuke",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-api-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-2",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "nuke-build/nuke",
+      "cohort": "fresh-v8",
+      "operation_scope": "known-wrapper-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nuke-build/nuke",
+      "cohort": "fresh-v8",
+      "operation_scope": "existence-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nuke-build/nuke",
+      "cohort": "fresh-v8",
+      "operation_scope": "path-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "eslint/eslint",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-api-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "eslint/eslint",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-api-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "eslint/eslint",
+      "cohort": "fresh-v8",
+      "operation_scope": "in-memory-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "eslint/eslint",
+      "cohort": "fresh-v8",
+      "operation_scope": "syntax-inspection-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "pnpm/pnpm",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-api-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "pnpm/pnpm",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-api-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pnpm/pnpm",
+      "cohort": "fresh-v8",
+      "operation_scope": "in-memory-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pnpm/pnpm",
+      "cohort": "fresh-v8",
+      "operation_scope": "in-memory-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "pytest-dev/pytest",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-api-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "pytest-dev/pytest",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-api-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pytest-dev/pytest",
+      "cohort": "fresh-v8",
+      "operation_scope": "in-memory-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pytest-dev/pytest",
+      "cohort": "fresh-v8",
+      "operation_scope": "in-memory-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pressly-goose-fresh-v8-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "pressly/goose",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-sql-statement",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pressly-goose-fresh-v8-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "pressly/goose",
+      "cohort": "fresh-v8",
+      "operation_scope": "native-sql-statement",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pressly-goose-fresh-v8-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pressly/goose",
+      "cohort": "fresh-v8",
+      "operation_scope": "data-modification-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "pressly-goose-fresh-v8-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "pressly/goose",
+      "cohort": "fresh-v8",
+      "operation_scope": "data-modification-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    }
+  ],
+  "suite": {
+    "suite": "fresh-external-v8",
+    "detector_reference_commit": "5c4c5a23270d273678665e9d9c1194fb93a5abc6",
+    "label_scope": "Potential filesystem deletion or SQL DROP/TRUNCATE in the complete source; not malware/protestware or a reachability proof.",
+    "review": "All labels are assistant-proposed candidates, pending independent human review.",
+    "policy": "Keep first outcomes; no detector tuning in this evaluation iteration; report-only records FP/FN but does not mask evaluation errors.",
+    "sampling": "Targeted, manually selected balanced set: 24 whole files, six previously unused primary repositories, four per language, two positive/two negative; single-file auto, no helpers; production/test/example roles are explicit."
+  },
+  "evaluation_mode": "report-only",
+  "corpus_sha256": "e56b17959e94dff4a4239bc562e7580b21049c8eeba2e0acdfaf46dc9f101473",
+  "label_review": {
+    "status": "pending",
+    "counts": {
+      "pending": 24,
+      "confirmed": 0,
+      "disputed": 0
+    },
+    "identity_verified": false,
+    "basis": "Claims in a checksum-bound review file; authenticate reviewer and independence in the trusted review process."
+  }
+}

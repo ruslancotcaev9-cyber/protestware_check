@@ -13,7 +13,8 @@
 [SHA-256 модулей](../tests/corpus/detector-freeze.json) проверяются тестами.
 Полный прогон выполнен на
 [2f4e10223656c440e2862e03160493fc63e89184](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/2f4e10223656c440e2862e03160493fc63e89184).
-Этот SHA закреплён в примерах GitHub/GitLab.
+Этот SHA использовался в примерах GitHub/GitLab при первоначальной проверке;
+текущая закреплённая ревизия указана в [индексе документации](README.md).
 
 [CI](https://github.com/ruslancotcaev9-cyber/protestware_check/actions/runs/44315027438) прошёл **573 теста без пропусков**, syntax checks,
 реальный Go export/import на собственной безопасной фикстуре и advisory-регрессии.
@@ -127,3 +128,12 @@ ZIP отдельно не пересчитывался; проверки выш�
 [review 56](evaluation/external-review-v6-1.8.0.json),
 [review 20](evaluation/retained-v7-review-v1.8.0.json),
 [заморозка](evaluation/detector-freeze-v1.8.0.json).
+
+## Последующая оценка v8
+
+[Новый отдельный набор](EVALUATION_V8_2026-11-18.md) проверил те же неизменные
+правила 1.9.0: 24 целых файла шести новых проектов, TP11/TN12/FP0/FN1/errors0,
+без partial; 581 тест без пропусков. FN — C# extension methods в соседнем файле,
+при parsed без предупреждений. Прежние четыре набора сохранили входы и исходы.
+Все 24 новые метки pending; первые исходные JSON и отдельный повтор сохранены.
+Данные первоначального прогона выше не заменены результатами v8.

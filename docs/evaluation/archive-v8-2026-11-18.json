@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "code_version": "1.9.0",
+  "detector_input_commit": "1466e0acecc7eaa36bec7bd5cb0622061ba829e2",
+  "detector_reference_commit": "5c4c5a23270d273678665e9d9c1194fb93a5abc6",
+  "protocol_commit": "b3d1c37c7bf9469c0d5e35722639a8d1cbe88b77",
+  "selection_commit": "8c42fbef95e194846eae548ad28a757b928dcf08",
+  "measurement_commit": "f30e3b6d4176275be44c6f85b173b6dcda8f5fa8",
+  "first_run": {
+    "id": 44319947226,
+    "event": "push",
+    "job": 134855919485,
+    "result_logged_at": "2026-11-18T14:03:38.2698899Z",
+    "artifact_id": 14434571437,
+    "zip_digest_reported_by_github": "sha256:ffa517526991c2886401e6845e35d626c6ebad6fc97ce88f239b6540ce0350d2",
+    "zip_digest_independently_recomputed": false
+  },
+  "verification_run": {
+    "id": 44320019662,
+    "event": "pull_request",
+    "job": 134856173871,
+    "result_logged_at": "2026-11-18T14:03:55.6763341Z",
+    "artifact_id": 14434650761,
+    "zip_digest_reported_by_github": "sha256:8c388012c04d8f77a88c54c408be1496eed966d6f0c6f198f12c6eabe36c73e9",
+    "zip_digest_independently_recomputed": false
+  },
+  "archive_method": "Decode exact public JSON byte records from each successful CI job log; recompute SHA-256 and compare with the emitted report marker; preserve original UTF-8 text unchanged. ZIP digests above are provider metadata, not independently recomputed values.",
+  "first_reports": [
+    {
+      "ci_path": "corpus-metrics.json",
+      "archive_path": "docs/evaluation/regression-v8-2026-11-18.json",
+      "sha256": "ff2ecf940c217450f5101be22ce0f3791e8e0231f68f02ab9653fd0b121c5edd",
+      "corpus_sha256": "331599e2077333c02082d710327f60cf2080ca67628c0695eeb40e1e8a92dba2"
+    },
+    {
+      "ci_path": "promoted-corpus-metrics.json",
+      "archive_path": "docs/evaluation/promoted-v8-2026-11-18.json",
+      "sha256": "ad1a8c1fc0c8f7bb49073ac7d668e3ba2c7c1328a22b9ef1c7a43a84c2a3f1b6",
+      "corpus_sha256": "f9945bc4176be137c45af892fa0e05d88312cc29420b43f93f451887e2b79f4c"
+    },
+    {
+      "ci_path": "external-corpus-metrics.json",
+      "archive_path": "docs/evaluation/retained-v6-v8-2026-11-18.json",
+      "sha256": "6bdffeb73b624a7666e5f2a8312289d3e89125075535f2db2112d855c1d676f1",
+      "corpus_sha256": "5cc12301e6792fb74d13bc1e364deb8288ef2dd0214603f0649e203fb6d3f049"
+    },
+    {
+      "ci_path": "retained-v7-metrics.json",
+      "archive_path": "docs/evaluation/retained-v7-v8-2026-11-18.json",
+      "sha256": "503840f0540d7aeeec4c7ef14703b2c156eaec06e08e962a25cfdccee5a618eb",
+      "corpus_sha256": "eb276c641817c569b02acbdae04792c8f917362d402466027118fb497320d7f9"
+    },
+    {
+      "ci_path": "fresh-v8-metrics.json",
+      "archive_path": "docs/evaluation/fresh-v8-first-2026-11-18.json",
+      "sha256": "77b595b155bd9131803b94ac44d340ecd60c0c11af8197d8fc09b988329ff5f0",
+      "corpus_sha256": "e56b17959e94dff4a4239bc562e7580b21049c8eeba2e0acdfaf46dc9f101473"
+    }
+  ],
+  "verification_report": {
+    "ci_path": "fresh-v8-metrics.json",
+    "archive_path": "docs/evaluation/fresh-v8-verification-2026-11-18.json",
+    "sha256": "1918f165ae2c21141a383ffe019c7a8d5affbb794e85562216eccb008bfb115f",
+    "corpus_sha256": "e56b17959e94dff4a4239bc562e7580b21049c8eeba2e0acdfaf46dc9f101473"
+  },
+  "first_and_verification_case_outcomes_equal": true,
+  "prior_four_corpus_inputs_and_case_results_equal_to_initial_1_9_0": true
+}
