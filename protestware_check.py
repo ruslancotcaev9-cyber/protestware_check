@@ -36,7 +36,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request
 
-VERSION = "1.8.0"
+VERSION = "1.9.0"
 DEFAULT_MAX_BYTES = 1_000_000
 CODE_SUFFIXES = {
     ".py", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".go", ".rs",
@@ -311,7 +311,7 @@ def python_code_only_lines(content: str) -> list[str]:
 
 def scan_text(path: str, content: str, political_terms: list[str], allowed_domains: list[str],
               ast_mode: str = "auto", ast_warnings: list[str] | None = None,
-              ast_stats: dict[str, int] | None = None, context=None, module_project=None) -> list[dict[str, Any]]:
+              ast_stats: dict[str, int] | None = None, context=None, module_project=None, go_project=None) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
     lines = content.splitlines()
     suffix = Path(path).suffix.lower()
@@ -417,8 +417,12 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
     tree_findings: list[dict[str, Any]] = []
     parsed = False
     if suffix in polyglot_ast.SUPPORTED and ast_mode != "off":
-        tree_findings, diagnostic = (polyglot_ast.scan_tree(path, content, allowed_domains, module_project=module_project)
-                                     if module_project is not None else polyglot_ast.scan_tree(path, content, allowed_domains))
+        tree_options = {}
+        if module_project is not None:
+            tree_options['module_project'] = module_project
+        if go_project is not None:
+            tree_options['go_project'] = go_project
+        tree_findings, diagnostic = polyglot_ast.scan_tree(path, content, allowed_domains, **tree_options)
         parsed = diagnostic is None or diagnostic.startswith("AST partial ")
         if ast_stats is not None:
             name = "partial" if diagnostic and parsed else "degraded" if diagnostic else "parsed"
@@ -508,16 +512,20 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
             raise ScanError("Total source file/byte budget exceeded; scan is incomplete")
         selected.append((path, content))
     module_project = None
+    go_project = None
     if ast_mode != 'off':
         from js_modules import Project, SUFFIXES
         if any(Path(path).suffix.lower() in SUFFIXES for path, _ in selected):
             module_project = Project(selected)
+        if any(Path(path).suffix.lower() == '.go' for path, _ in selected):
+            from go_modules import Project as GoProject
+            go_project = GoProject(selected)
     for path, content in selected:
         try:
             previous_stats = ast_stats.copy()
             results.extend(scan_text(path, content, political_terms, allowed_domains,
                                      ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats, context=context,
-                                     module_project=module_project))
+                                     module_project=module_project, go_project=go_project))
         except RecursionError as error:
             raise ScanError(f"Analysis nesting limit exceeded: {path}") from error
         status = next((key for key in ("partial", "degraded", "parsed", "disabled")
@@ -596,6 +604,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
                              "mode": dependencies["mode"], 'go_builds': dependencies.get('go_builds', [])},
             "warnings": warnings, "ast": {"mode": ast_mode, **ast_stats,
                                          **({'modules': module_project.metadata()} if module_project is not None else {}),
+                                         **({'go_modules': go_project.metadata()} if go_project is not None else {}),
                                          "complete": ast_stats["degraded"] == 0 and ast_stats["partial"] == 0 and
                                                      ast_stats["parsed"] > 0 and ast_mode != "off"}}
 

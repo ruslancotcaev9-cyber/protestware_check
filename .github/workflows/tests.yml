@@ -66,7 +66,7 @@ jobs:
         run: python scripts/evaluate_corpus.py --corpus tests/corpus/external.json --review-file tests/corpus/external-review.json --report-only --measure --output external-corpus-metrics.json
       - name: Validate retained v7 candidate-label review binding
         run: python scripts/corpus_review.py validate --corpus tests/corpus/retained-v7.json --review tests/corpus/retained-v7-review.json
-      - name: Retained v7 whole files after consumed Cake cases are excluded
+      - name: Retained v7 whole files after consumed Cake and Go cases are excluded
         run: python scripts/evaluate_corpus.py --corpus tests/corpus/retained-v7.json --review-file tests/corpus/retained-v7-review.json --report-only --measure --output retained-v7-metrics.json
       - name: Record exact public corpus report bytes for archival
         if: always()
@@ -75,6 +75,14 @@ jobs:
           import base64
           from hashlib import sha256
           from pathlib import Path
+          for name in ('corpus-metrics.json', 'promoted-corpus-metrics.json', 'external-corpus-metrics.json'):
+              report = Path(name).read_bytes()
+              if len(report) > 1_000_000:
+                  raise SystemExit('Corpus report archive byte budget exceeded')
+              print('CORPUS_ARCHIVE_SHA256=' + name + ':' + sha256(report).hexdigest())
+              content = base64.b64encode(report).decode('ascii')
+              for offset in range(0, len(content), 4096):
+                  print('CORPUS_ARCHIVE_BYTES=' + name + ':' + content[offset:offset + 4096])
           raw = Path('retained-v7-metrics.json').read_bytes()
           if len(raw) > 1_000_000:
               raise SystemExit('Corpus report archive byte budget exceeded')

@@ -9,7 +9,7 @@
 
 Текущие правила с бюджетом поиска контекста заморожены в
 [09c5b64bbb9a383ac1f5b48400730c76837e02d6](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/09c5b64bbb9a383ac1f5b48400730c76837e02d6).
-[SHA-256 правил](../tests/corpus/detector-freeze.json) проверяется тестом.
+[SHA-256 правил](evaluation/detector-freeze-v1.8.0.json) проверяется тестом.
 Полный прогон актуальной заморозки выполнен на
 [02c1fd65942055b587b3c7a596dcf4967b38fe2a](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/02c1fd65942055b587b3c7a596dcf4967b38fe2a).
 
@@ -115,3 +115,10 @@ Review/freeze-файлы ZIP побайтно совпадают с провер
 [архив регрессий](evaluation/promoted-corpus-v1.7.0.json),
 [журнал](evaluation/external-review-v6-1.7.0.json),
 [заморозка](evaluation/detector-freeze-v1.7.0.json).
+
+Входы этого этапа теперь сохранены отдельно: [внешние 56](evaluation/external-corpus-v6-1.8.0.json),
+[регрессии 42](evaluation/promoted-corpus-v1.8.0.json),
+[остаток v7, 20](evaluation/retained-v7-corpus-v1.8.0.json),
+[review 56](evaluation/external-review-v6-1.8.0.json),
+[review 20](evaluation/retained-v7-review-v1.8.0.json).
+Состояние после следующего этапа — [проверка 1.9.0](VALIDATION_1_9_0.md).

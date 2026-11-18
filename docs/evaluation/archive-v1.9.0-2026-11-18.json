@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "version": "1.9.0",
+  "measured_commit": "2f4e10223656c440e2862e03160493fc63e89184",
+  "detector_reference_commit": "5c4c5a23270d273678665e9d9c1194fb93a5abc6",
+  "workflow_run": 44315027438,
+  "job": 134838745339,
+  "artifact": {
+    "id": 14431732740,
+    "zip_digest_reported_by_github": "sha256:43db9f8e4835b63f7d214c07559a857a6e93094201b89397a6d5d34803f65623",
+    "zip_digest_independently_recomputed": false
+  },
+  "archive_method": "Decode the exact public corpus JSON byte records emitted in the successful CI job log; verify SHA-256 of each decoded UTF-8 report against its CI marker before committing unchanged text.",
+  "reports": [
+    {
+      "ci_path": "corpus-metrics.json",
+      "archive_path": "docs/evaluation/regression-v1.9.0-2026-11-18.json",
+      "sha256": "d128ff696bfa27133d1af3a05703558f65cb0d4e0491ce5fa5d149f98a04757e",
+      "corpus_sha256": "331599e2077333c02082d710327f60cf2080ca67628c0695eeb40e1e8a92dba2"
+    },
+    {
+      "ci_path": "promoted-corpus-metrics.json",
+      "archive_path": "docs/evaluation/promoted-v1.9.0-2026-11-18.json",
+      "sha256": "8e2e1103eddbb448274402c0014cce508bcdcb8b5d8a160135dc3e1eb33c787f",
+      "corpus_sha256": "f9945bc4176be137c45af892fa0e05d88312cc29420b43f93f451887e2b79f4c"
+    },
+    {
+      "ci_path": "external-corpus-metrics.json",
+      "archive_path": "docs/evaluation/retained-v6-1.9.0-2026-11-18.json",
+      "sha256": "58e56aff03770d70cd0d7579054d2d309291cef9a0498893fa980c073e60e5a6",
+      "corpus_sha256": "5cc12301e6792fb74d13bc1e364deb8288ef2dd0214603f0649e203fb6d3f049"
+    },
+    {
+      "ci_path": "retained-v7-metrics.json",
+      "archive_path": "docs/evaluation/retained-v7-1.9.0-2026-11-18.json",
+      "sha256": "fdab96c3fb2520d172e7a2b60cff5c4233d7a250a10770208f771039b794de4f",
+      "corpus_sha256": "eb276c641817c569b02acbdae04792c8f917362d402466027118fb497320d7f9"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Проверка меток внешнего корпуса
 
-Корпус SHA-256: `6091eb2a5b061d72bdbd4f489024ea2faf99a8ead7abb49e14dd1af6155684cf`.
+Корпус SHA-256: `eb276c641817c569b02acbdae04792c8f917362d402466027118fb497320d7f9`.
 
 Все метки ниже — предложения ассистента. Независимое ревью не выполнено. Положительная метка означает операцию, а не вредоносность.
 
@@ -8,10 +8,6 @@
 
 | ID / правило | Предложение | Режим / группа | Исходник | Обоснование |
 |---|---|---|---|---|
-| go-git-go-billy-fresh-v7-1 / GO_FS_DELETE | операция есть | auto / fresh-v7 | [go-git/go-billy:osfs/os_bound.go](https://github.com/go-git/go-billy/blob/d67c9b5cfb14a92d0d5662d42b39444449b36642/osfs/os_bound.go#L153) | BoundOS.Remove/RemoveAll call RootOS methods; rootFSWithCreate constructs RootOS from os.OpenRoot in this file. The pinned os_rootfs.go establishes the native os.Root deletion target; that other file is review context, not a detector helper. |
-| go-git-go-billy-fresh-v7-2 / GO_FS_DELETE | операция есть | auto / fresh-v7 | [go-git/go-billy:osfs/os_rootfs.go](https://github.com/go-git/go-billy/blob/d67c9b5cfb14a92d0d5662d42b39444449b36642/osfs/os_rootfs.go#L198) | RootOS.root is explicitly *os.Root; Remove and RemoveAll invoke fs.root.Remove/RemoveAll. This is native instance deletion rather than inference from a method name. |
-| go-git-go-billy-fresh-v7-3 / GO_FS_DELETE | целевой операции нет | auto / fresh-v7 | [go-git/go-billy:memfs/memory.go](https://github.com/go-git/go-billy/blob/d67c9b5cfb14a92d0d5662d42b39444449b36642/memfs/memory.go#L1) | Memory.Remove delegates to in-memory storage; this file has no os/syscall native deletion call. The label concerns physical/native filesystem deletion, not removal of transient entries from a map. |
-| go-git-go-billy-fresh-v7-4 / GO_FS_DELETE | целевой операции нет | auto / fresh-v7 | [go-git/go-billy:osfs/os_options.go](https://github.com/go-git/go-billy/blob/d67c9b5cfb14a92d0d5662d42b39444449b36642/osfs/os_options.go#L1) | WithMmap only configures an option flag; filesystem risks described in comments are not deletion calls. |
 | sqitchers-sqitch-fresh-v7-1 / SQL_DESTRUCTIVE | операция есть | auto / fresh-v7 | [sqitchers/sqitch:t/engine/revert/users.sql](https://github.com/sqitchers/sqitch/blob/b08e5c8a773ee4ab5ea4ab7cf6f7a16c55d6994e/t/engine/revert/users.sql#L2) | DROP SCHEMA IF EXISTS __myapp CASCADE is an executable destructive SQL statement, regardless of whether this test script is run. |
 | sqitchers-sqitch-fresh-v7-2 / SQL_DESTRUCTIVE | операция есть | auto / fresh-v7 | [sqitchers/sqitch:t/engine/revert/widgets.sql](https://github.com/sqitchers/sqitch/blob/b08e5c8a773ee4ab5ea4ab7cf6f7a16c55d6994e/t/engine/revert/widgets.sql#L2) | DROP TABLE IF EXISTS __myapp.widgets is an executable destructive SQL statement. |
 | sqitchers-sqitch-fresh-v7-3 / SQL_DESTRUCTIVE | целевой операции нет | auto / fresh-v7 | [sqitchers/sqitch:t/engine/deploy/users.sql](https://github.com/sqitchers/sqitch/blob/b08e5c8a773ee4ab5ea4ab7cf6f7a16c55d6994e/t/engine/deploy/users.sql#L1) | This complete deploy script creates a schema and table; it contains no destructive SQL statement. |

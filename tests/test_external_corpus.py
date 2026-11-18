@@ -52,7 +52,7 @@ class ExternalCorpusTests(unittest.TestCase):
     def test_promoted_v1_has_no_shared_source_files_with_fresh_evaluation(self):
         old = corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
         fresh = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
-        self.assertEqual(len(old), 42)
+        self.assertEqual(len(old), 46)
         key = lambda c: (c['provenance']['repository'], c['provenance']['path'])
         consumed = set(map(key, old))
         consumed.update((f.get('provenance', c['provenance'])['repository'],
@@ -105,7 +105,7 @@ class ExternalCorpusTests(unittest.TestCase):
         old = corpus_evaluation.load(archive)
         current = corpus_evaluation.load(ROOT / 'tests/corpus/external.json')
         promoted = corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
-        moved = [c for c in promoted if 'project_files' in c]
+        moved = [c for c in promoted if 'project_files' in c and c.get('promoted_from') in {v['id'] for v in old}]
         self.assertEqual(len(moved), 16)
         self.assertEqual({c['id'] for c in old} - {c['id'] for c in current}, {c['promoted_from'] for c in moved})
         original = {c['id']: c for c in old}

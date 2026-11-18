@@ -112,11 +112,11 @@ class FreshExternalCorpusTests(unittest.TestCase):
     def test_consumed_cake_cases_are_promoted_and_retained_inputs_unchanged(self):
         original = {c['id']: c for c in corpus_evaluation.load(CORPUS)}
         retained = corpus_evaluation.load(ROOT / 'tests/corpus/retained-v7.json')
-        self.assertEqual(len(retained), 20)
+        self.assertEqual(len(retained), 16)
         for case in retained:
             self.assertEqual(case, original[case['id']])
         consumed = [c for c in corpus_evaluation.load(ROOT / 'tests/corpus/promoted.json')
-                    if c.get('promoted_from') in original]
+                    if c.get('promoted_from') in original and c['provenance']['repository']=='cake-build/cake']
         self.assertEqual(len(consumed), 4)
         for case in consumed:
             before = original[case['promoted_from']]
@@ -126,15 +126,41 @@ class FreshExternalCorpusTests(unittest.TestCase):
         self.assertTrue({c['provenance']['repository'] for c in consumed}.isdisjoint(
                         {c['provenance']['repository'] for c in retained}))
 
-    def test_current_retained_v7_review_has_twenty_pending_records(self):
+    def test_current_retained_v7_review_has_sixteen_pending_records(self):
         document, checksum = corpus_evaluation.load_document(ROOT / 'tests/corpus/retained-v7.json')
         summary = corpus_review.load(ROOT / 'tests/corpus/retained-v7-review.json', document['cases'], checksum)
-        self.assertEqual(summary['counts'], {'pending': 20, 'confirmed': 0, 'disputed': 0})
+        self.assertEqual(summary['counts'], {'pending': 16, 'confirmed': 0, 'disputed': 0})
         self.assertFalse(summary['identity_verified'])
         text = corpus_review.worksheet(document['cases'], checksum).replace(
             'supporting-sources.json для обёрток', 'закреплённые исходные ссылки для обёрток').replace(
             'external-review.json', 'retained-v7-review.json')
         self.assertEqual(text, (ROOT / 'docs/CORPUS_LABEL_REVIEW_RETAINED_V7.md').read_text())
+
+    def test_go_cases_are_consumed_with_pinned_context_and_original_labels(self):
+        original={c['id']:c for c in corpus_evaluation.load(CORPUS)}
+        promoted=corpus_evaluation.load(ROOT/'tests/corpus/promoted.json')
+        selected=[c for c in promoted if c.get('promoted_from') in original and c['provenance']['repository']=='go-git/go-billy']
+        self.assertEqual(len(selected),4)
+        for case in selected:
+            before=original[case['promoted_from']]
+            for key in ('code','path','positive','rule','ast_mode','provenance'):
+                self.assertEqual(case[key],before[key])
+            for helper in case.get('project_files',[]):
+                raw=helper['code'].encode()
+                self.assertEqual(sha256(raw).hexdigest(),helper['sha256'])
+                self.assertEqual(sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest(),helper['git_blob_sha'])
+                self.assertEqual(helper['provenance']['repository'],'go-git/go-billy')
+                self.assertEqual(sha256((ROOT/helper['provenance']['license_path']).read_bytes()).hexdigest(),helper['provenance']['license_sha256'])
+
+    def test_current_retained_set_has_no_consumed_primary_or_helper_origins(self):
+        retained=corpus_evaluation.load(ROOT/'tests/corpus/retained-v7.json')
+        consumed=corpus_evaluation.load(ROOT/'tests/corpus/promoted.json')
+        keys={(c['provenance']['repository'],c['provenance']['path']) for c in consumed}
+        for c in consumed:
+            keys.update((f.get('provenance',c['provenance'])['repository'],
+                         f.get('provenance',{}).get('path',f['path'])) for f in c.get('project_files',[]))
+        self.assertTrue(keys.isdisjoint({(c['provenance']['repository'],c['provenance']['path']) for c in retained}))
+        self.assertEqual({c['language'] for c in retained},{'SQL','JavaScript','TypeScript','Python'})
 
     def test_ci_keeps_retained_measurement_report_only_and_archives_exact_bytes(self):
         workflow = (ROOT / '.github/workflows/tests.yml').read_text()
