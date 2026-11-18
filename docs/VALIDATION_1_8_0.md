@@ -2,10 +2,10 @@
 
 [C# API](CSHARP_BINDING_ANALYSIS.md) · [Заметки](releases/v1.8.0.md).
 Правила заморожены в
-[44e682db0cad9b584124e979c05a5e46377c6c63](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/44e682db0cad9b584124e979c05a5e46377c6c63).
+[09c5b64bbb9a383ac1f5b48400730c76837e02d6](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/09c5b64bbb9a383ac1f5b48400730c76837e02d6).
 [Хеши](../tests/corpus/detector-freeze.json) проверяются тестами.
 
-Локально прошли 83 целевых теста с нативной C#-грамматикой. Оба Cake FN
+Локально прошли 84 целевых теста с нативной C#-грамматикой. Оба Cake FN
 находятся по типам; две отрицательные Cake-регрессии остаются отрицательными.
 Полный CI и точные JSON будут добавлены после измерения закреплённой ветки.
 Сторонние исходники не исполняются. Код 1.8.0 остаётся unreleased.

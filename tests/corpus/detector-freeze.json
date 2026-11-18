@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "detector_reference_commit": "44e682db0cad9b584124e979c05a5e46377c6c63",
+  "detector_reference_commit": "09c5b64bbb9a383ac1f5b48400730c76837e02d6",
   "files": {
     "analysis_context.py": "d8fa61fd92f375a7e82c150b10c1fa9bc969ad80025b884db2b152734414c9e3",
     "ast_analysis.py": "cc56f9878018fd7fafd5a896eee094fa5e8d215dce8b686c2470896f6091783d",
     "cpp_ast.py": "4b4ee17d408bbae5b84f929ab250a3bb8f8b7dfb561a02bdae54ce14f00d7f10",
-    "csharp_bindings.py": "00cea7a5cf0d14e0766aee066183ce2010f24be11ce46dd2b6966361381d7d26",
+    "csharp_bindings.py": "35126206ec45f5a2ca0c395e7f400654020e2951c59489e5b6f50c938abea43c",
     "dependency_analysis.py": "0830552c6952ee502eac2c31c1b06aaccf2a2c4b1d6b679ae7a7fedda275e736",
     "go_bindings.py": "6e2e1f15e6eb908251f20a8c3f2a1ace449b612fd66f11f73bf19276a3075023",
     "go_build_info.py": "a68c1672b821d451abeb5c5e5ec853c5fad2cab19253dd5db684121a3d042a0e",

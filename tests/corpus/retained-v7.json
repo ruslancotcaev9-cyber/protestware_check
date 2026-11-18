@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "retained-external-v7-after-csharp",
-  "detector_reference_commit": "44e682db0cad9b584124e979c05a5e46377c6c63",
+  "detector_reference_commit": "09c5b64bbb9a383ac1f5b48400730c76837e02d6",
   "protocol_commit": "01ca43c2c54fdd8246d74cdc3792d43e42f14af1",
   "label_scope": "Rule-specific operation presence, not malware/protestware or guaranteed reachability.",
   "review": "Assistant-proposed candidate labels; independent human review pending.",

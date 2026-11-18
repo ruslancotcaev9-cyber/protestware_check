@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "suite": "promoted-regression-v4",
-  "detector_reference_commit": "44e682db0cad9b584124e979c05a5e46377c6c63",
+  "detector_reference_commit": "09c5b64bbb9a383ac1f5b48400730c76837e02d6",
   "label_scope": "rule-observable operations, not malware classification",
   "review": "labels assigned by project maintainer assistant; no independent human adjudication",
   "policy": "42 consumed source cases including four Cake files used for C# binding implementation. Project helpers are pinned separately. Not an independent quality estimate.",
