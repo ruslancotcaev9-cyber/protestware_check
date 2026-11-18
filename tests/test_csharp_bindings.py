@@ -188,6 +188,14 @@ class CSharpBindingTests(unittest.TestCase):
         self.assertFalse(calls)
         self.assertTrue(diagnostics)
 
+    def test_repeated_context_lookup_has_a_separate_budget(self):
+        code = 'using System.IO; ' + '\n'.join(
+            f'class C{i} {{FileInfo f;void M(){{f.Delete();}}}}' for i in range(80))
+        root = polyglot_ast._parser('csharp').parse(code.encode()).root_node
+        calls, diagnostics = csharp_bindings.resolve(code,root,max_context_steps=100)
+        self.assertTrue(calls)
+        self.assertTrue(any('context budget exceeded' in item for item in diagnostics))
+
 
 if __name__ == '__main__':
     unittest.main()

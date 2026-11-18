@@ -31,14 +31,22 @@ OTHER = Binding('other')
 
 
 class Resolver:
-    def __init__(self, source, *, max_nodes=120000, max_depth=120):
+    def __init__(self, source, *, max_nodes=120000, max_depth=120, max_context_steps=120000):
         self.data = source.encode('utf-8')
         self.max_nodes, self.max_depth = max_nodes, max_depth
         self.visits = 0
+        self.context_steps, self.max_context_steps = 0, max_context_steps
         self.calls, self.diagnostics = {}, set()
         self.usings, self.declared, self.full_types = {}, set(), set()
         self.methods = set()
         self.root = None
+        self.file_namespace = ''
+        self.generics = {}
+
+    def context_step(self):
+        self.context_steps += 1
+        if self.context_steps > self.max_context_steps:
+            raise ValueError('C# binding context budget exceeded')
 
     def raw(self, node):
         return self.data[node.start_byte:node.end_byte].decode('utf-8', 'replace') if node is not None else ''
@@ -54,24 +62,23 @@ class Resolver:
             if current.type == 'namespace_declaration':
                 parts.append(self.name(current.child_by_field_name('name')))
             current = current.parent
-        file_scope = next((n for n in self.root.named_children if n.type == 'file_scoped_namespace_declaration'), None)
-        if file_scope is not None:
-            parts.append(self.name(file_scope.child_by_field_name('name')))
+        if self.file_namespace:
+            parts.append(self.file_namespace)
         return '.'.join(reversed(parts))
 
     def context(self, node):
         owners, generics = [], set()
         current = node
         while current is not None:
+            self.context_step()
             if current.type in {'compilation_unit', 'namespace_declaration'}:
                 owners.append(current.id)
-            for child in current.named_children:
-                if child.type == 'type_parameter_list':
-                    generics.update(self.name(p.child_by_field_name('name')) for p in child.named_children)
+            generics.update(self.generics.get(current.id, ()))
             current = current.parent
         aliases, imports, static = {}, set(), set()
         for owner in reversed(owners):
             for alias, target, is_static in self.usings.get(owner, []):
+                self.context_step()
                 if alias:
                     aliases[alias] = target
                 elif is_static:
@@ -82,6 +89,8 @@ class Resolver:
 
     def index(self, root):
         self.root = root
+        file_scope = next((n for n in root.named_children if n.type == 'file_scoped_namespace_declaration'), None)
+        self.file_namespace = self.name(file_scope.child_by_field_name('name')) if file_scope is not None else ''
         todo = [(root, 0)]
         count = 0
         while todo:
@@ -89,6 +98,10 @@ class Resolver:
             count += 1
             if count > self.max_nodes or depth > self.max_depth:
                 raise ValueError('C# binding index budget exceeded')
+            if node.type in CLASSES | FUNCTIONS:
+                parameters = next((c for c in node.named_children if c.type == 'type_parameter_list'), None)
+                if parameters is not None:
+                    self.generics[node.id] = {self.name(p.child_by_field_name('name')) for p in parameters.named_children}
             if node.type in CLASSES:
                 name = self.name(node.child_by_field_name('name'))
                 self.declared.add(name)
