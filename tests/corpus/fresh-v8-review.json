@@ -1,0 +1,247 @@
+{
+  "schema": 1,
+  "corpus_sha256": "e56b17959e94dff4a4239bc562e7580b21049c8eeba2e0acdfaf46dc9f101473",
+  "policy": "Pending candidate labels are not independent review. Reviewer identity/independence must be established outside this file by the trusted review process.",
+  "cases": [
+    {
+      "id": "rclone-rclone-fresh-v8-1",
+      "case_sha256": "28a71c7044658ea37836f3ca9ac6a3f1001ad6548cf59fa5454b23b76e5788c2",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rclone-rclone-fresh-v8-2",
+      "case_sha256": "30cb56de2a893933149b6a584a78bf628416ab8f2a507610111eabc8b2a3724e",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rclone-rclone-fresh-v8-3",
+      "case_sha256": "8531474e78e21eaa2d6d18ca75d7444a2d9e47c545687b254d1305522a4b65a6",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "rclone-rclone-fresh-v8-4",
+      "case_sha256": "0a6b9ec00f58acbcff0bb8ed34365587d3b7ece0f39dd656d2435ce39d4aafd1",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-1",
+      "case_sha256": "13b26f40c86ac29693c57a6efdedffcbed6f703242482c5a873359d93b227f8b",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-2",
+      "case_sha256": "ba2d7282014bde334a9c9d4e42fc22c94070a135c87a66bcfbc3f72d53236674",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-3",
+      "case_sha256": "31c3ce3fe3722cedfdaed2196edef6750262d804423b349027745189d18722b0",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-4",
+      "case_sha256": "9d3a90275272847bfc6e13deaa45466a35fdd45c3db871333192a65f06c69007",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-1",
+      "case_sha256": "b945cbeb3de90774501ea5b3fc23fb499714d4087a141d0f0992a7de3aa762a8",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-2",
+      "case_sha256": "068d94c7d9b65c40b73e901e7286dff8920ce65625f8f9ea1f1962acac88d726",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-3",
+      "case_sha256": "bbd1a21d92741dd285df21cc46774aaa23e2d7cd8e04e5e958f86fe474ffed6c",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-4",
+      "case_sha256": "48546d0b33176c4d07af7790b5e4a67f36535e2b66b25156c38c01a382fded2d",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-1",
+      "case_sha256": "5b9709c13f6e824fc0c32dba78aaa596305047a14cbc94c51ea78188d89e8580",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-2",
+      "case_sha256": "3921a1926cbdfc7b8ef068e1922d6ed629d0819ee3998d177fd8c891642cdc5e",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-3",
+      "case_sha256": "49ee08753b347bfe6e779e815cb046e99764b0f8777fd2b0f921358fb0b9deff",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-4",
+      "case_sha256": "656684a7a1763a7000e23b6cd71733b06c7f802ab619698857825bcedc186acf",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-1",
+      "case_sha256": "cb7636df5f513e6af3d2f6d971138de339f8978dfbf9ff5131c6c1a1fa755c20",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-2",
+      "case_sha256": "ba0ef80496b82a9f6af7e1d1d68d84ab168944b8a17c45b2a1870155c8dfafbe",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-3",
+      "case_sha256": "16e537dc33ec0dbce85814564108c6f8504d8660121401f79dd2687e57c1c3f0",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-4",
+      "case_sha256": "ee20a74b8b20957db7b18ef62e5cd01dc711475444c08a0581645bc98d1c2d67",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pressly-goose-fresh-v8-1",
+      "case_sha256": "b109c5fb36b03c38361185ee839c874800c7b20c79b1521fe4e671a61661eaf3",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pressly-goose-fresh-v8-2",
+      "case_sha256": "d5e752f192d194bb18c47307450b884f3dbdf6201f5ecf84f3645602c869d407",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pressly-goose-fresh-v8-3",
+      "case_sha256": "6287a84e3a4cdb69c5afd50783a5d35f6f483b96e66209fdb0de51d3d84672a5",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "pressly-goose-fresh-v8-4",
+      "case_sha256": "f06fc6af0144643ed71f78ebef4726a473e8af4af3ce5563558ea596c8219cda",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    }
+  ]
+}
