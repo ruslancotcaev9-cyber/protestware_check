@@ -12,7 +12,8 @@ Changes to **protestware-check** are recorded here. Format follows
 - Bound the type/call worklist and preserve partial diagnostics, native symbols,
   JSON dataflow and SARIF graph metadata. Do not execute or build target code.
 - Add scope, shadowing, callback, negative in-memory and provenance regressions.
-  Full CI and current corpus measurements are recorded in docs/VALIDATION_1_9_0.md.
+  Verify 573 tests without skips and archive exact CI report bytes/checksums.
+  Current results and limits are recorded in docs/VALIDATION_1_9_0.md.
 - Rotate four consumed go-billy cases with pinned helper context; preserve
   original v7 and archived 1.8.0 inputs. Current sets are 48/46/56/16.
   No fresh independent quality improvement or human label approval is claimed.

@@ -115,3 +115,10 @@ Review/freeze-файлы ZIP побайтно совпадают с провер
 [архив регрессий](evaluation/promoted-corpus-v1.7.0.json),
 [журнал](evaluation/external-review-v6-1.7.0.json),
 [заморозка](evaluation/detector-freeze-v1.7.0.json).
+
+Входы этого этапа теперь сохранены отдельно: [внешние 56](evaluation/external-corpus-v6-1.8.0.json),
+[регрессии 42](evaluation/promoted-corpus-v1.8.0.json),
+[остаток v7, 20](evaluation/retained-v7-corpus-v1.8.0.json),
+[review 56](evaluation/external-review-v6-1.8.0.json),
+[review 20](evaluation/retained-v7-review-v1.8.0.json).
+Состояние после следующего этапа — [проверка 1.9.0](VALIDATION_1_9_0.md).
