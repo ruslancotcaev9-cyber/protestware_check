@@ -100,6 +100,12 @@ class GoModuleTests(unittest.TestCase):
         self.assertIn('return-type',{h[2] for h in route})
         self.assertEqual({h[0] for h in route},{'main.go','api.go'})
 
+    def test_chained_factory_call_keeps_outer_method_identity(self):
+        p=self.project(caller='package p\nfunc Make()*FS{return nil}\nfunc M(){Make().Remove("x")}')
+        calls=p.calls('main.go')[0]
+        self.assertEqual([p.units['main.go'].raw(item[0]) for item in calls.values()],['Make().Remove("x")'])
+        self.assertFalse(p.calls('main.go')[1])
+
     def test_package_directory_test_and_build_scope_boundaries(self):
         helper='package p\nimport "os"\ntype FS struct{root *os.Root}\nfunc(f *FS)Remove(p string)error{return f.root.Remove(p)}'
         caller='package p\nfunc Make()*FS{return nil}\nfunc M(){Make().Remove("x")}'
@@ -112,11 +118,7 @@ class GoModuleTests(unittest.TestCase):
         helper='//go:build !js\n\npackage p\nimport "os"\ntype FS struct{root *os.Root}\nfunc(f *FS)Remove(p string)error{return f.root.Remove(p)}'
         caller='//go:build !js\n\npackage p\nfunc Make()*FS{return nil}\nfunc M(){Make().Remove("x")}'
         p=self.project(caller,helper)
-        self.assertTrue(p.calls('main.go')[0], (p.metadata(), p.calls('main.go')[1],
-            {path: str(u.tree.root_node) for path,u in p.units.items()},
-            {key: repr(value) for key,value in p.types.items()},
-            {key: repr(value) for key,value in p.result_cache.items()}, repr(p.methods),
-            {path: repr(u.globals) for path,u in p.units.items()}, repr(p.seeds)))
+        self.assertTrue(p.calls('main.go')[0], (p.metadata(), p.calls('main.go')[1]))
 
     def test_missing_duplicate_and_broken_helpers_do_not_establish_links(self):
         caller='package p\nfunc Make()*FS{return nil}\nfunc M(){Make().Remove("x")}'
@@ -168,6 +170,7 @@ class GoModuleTests(unittest.TestCase):
         deletion=next(r for r in sarif(report)['runs'][0]['results'] if r['ruleId']=='GO_FS_DELETE')
         self.assertEqual(deletion['properties']['resolved_symbol'],'os.Root.Remove')
         self.assertTrue(deletion['codeFlows']);self.assertTrue(report['ast']['go_modules']['complete'])
+        self.assertEqual(sarif(report)['runs'][0]['invocations'][0]['properties']['goModuleAnalysis'],report['ast']['go_modules'])
 
     def test_helper_findings_do_not_satisfy_a_negative_primary(self):
         helper='package p\nimport "os"\nfunc Clean(r *os.Root){r.Remove("x")}'

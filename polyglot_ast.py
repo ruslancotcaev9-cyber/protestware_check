@@ -263,7 +263,7 @@ class TreeAnalyzer:
         pattern = deletes.get(ext)
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             pattern = r'Deno\s*\.\s*remove'
-        deletion = node.start_byte in self.go_deletions if ext == '.go' else bool(pattern and re.match(r'^(?:' + pattern + r')\s*\(', visible))
+        deletion = (node.start_byte, node.end_byte) in self.go_deletions if ext == '.go' else bool(pattern and re.match(r'^(?:' + pattern + r')\s*\(', visible))
         if ext == '.cs':
             deletion = node.start_byte in self.cs_deletions
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
@@ -273,8 +273,8 @@ class TreeAnalyzer:
                         trace=(('condition', int(branch), 'RU/BY geographic branch'),))
             self.emit('AST_GEO_ACTION', 'correlation', 'high', node,
                       'AST: filesystem deletion in a geographic branch; review reachability and intent', flow)
-            if ext == '.go' and node.start_byte in self.go_calls:
-                _, symbol, route = self.go_calls[node.start_byte]
+            if ext == '.go' and (node.start_byte, node.end_byte) in self.go_calls:
+                _, symbol, route = self.go_calls[(node.start_byte, node.end_byte)]
                 item = next((f for f in self.findings if f['rule']=='AST_GEO_ACTION' and f['line']==node.start_point[0]+1), None)
                 if item is not None:
                     item.update(resolved_symbol=symbol, binding_basis='selected-go-types', binding_certainty='possible')

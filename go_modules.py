@@ -257,7 +257,7 @@ class Project:
         return self.result_cache[identity]
 
     def edge(self, owner, node, target, route, unit):
-        key = (unit.path, node.start_byte)
+        key = (unit.path, node.start_byte, node.end_byte)
         if key not in self.edges and len(self.edges) >= self.max_edges:
             raise ValueError('Go selected call edge budget exceeded')
         self.edges[key] = (owner, node, target, route, unit)
@@ -276,7 +276,7 @@ class Project:
             owner, node, target, route, unit = self.edges[key]
             for symbol, hops in self.summaries.get(target, {}).items():
                 combined = trace(route, hops)
-                self.observations[unit.path].setdefault(node.start_byte, (node, symbol, combined))
+                self.observations[unit.path].setdefault((node.start_byte, node.end_byte), (node, symbol, combined))
                 summary = self.summaries.setdefault(owner, {})
                 if symbol not in summary:
                     summary[symbol] = combined
@@ -388,7 +388,7 @@ class Walker:
                 symbol = 'os.Root.' + name
         if symbol:
             route = trace(value.route, self.u.hop(node, 'sink', symbol))
-            self.p.observations[self.u.path][node.start_byte] = (node, symbol, route)
+            self.p.observations[self.u.path][(node.start_byte, node.end_byte)] = (node, symbol, route)
             self.p.seeds[owner].setdefault(symbol, route)
         else:
             target = self.target(fn, scopes)
