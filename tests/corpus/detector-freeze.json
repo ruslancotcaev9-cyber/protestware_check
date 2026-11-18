@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "detector_reference_commit": "0466c85bc3e38e58623f2e0f35c52d7d63c5f0bd",
+  "detector_reference_commit": "4ac395c02296e971902f53e476ff4c6411b82d04",
   "files": {
     "analysis_context.py": "84ae93172adf328d1350f57af27e9bac2c56d6ec80f0b32f30d149c00b88fab1",
     "ast_analysis.py": "cc56f9878018fd7fafd5a896eee094fa5e8d215dce8b686c2470896f6091783d",
@@ -9,7 +9,7 @@
     "dependency_analysis.py": "0830552c6952ee502eac2c31c1b06aaccf2a2c4b1d6b679ae7a7fedda275e736",
     "go_bindings.py": "6e2e1f15e6eb908251f20a8c3f2a1ace449b612fd66f11f73bf19276a3075023",
     "go_build_info.py": "a68c1672b821d451abeb5c5e5ec853c5fad2cab19253dd5db684121a3d042a0e",
-    "go_modules.py": "2130a06761764db9a1253105cd3b70aa6d7973c13fae1f62abf3187f1be4ae8e",
+    "go_modules.py": "766e8f2e17a8abf498a29c4d0908ad70deeaaf3ea06db9e7b937745fc71ade01",
     "js_behavior.py": "1945de68f34c63fed10871875af926dbab701de3c4eca519f4d62ab9d113618d",
     "js_bindings.py": "ac6c25887c2f832eb10f7418300db46f2a7ecf21a2a41e636c4c76fb79a24d97",
     "js_modules.py": "3446341ede6288052efe33d0dacb2f2f1b95b022a156c683f28a6fd86684be06",

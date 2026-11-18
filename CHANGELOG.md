@@ -4,6 +4,19 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] — unreleased (2026-11-18)
+
+- Resolve observed Go os.Root types, constructions and native deletion calls.
+  Follow fields, annotated returns and concrete local wrappers across selected
+  package files with explicit directory/test/build-tag boundaries.
+- Bound the type/call worklist and preserve partial diagnostics, native symbols,
+  JSON dataflow and SARIF graph metadata. Do not execute or build target code.
+- Add scope, shadowing, callback, negative in-memory and provenance regressions.
+  Full CI and current corpus measurements are recorded in docs/VALIDATION_1_9_0.md.
+- Rotate four consumed go-billy cases with pinned helper context; preserve
+  original v7 and archived 1.8.0 inputs. Current sets are 48/46/56/16.
+  No fresh independent quality improvement or human label approval is claimed.
+
 ## [1.8.0] — unreleased (2026-11-18)
 
 - Bind C# File/Directory and FileInfo/DirectoryInfo deletion calls through

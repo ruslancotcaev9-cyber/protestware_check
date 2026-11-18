@@ -18,9 +18,9 @@
 
 ## Текущий остаток v7 после C#-реализации
 
-Четыре изученных Cake-файла исключены из текущей оценки и перенесены в регрессию.
+Восемь изученных файлов Cake и go-billy исключены из текущей оценки и перенесены в регрессию.
 [retained-v7.json](../tests/corpus/retained-v7.json) и
-[retained-v7-review.json](../tests/corpus/retained-v7-review.json) содержат 20
+[retained-v7-review.json](../tests/corpus/retained-v7-review.json) содержат 16
 оставшихся случаев/pending; [таблица](CORPUS_LABEL_REVIEW_RETAINED_V7.md).
 Их журнал проверяется отдельно от прежних 56 external.json и исторических 24 v7.
 

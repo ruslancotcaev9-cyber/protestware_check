@@ -149,3 +149,11 @@ CI устанавливает закреплённые зависимости, �
 С 1.8.0 C#-находки используют существующие resolved_symbol, binding_certainty,
 binding_basis=selected-file-type и dataflow; SARIF сохраняет их. Это аддитивная
 семантика schema 1, не полный вывод C#-компилятора.
+
+С 1.9.0 добавлено необязательное `ast.go_modules` с полями mode, files, bytes,
+packages, nodes, resolution_steps, call_edges, summary_steps и complete.
+SARIF invocation properties сохраняют его как `goModuleAnalysis`.
+Go Root/обёртки используют existing finding fields resolved_symbol,
+binding_certainty=possible, binding_basis=selected-go-types и dataflow.
+Это добавочные поля schema 1. Новые правила меняют baseline context и требуют
+повторного ревью; номера baseline/Go/status не меняются.

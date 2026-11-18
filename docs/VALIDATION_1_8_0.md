@@ -9,7 +9,7 @@
 
 Текущие правила с бюджетом поиска контекста заморожены в
 [09c5b64bbb9a383ac1f5b48400730c76837e02d6](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/09c5b64bbb9a383ac1f5b48400730c76837e02d6).
-[SHA-256 правил](../tests/corpus/detector-freeze.json) проверяется тестом.
+[SHA-256 правил](evaluation/detector-freeze-v1.8.0.json) проверяется тестом.
 Полный прогон актуальной заморозки выполнен на
 [02c1fd65942055b587b3c7a596dcf4967b38fe2a](https://github.com/ruslancotcaev9-cyber/protestware_check/commit/02c1fd65942055b587b3c7a596dcf4967b38fe2a).
 
