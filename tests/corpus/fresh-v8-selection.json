@@ -1,0 +1,345 @@
+{
+  "schema": 1,
+  "protocol_commit": "b3d1c37c7bf9469c0d5e35722639a8d1cbe88b77",
+  "detector_input_commit": "1466e0acecc7eaa36bec7bd5cb0622061ba829e2",
+  "detector_reference_commit": "5c4c5a23270d273678665e9d9c1194fb93a5abc6",
+  "corpus_sha256": "e56b17959e94dff4a4239bc562e7580b21049c8eeba2e0acdfaf46dc9f101473",
+  "selection_before_results": true,
+  "repositories": {
+    "rclone/rclone": "a6779f3d79e0dfb71d08149f0ba35ba5568daab6",
+    "nuke-build/nuke": "27e8077b8ab01222c16c3610a899c25d1bce910c",
+    "eslint/eslint": "21026992e3520869b31ca4500905665942bb2cf0",
+    "pnpm/pnpm": "0058eb66def3f49ede56d85683c6c296cbf2f004",
+    "pytest-dev/pytest": "36eed6b7b0eb59760fc4b33e90bdaac5057388f0",
+    "pressly/goose": "ded3331f49ba36e8986082b8b74918571d420d0e"
+  },
+  "excluded_repositories": [
+    "angular/angular-cli",
+    "cake-build/cake",
+    "cli/cli",
+    "dotnet/aspnetcore",
+    "dotnet/runtime",
+    "go-git/go-billy",
+    "golang/go",
+    "isaacs/node-graceful-fs",
+    "isaacs/rimraf",
+    "jprichardson/node-fs-extra",
+    "microsoft/TypeScript",
+    "microsoft/vscode",
+    "nodejs/node",
+    "npm/cli",
+    "pallets/click",
+    "postgres/postgres",
+    "pypa/pip",
+    "pypa/virtualenv",
+    "python/cpython",
+    "spf13/afero",
+    "sqitchers/sqitch",
+    "sqlfluff/sqlfluff"
+  ],
+  "previous_inputs_sha256": {
+    "tests/corpus/cases.json": "331599e2077333c02082d710327f60cf2080ca67628c0695eeb40e1e8a92dba2",
+    "tests/corpus/detector-freeze.json": "f759070560a36a67a4247cf04cda04c9ef79edca11fa597ee8437f6d403650b1",
+    "tests/corpus/external-review.json": "caad78aabaaa84a27c2d3358b6d99ce10b865ce78dd07c4c22f32a7ea7a97116",
+    "tests/corpus/external.json": "5cc12301e6792fb74d13bc1e364deb8288ef2dd0214603f0649e203fb6d3f049",
+    "tests/corpus/fresh-v7-review.json": "ab219e87cbc6621d39d392e2ffb2a57a852109144efe7e6f0798cd2504f7fa7a",
+    "tests/corpus/fresh-v7-selection.json": "cf3955f1a1f5a1f4cf44b0a84bd5f232dc53d55a063a318d2c7edd97e38d7a1c",
+    "tests/corpus/fresh-v7.json": "0d917304b8db1254c9532be38f6266220f068bf7468c1790a7182099657cd2a2",
+    "tests/corpus/go-source-context.json": "c3c91839d789380a2c97b600b7097e0b5032a765b9511f745e44a5271c4dab0d",
+    "tests/corpus/promoted.json": "f9945bc4176be137c45af892fa0e05d88312cc29420b43f93f451887e2b79f4c",
+    "tests/corpus/retained-v7-review.json": "63ae3ed61565ee2ebb2a36601665a1ff16bd35eab3651fb8c64b3fd9174b1aee",
+    "tests/corpus/retained-v7.json": "eb276c641817c569b02acbdae04792c8f917362d402466027118fb497320d7f9",
+    "tests/corpus/supporting-sources.json": "71186f46a6082573eb5ba9a3b6dce4cc16e0562ed50150e0b88906436f15bedb",
+    "tests/corpus/licenses/angular-angular-cli.txt": "15e77c4692114f87c2020353626c868472c23954a4ed37ecc4c1522d14be1eb7",
+    "tests/corpus/licenses/cake-build-cake.txt": "736042c13e3bc0a6c70fd8eeee46b0577b94799135bfe8e1ee777ec670db3a72",
+    "tests/corpus/licenses/cli-cli.txt": "6da4adc42392c8485e40b4251c7e332fc3352df1947c9ffade71dd60b14a7a4f",
+    "tests/corpus/licenses/dotnet-aspnetcore.txt": "cfc21f5e8bd655ae997eec916138b707b1d290b83272c02a95c9f821b8c87310",
+    "tests/corpus/licenses/dotnet-runtime.txt": "cfc21f5e8bd655ae997eec916138b707b1d290b83272c02a95c9f821b8c87310",
+    "tests/corpus/licenses/go-git-go-billy.txt": "4d324e3ccdba05b20e3ed1b9547f70f10da14e095ea2af32a895e8858b28a396",
+    "tests/corpus/licenses/golang-go.txt": "911f8f5782931320f5b8d1160a76365b83aea6447ee6c04fa6d5591467db9dad",
+    "tests/corpus/licenses/isaacs-node-graceful-fs.txt": "f65c5d9f22a317b2a10803bd1868461ce6499c2ed7217bc80c0cc772a748789c",
+    "tests/corpus/licenses/isaacs-rimraf.txt": "8a1af140fdfbf5afd3df27f7e662f989c5b963a300020dfafce42033cae9e004",
+    "tests/corpus/licenses/jprichardson-node-fs-extra.txt": "c6a7de1428955aa5a692f4d3a3d3ede658d959616944713337cda296736442e1",
+    "tests/corpus/licenses/microsoft-TypeScript.txt": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47",
+    "tests/corpus/licenses/microsoft-vscode.txt": "9480271317925265e806a9a196aaa33410a962fa9d4d1e248a4a5187bc8c9df9",
+    "tests/corpus/licenses/nodejs-node.txt": "e4e51be4a687d939cf7dbe5961a4fee45a4acbbd5e1a07b11203f85bf419be47",
+    "tests/corpus/licenses/npm-cli.txt": "7610d223851f421d315df5e77974f1c68a04b97e02060e5bbbcf13d95e3ca257",
+    "tests/corpus/licenses/pallets-click.txt": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+    "tests/corpus/licenses/postgres-postgres.txt": "3d6af92ff8a4c2cdf69afb1cf44edea727922f5cd0cf8b5f72b11cdecac8fdfd",
+    "tests/corpus/licenses/pypa-pip.txt": "634300a669d49aeae65b12c6c48c924c51a4cdf3d1ff086dc3456dc8bcaa2104",
+    "tests/corpus/licenses/pypa-virtualenv.txt": "38ef740a641ff08df082680e98ab30d09badccee9e5fb686bce21212f3a663f0",
+    "tests/corpus/licenses/python-cpython.txt": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+    "tests/corpus/licenses/spf13-afero.txt": "5e3400b93bbb099e83e52bab885e7441750673c21f97988ca3f1240639b63283",
+    "tests/corpus/licenses/sqitchers-sqitch.txt": "a04edd4f562552d52dd3558804e9f13b429b8a91f9f02058718212d2d912f81d",
+    "tests/corpus/licenses/sqlfluff-sqlfluff.txt": "22dce2dc3663d299ccc2606289647982d757e6157393081e59736a9db335c77f"
+  },
+  "considered_but_not_selected": [
+    {
+      "repository": "rclone/rclone",
+      "path": "lib/file/file_windows.go",
+      "reason": "The source explicitly attributes part to Go syscall_windows.go. Go has been used in earlier inputs; exclude known borrowed source before measurement."
+    },
+    {
+      "repository": "pytest-dev/pytest",
+      "path": "src/_pytest/pathlib.py",
+      "reason": "The source explicitly includes code copied from CPython pathlib.py. CPython has been used in earlier inputs; choose non-borrowed primary files before measurement."
+    },
+    {
+      "repository": "eslint/eslint",
+      "path": "tests/lib/cli.js",
+      "reason": "2508 source lines exceed the protocol limit of 1500; not selected before measurement."
+    },
+    {
+      "repository": "eslint/eslint",
+      "path": "lib/cli-engine/lint-result-cache.js",
+      "reason": "No direct physical deletion in this revision; production ESLint class with an explicit fs.unlink was selected instead."
+    },
+    {
+      "repository": "pnpm/pnpm",
+      "path": "pnpm11/bins/remover/src/removeBins.ts",
+      "reason": "Calls an external rimraf package; native-source positives were selected before measurement to avoid assigning behavior by package name alone."
+    }
+  ],
+  "cases": [
+    {
+      "id": "rclone-rclone-fresh-v8-1",
+      "repository": "rclone/rclone",
+      "path": "fs/config/configfile/configfile.go",
+      "git_blob_sha": "c6a09fe5085fe585193b729ac853271e93c09042",
+      "fragment_sha256": "45d5aa647da982bb7435631926bbba09c1e7021571dc5fb5d5da7c9d9989a66f",
+      "case_sha256": "28a71c7044658ea37836f3ca9ac6a3f1001ad6548cf59fa5454b23b76e5788c2",
+      "positive": true,
+      "source_kind": "production"
+    },
+    {
+      "id": "rclone-rclone-fresh-v8-2",
+      "repository": "rclone/rclone",
+      "path": "lib/file/file_test.go",
+      "git_blob_sha": "eab7bf7c146ec19e78d2e9547a219cd26f0495ec",
+      "fragment_sha256": "4e7f3eb1e7066ecf8993cf07a1841086082309764d5f3a21ea34c5115ab5d55c",
+      "case_sha256": "30cb56de2a893933149b6a584a78bf628416ab8f2a507610111eabc8b2a3724e",
+      "positive": true,
+      "source_kind": "test-source"
+    },
+    {
+      "id": "rclone-rclone-fresh-v8-3",
+      "repository": "rclone/rclone",
+      "path": "lib/file/file_other.go",
+      "git_blob_sha": "d97a4250b3359919fe6163a962a92f4a1ec3d015",
+      "fragment_sha256": "38a094c64d5890a08aebafb0b59f6cdee192979c75bd2518add81dfe629bbbc1",
+      "case_sha256": "8531474e78e21eaa2d6d18ca75d7444a2d9e47c545687b254d1305522a4b65a6",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "rclone-rclone-fresh-v8-4",
+      "repository": "rclone/rclone",
+      "path": "lib/file/unc_windows.go",
+      "git_blob_sha": "5038b2198dc87262ab68f4ddc51b77797ce19432",
+      "fragment_sha256": "8b99fc56549604f752d66afcb71ec756c62906a6c5f74def7b09ad3b71dc22e0",
+      "case_sha256": "0a6b9ec00f58acbcff0bb8ed34365587d3b7ece0f39dd656d2435ce39d4aafd1",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-1",
+      "repository": "nuke-build/nuke",
+      "path": "source/Nuke.Utilities/IO/AbsolutePath.Delete.cs",
+      "git_blob_sha": "675837998c4a3408253e0d15698f95162d7c541a",
+      "fragment_sha256": "e5d1b6fae7ba32cdd9c2118d7302e0f779a43345d09fc115fa97c3dfe9cc3090",
+      "case_sha256": "13b26f40c86ac29693c57a6efdedffcbed6f703242482c5a873359d93b227f8b",
+      "positive": true,
+      "source_kind": "production"
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-2",
+      "repository": "nuke-build/nuke",
+      "path": "source/Nuke.Utilities/IO/AbsolutePath.MoveCopy.cs",
+      "git_blob_sha": "3a0e6949bb0ae9f022fc7564cb16ec92ed2d1124",
+      "fragment_sha256": "e292a3de7528ac4b55341010b83a0ccf52aff2683cc6c2bc24c81e71448a2d1e",
+      "case_sha256": "ba2d7282014bde334a9c9d4e42fc22c94070a135c87a66bcfbc3f72d53236674",
+      "positive": true,
+      "source_kind": "production"
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-3",
+      "repository": "nuke-build/nuke",
+      "path": "source/Nuke.Utilities/IO/AbsolutePath.Exists.cs",
+      "git_blob_sha": "7a806a4cc495a4d9eef38a2ecd340967d2f7163e",
+      "fragment_sha256": "5c7309504019a4a7a711a36a25c6d761705d53102306c84a3d9003c849dd764d",
+      "case_sha256": "31c3ce3fe3722cedfdaed2196edef6750262d804423b349027745189d18722b0",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "nuke-build-nuke-fresh-v8-4",
+      "repository": "nuke-build/nuke",
+      "path": "source/Nuke.Utilities/IO/AbsolutePath.Extension.cs",
+      "git_blob_sha": "30dfd488aacbad9166886bd0577656b462575d78",
+      "fragment_sha256": "ed4699c4fbeb6fefef730b50d12a9f0a6b090e75f4a1dd29b59dfe6bbc99d250",
+      "case_sha256": "9d3a90275272847bfc6e13deaa45466a35fdd45c3db871333192a65f06c69007",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-1",
+      "repository": "eslint/eslint",
+      "path": "lib/eslint/eslint.js",
+      "git_blob_sha": "c6a358d918fc8f9feca2b0f64a7fea7242fdf8ea",
+      "fragment_sha256": "2e2a156d3511c2ac87ea00b3a12427b9b004275aecaf62514eeefdd25ab529c2",
+      "case_sha256": "b945cbeb3de90774501ea5b3fc23fb499714d4087a141d0f0992a7de3aa762a8",
+      "positive": true,
+      "source_kind": "production"
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-2",
+      "repository": "eslint/eslint",
+      "path": "tests/lib/cli-engine/lint-result-cache.js",
+      "git_blob_sha": "d23617f06e847713f6b3551639b2bb4480a51715",
+      "fragment_sha256": "6350c4bb3d61d7ff9c44bc1dcf93767b6866916e6c0189791ad266b8ac6e0d45",
+      "case_sha256": "068d94c7d9b65c40b73e901e7286dff8920ce65625f8f9ea1f1962acac88d726",
+      "positive": true,
+      "source_kind": "test-source"
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-3",
+      "repository": "eslint/eslint",
+      "path": "lib/linter/file-context.js",
+      "git_blob_sha": "ff3ac9ee1ba1f8503bb9e61ddd0a9ca048ea55c2",
+      "fragment_sha256": "48e30cbc92aca50d4bbe54539f1da6c39cdeb0062d9fc67d67ed14d3efd677ba",
+      "case_sha256": "bbd1a21d92741dd285df21cc46774aaa23e2d7cd8e04e5e958f86fe474ffed6c",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "eslint-eslint-fresh-v8-4",
+      "repository": "eslint/eslint",
+      "path": "lib/rules/no-delete-var.js",
+      "git_blob_sha": "7dfe002af4cc161c9a431fe706b5d3aff094e1f1",
+      "fragment_sha256": "2651e6bfd3a53ccff2b9b57971b9772fabbeb304a6c8d2327d98363c968aa133",
+      "case_sha256": "48546d0b33176c4d07af7790b5e4a67f36535e2b66b25156c38c01a382fded2d",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-1",
+      "repository": "pnpm/pnpm",
+      "path": "pnpm11/cache/api/src/cacheDelete.ts",
+      "git_blob_sha": "3ea8259c3cecb6c9e74a13ade4e407e207038718",
+      "fragment_sha256": "cac80efa076d5b3e37823ce4f0c1751b4cef6c57be9355430501ec92053ffcc4",
+      "case_sha256": "5b9709c13f6e824fc0c32dba78aaa596305047a14cbc94c51ea78188d89e8580",
+      "positive": true,
+      "source_kind": "production"
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-2",
+      "repository": "pnpm/pnpm",
+      "path": "pnpm11/global/commands/src/cleanupFailedGlobalInstall.ts",
+      "git_blob_sha": "f1d27e50fe375835b50e7a4de3d9db2363ffc2e6",
+      "fragment_sha256": "b173dc2556f615fe6ed355ce42b19c96173767d169e27283ddd18fb0b3c470b8",
+      "case_sha256": "3921a1926cbdfc7b8ef068e1922d6ed629d0819ee3998d177fd8c891642cdc5e",
+      "positive": true,
+      "source_kind": "production"
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-3",
+      "repository": "pnpm/pnpm",
+      "path": "pnpm11/config/commands/src/parseConfigPropertyPath.ts",
+      "git_blob_sha": "2fbba39ee36a281ac38d1bf9bb64acdd5197ad06",
+      "fragment_sha256": "dfd3ed1588dcb2f834bc12527f0e3359b92f5a05eda48384f08effbf7e60aac1",
+      "case_sha256": "49ee08753b347bfe6e779e815cb046e99764b0f8777fd2b0f921358fb0b9deff",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "pnpm-pnpm-fresh-v8-4",
+      "repository": "pnpm/pnpm",
+      "path": "pnpm11/network/auth-header/src/helpers/removePort.ts",
+      "git_blob_sha": "6e05651dc13aef22d810f1d1086f4ab0ed0407a7",
+      "fragment_sha256": "e674e3c74f820ef7508f6c4aca339a26f273600b318693f1081222f55d6218bc",
+      "case_sha256": "656684a7a1763a7000e23b6cd71733b06c7f802ab619698857825bcedc186acf",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-1",
+      "repository": "pytest-dev/pytest",
+      "path": "src/_pytest/cacheprovider.py",
+      "git_blob_sha": "5d4a528077dd04daae897a5ce16fe20396ec21f6",
+      "fragment_sha256": "6a099a27b9339b5ea19dc82e309286f00c1b96e174e7761c8776b5aa8257978e",
+      "case_sha256": "cb7636df5f513e6af3d2f6d971138de339f8978dfbf9ff5131c6c1a1fa755c20",
+      "positive": true,
+      "source_kind": "production"
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-2",
+      "repository": "pytest-dev/pytest",
+      "path": "testing/test_cacheprovider.py",
+      "git_blob_sha": "a38a72c601102ce79fd007473d1fc2e47b4f7a16",
+      "fragment_sha256": "19c59edb276ab8ff650699c11324a2a01a366551c28e40a448a225f839a765a3",
+      "case_sha256": "ba0ef80496b82a9f6af7e1d1d68d84ab168944b8a17c45b2a1870155c8dfafbe",
+      "positive": true,
+      "source_kind": "test-source"
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-3",
+      "repository": "pytest-dev/pytest",
+      "path": "src/_pytest/_io/saferepr.py",
+      "git_blob_sha": "3f5c956d9cf7eba3355e8097568a22705f82889f",
+      "fragment_sha256": "c4634e463e01eb613fc52d909f6f44e4aa682e0c3ad2ad3d6fe0286d6f1c7aa8",
+      "case_sha256": "16e537dc33ec0dbce85814564108c6f8504d8660121401f79dd2687e57c1c3f0",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "pytest-dev-pytest-fresh-v8-4",
+      "repository": "pytest-dev/pytest",
+      "path": "src/_pytest/_io/wcwidth.py",
+      "git_blob_sha": "23886ff1581a16aa97e5c375e62261622e24c169",
+      "fragment_sha256": "714109ef8521c1e202c1b2af536aba9e865c3600f442504407d09f6a41986aa0",
+      "case_sha256": "ee20a74b8b20957db7b18ef62e5cd01dc711475444c08a0581645bc98d1c2d67",
+      "positive": false,
+      "source_kind": "production"
+    },
+    {
+      "id": "pressly-goose-fresh-v8-1",
+      "repository": "pressly/goose",
+      "path": "examples/sql-migrations/00001_create_users_table.sql",
+      "git_blob_sha": "efce49f235b6740f3882dda89879aaa891459b41",
+      "fragment_sha256": "9a09c5f945ea1ee521a33922ca253826efa8ce9496a174aed12ef5111aec644a",
+      "case_sha256": "b109c5fb36b03c38361185ee839c874800c7b20c79b1521fe4e671a61661eaf3",
+      "positive": true,
+      "source_kind": "sql-example"
+    },
+    {
+      "id": "pressly-goose-fresh-v8-2",
+      "repository": "pressly/goose",
+      "path": "examples/sql-migrations/00003_no_transaction.sql",
+      "git_blob_sha": "b890c3181d2c10285b225ea19d2cb004db15db01",
+      "fragment_sha256": "2d0eb7361c41fd30fbfdd4d167812fd6b98b403fb7a9aacededac2b85e7cba67",
+      "case_sha256": "d5e752f192d194bb18c47307450b884f3dbdf6201f5ecf84f3645602c869d407",
+      "positive": true,
+      "source_kind": "sql-example"
+    },
+    {
+      "id": "pressly-goose-fresh-v8-3",
+      "repository": "pressly/goose",
+      "path": "examples/sql-migrations/00002_rename_root.sql",
+      "git_blob_sha": "203d54e000439e38d70f49d6b6560e06a9d94ad3",
+      "fragment_sha256": "e8688519df24959ffe9462421db507a9c66273ec8ab69993bd9a8407a2f6e761",
+      "case_sha256": "6287a84e3a4cdb69c5afd50783a5d35f6f483b96e66209fdb0de51d3d84672a5",
+      "positive": false,
+      "source_kind": "sql-example"
+    },
+    {
+      "id": "pressly-goose-fresh-v8-4",
+      "repository": "pressly/goose",
+      "path": "internal/testing/integration/testdata/migrations/postgres/00002_insert.sql",
+      "git_blob_sha": "8ec039602ba78467466b2356494b9fe50a250af4",
+      "fragment_sha256": "f813a3677e7fa33d16f7fd0f370ec5b657b75d0555b04b67af5a28cab474b536",
+      "case_sha256": "f06fc6af0144643ed71f78ebef4726a473e8af4af3ce5563558ea596c8219cda",
+      "positive": false,
+      "source_kind": "sql-example"
+    }
+  ]
+}

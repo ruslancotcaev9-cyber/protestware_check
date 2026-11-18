@@ -1,0 +1,1296 @@
+{
+  "schema": 1,
+  "tool_version": "1.9.0",
+  "cases": 46,
+  "source_groups": 36,
+  "whole_file_cases": 26,
+  "repositories": 11,
+  "metrics_valid": true,
+  "overall": {
+    "tp": 24,
+    "fp": 0,
+    "tn": 22,
+    "fn": 0,
+    "errors": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "false_positive_rate": 0.0
+  },
+  "by_language_and_rule": [
+    {
+      "language": "C#",
+      "rule": "CS_FS_DELETE",
+      "tp": 3,
+      "fp": 0,
+      "tn": 3,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Go",
+      "rule": "GO_FS_DELETE",
+      "tp": 3,
+      "fp": 0,
+      "tn": 3,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "JavaScript",
+      "rule": "FS_DELETE",
+      "tp": 7,
+      "fp": 0,
+      "tn": 7,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "Python",
+      "rule": "FS_DELETE",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "SQL",
+      "rule": "SQL_DESTRUCTIVE",
+      "tp": 3,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "language": "TypeScript",
+      "rule": "FS_DELETE",
+      "tp": 7,
+      "fp": 0,
+      "tn": 7,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_repository": [
+    {
+      "repository": "cake-build/cake",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "dotnet/runtime",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "go-git/go-billy",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "golang/go",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "isaacs/rimraf",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "jprichardson/node-fs-extra",
+      "tp": 4,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "microsoft/TypeScript",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "microsoft/vscode",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "nodejs/node",
+      "tp": 3,
+      "fp": 0,
+      "tn": 3,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "postgres/postgres",
+      "tp": 3,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "python/cpython",
+      "tp": 1,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_cohort": [
+    {
+      "cohort": "promoted-v4",
+      "tp": 8,
+      "fp": 0,
+      "tn": 8,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "cohort": "promoted-v7-csharp",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "cohort": "promoted-v7-go",
+      "tp": 2,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "cohort": "unspecified",
+      "tp": 12,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_operation_scope": [
+    {
+      "scope": "configuration-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "in-memory-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "known-wrapper-call",
+      "tp": 1,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "local-wrapper",
+      "tp": 6,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "native-instance-call",
+      "tp": 3,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "no-target-operation",
+      "tp": 0,
+      "fp": 0,
+      "tn": 8,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "path-string-only",
+      "tp": 0,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "third-party-wrapper",
+      "tp": 2,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "unspecified",
+      "tp": 12,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_mode": [
+    {
+      "mode": "auto",
+      "tp": 12,
+      "fp": 0,
+      "tn": 12,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "mode": "required",
+      "tp": 12,
+      "fp": 0,
+      "tn": 10,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_status": [
+    {
+      "status": "parsed",
+      "tp": 18,
+      "fp": 0,
+      "tn": 18,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    },
+    {
+      "status": "partial",
+      "tp": 6,
+      "fp": 0,
+      "tn": 4,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "analysis": {
+    "by_status": {
+      "parsed": 36,
+      "partial": 10
+    },
+    "complete": false,
+    "successful_fraction": 1.0,
+    "partial_cases": 10
+  },
+  "performance": {
+    "measured": true,
+    "elapsed_seconds": 38.471330208,
+    "median_case_seconds": 0.07252077349999908,
+    "peak_traced_python_bytes": 11180800
+  },
+  "results": [
+    {
+      "id": "golang-go-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "golang/go",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "golang-go-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "golang/go",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "dotnet-runtime-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "dotnet/runtime",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "dotnet-runtime-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "dotnet/runtime",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-TypeScript-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "microsoft/TypeScript",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-TypeScript-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "microsoft/TypeScript",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "postgres/postgres",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "postgres/postgres",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-cpython-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "python/cpython",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "python-cpython-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "python/cpython",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "postgres/postgres",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "postgres-postgres-v2-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "language-pattern"
+      ],
+      "expected_positive": true,
+      "repository": "postgres/postgres",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v2-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v2-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "nodejs-node-v2-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "nodejs/node",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-TypeScript-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "microsoft/TypeScript",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-vscode-v2-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "microsoft/vscode",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-vscode-v2-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "microsoft/vscode",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "microsoft-TypeScript-v2-2",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "microsoft/TypeScript",
+      "cohort": "unspecified",
+      "operation_scope": "unspecified",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic src/rimraf-windows.ts: AST partial analysis: src/rimraf-windows.ts: JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:143; JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:59",
+          "AST diagnostic src/rimraf-move-remove.ts: AST partial analysis: src/rimraf-move-remove.ts: JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:143; JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:59"
+        ]
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic src/rimraf-move-remove.ts: AST partial analysis: src/rimraf-move-remove.ts: JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:143; JS queried object property may be overridden by spread/computed member at src/rimraf-move-remove.ts:59"
+        ]
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-rimraf-whole-v4-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "isaacs/rimraf",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-fs-extra-whole-v4-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "promoted-v4",
+      "operation_scope": "third-party-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic node_modules/graceful-fs/graceful-fs.js: AST partial analysis: node_modules/graceful-fs/graceful-fs.js: JS conditional/function object export mutation is unresolved; JS factory result property mutation is unresolved; JS filesystem computed property write is unresolved; JS native module property mutation is unresolved across files; JS unresolved namespace property mutation is unsupported; Tree-sitter taint invocation budget reached",
+          "AST diagnostic node_modules/graceful-fs/polyfills.js: AST partial analysis: node_modules/graceful-fs/polyfills.js: JS factory result property mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/legacy-streams.js: AST partial analysis: node_modules/graceful-fs/legacy-streams.js: JS unresolved namespace property mutation is unsupported"
+        ]
+      }
+    },
+    {
+      "id": "promoted-fs-extra-whole-v4-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "text-heuristic"
+      ],
+      "expected_positive": true,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic lib/copy/copy.js: AST partial analysis: lib/copy/copy.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported; Tree-sitter taint recursive call reached",
+          "AST diagnostic lib/fs/index.js: AST partial analysis: lib/fs/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/index.js: AST partial analysis: lib/mkdirs/index.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/make-dir.js: AST partial analysis: lib/mkdirs/make-dir.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/utils.js: AST partial analysis: lib/mkdirs/utils.js: JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/path-exists/index.js: AST partial analysis: lib/path-exists/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/util/stat.js: AST partial analysis: lib/util/stat.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported; Tree-sitter taint recursive call reached",
+          "AST diagnostic lib/util/utimes.js: AST partial analysis: lib/util/utimes.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/graceful-fs.js: AST partial analysis: node_modules/graceful-fs/graceful-fs.js: JS conditional/function object export mutation is unresolved; JS factory result property mutation is unresolved; JS filesystem computed property write is unresolved; JS native module property mutation is unresolved across files; JS unresolved namespace property mutation is unsupported; Tree-sitter taint invocation budget reached",
+          "AST diagnostic node_modules/graceful-fs/polyfills.js: AST partial analysis: node_modules/graceful-fs/polyfills.js: JS factory result property mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/legacy-streams.js: AST partial analysis: node_modules/graceful-fs/legacy-streams.js: JS unresolved namespace property mutation is unsupported"
+        ]
+      }
+    },
+    {
+      "id": "promoted-fs-extra-whole-v4-3",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "promoted-v4",
+      "operation_scope": "third-party-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic lib/copy/copy-sync.js: AST partial analysis: lib/copy/copy-sync.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported; Tree-sitter taint call depth limit reached; Tree-sitter taint invocation budget reached; Tree-sitter taint recursive call reached",
+          "AST diagnostic lib/fs/index.js: AST partial analysis: lib/fs/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/index.js: AST partial analysis: lib/mkdirs/index.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/make-dir.js: AST partial analysis: lib/mkdirs/make-dir.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/utils.js: AST partial analysis: lib/mkdirs/utils.js: JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/util/stat.js: AST partial analysis: lib/util/stat.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported; Tree-sitter taint recursive call reached",
+          "AST diagnostic lib/util/utimes.js: AST partial analysis: lib/util/utimes.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/graceful-fs.js: AST partial analysis: node_modules/graceful-fs/graceful-fs.js: JS conditional/function object export mutation is unresolved; JS factory result property mutation is unresolved; JS filesystem computed property write is unresolved; JS native module property mutation is unresolved across files; JS unresolved namespace property mutation is unsupported; Tree-sitter taint invocation budget reached",
+          "AST diagnostic node_modules/graceful-fs/polyfills.js: AST partial analysis: node_modules/graceful-fs/polyfills.js: JS factory result property mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/legacy-streams.js: AST partial analysis: node_modules/graceful-fs/legacy-streams.js: JS unresolved namespace property mutation is unsupported"
+        ]
+      }
+    },
+    {
+      "id": "promoted-fs-extra-whole-v4-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "promoted-v4",
+      "operation_scope": "local-wrapper",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic lib/move/move-sync.js: AST partial analysis: lib/move/move-sync.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/copy/copy-sync.js: AST partial analysis: lib/copy/copy-sync.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported; Tree-sitter taint call depth limit reached; Tree-sitter taint invocation budget reached; Tree-sitter taint recursive call reached",
+          "AST diagnostic lib/copy/copy.js: AST partial analysis: lib/copy/copy.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported; Tree-sitter taint recursive call reached",
+          "AST diagnostic lib/copy/index.js: AST partial analysis: lib/copy/index.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/fs/index.js: AST partial analysis: lib/fs/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/index.js: AST partial analysis: lib/mkdirs/index.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/make-dir.js: AST partial analysis: lib/mkdirs/make-dir.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/utils.js: AST partial analysis: lib/mkdirs/utils.js: JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/path-exists/index.js: AST partial analysis: lib/path-exists/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/util/stat.js: AST partial analysis: lib/util/stat.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported; Tree-sitter taint recursive call reached",
+          "AST diagnostic lib/util/utimes.js: AST partial analysis: lib/util/utimes.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/graceful-fs.js: AST partial analysis: node_modules/graceful-fs/graceful-fs.js: JS conditional/function object export mutation is unresolved; JS factory result property mutation is unresolved; JS filesystem computed property write is unresolved; JS native module property mutation is unresolved across files; JS unresolved namespace property mutation is unsupported; Tree-sitter taint invocation budget reached",
+          "AST diagnostic node_modules/graceful-fs/polyfills.js: AST partial analysis: node_modules/graceful-fs/polyfills.js: JS factory result property mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/legacy-streams.js: AST partial analysis: node_modules/graceful-fs/legacy-streams.js: JS unresolved namespace property mutation is unsupported"
+        ]
+      }
+    },
+    {
+      "id": "promoted-fs-extra-whole-v4-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic lib/ensure/file.js: AST partial analysis: lib/ensure/file.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/fs/index.js: AST partial analysis: lib/fs/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/index.js: AST partial analysis: lib/mkdirs/index.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/make-dir.js: AST partial analysis: lib/mkdirs/make-dir.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/utils.js: AST partial analysis: lib/mkdirs/utils.js: JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/graceful-fs.js: AST partial analysis: node_modules/graceful-fs/graceful-fs.js: JS conditional/function object export mutation is unresolved; JS factory result property mutation is unresolved; JS filesystem computed property write is unresolved; JS native module property mutation is unresolved across files; JS unresolved namespace property mutation is unsupported; Tree-sitter taint invocation budget reached",
+          "AST diagnostic node_modules/graceful-fs/polyfills.js: AST partial analysis: node_modules/graceful-fs/polyfills.js: JS factory result property mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/legacy-streams.js: AST partial analysis: node_modules/graceful-fs/legacy-streams.js: JS unresolved namespace property mutation is unsupported"
+        ]
+      }
+    },
+    {
+      "id": "promoted-fs-extra-whole-v4-6",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic lib/mkdirs/make-dir.js: AST partial analysis: lib/mkdirs/make-dir.js: JS conditional/function object export mutation is unresolved; JS queried object property may be overridden by spread/computed member at lib/mkdirs/make-dir.js:8; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/fs/index.js: AST partial analysis: lib/fs/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/mkdirs/utils.js: AST partial analysis: lib/mkdirs/utils.js: JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/graceful-fs.js: AST partial analysis: node_modules/graceful-fs/graceful-fs.js: JS conditional/function object export mutation is unresolved; JS factory result property mutation is unresolved; JS filesystem computed property write is unresolved; JS native module property mutation is unresolved across files; JS unresolved namespace property mutation is unsupported; Tree-sitter taint invocation budget reached",
+          "AST diagnostic node_modules/graceful-fs/polyfills.js: AST partial analysis: node_modules/graceful-fs/polyfills.js: JS factory result property mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/legacy-streams.js: AST partial analysis: node_modules/graceful-fs/legacy-streams.js: JS unresolved namespace property mutation is unsupported"
+        ]
+      }
+    },
+    {
+      "id": "promoted-fs-extra-whole-v4-7",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic lib/path-exists/index.js: AST partial analysis: lib/path-exists/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/fs/index.js: AST partial analysis: lib/fs/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/graceful-fs.js: AST partial analysis: node_modules/graceful-fs/graceful-fs.js: JS conditional/function object export mutation is unresolved; JS factory result property mutation is unresolved; JS filesystem computed property write is unresolved; JS native module property mutation is unresolved across files; JS unresolved namespace property mutation is unsupported; Tree-sitter taint invocation budget reached",
+          "AST diagnostic node_modules/graceful-fs/polyfills.js: AST partial analysis: node_modules/graceful-fs/polyfills.js: JS factory result property mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/legacy-streams.js: AST partial analysis: node_modules/graceful-fs/legacy-streams.js: JS unresolved namespace property mutation is unsupported"
+        ]
+      }
+    },
+    {
+      "id": "promoted-fs-extra-whole-v4-8",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "jprichardson/node-fs-extra",
+      "cohort": "promoted-v4",
+      "operation_scope": "no-target-operation",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "partial",
+        "warnings": [
+          "AST diagnostic lib/util/utimes.js: AST partial analysis: lib/util/utimes.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic lib/fs/index.js: AST partial analysis: lib/fs/index.js: JS conditional/function object export mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/graceful-fs.js: AST partial analysis: node_modules/graceful-fs/graceful-fs.js: JS conditional/function object export mutation is unresolved; JS factory result property mutation is unresolved; JS filesystem computed property write is unresolved; JS native module property mutation is unresolved across files; JS unresolved namespace property mutation is unsupported; Tree-sitter taint invocation budget reached",
+          "AST diagnostic node_modules/graceful-fs/polyfills.js: AST partial analysis: node_modules/graceful-fs/polyfills.js: JS factory result property mutation is unresolved; JS unresolved namespace property mutation is unsupported",
+          "AST diagnostic node_modules/graceful-fs/legacy-streams.js: AST partial analysis: node_modules/graceful-fs/legacy-streams.js: JS unresolved namespace property mutation is unsupported"
+        ]
+      }
+    },
+    {
+      "id": "promoted-cake-build-cake-fresh-v7-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "cake-build/cake",
+      "cohort": "promoted-v7-csharp",
+      "operation_scope": "native-instance-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-cake-build-cake-fresh-v7-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "cake-build/cake",
+      "cohort": "promoted-v7-csharp",
+      "operation_scope": "native-instance-call",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-cake-build-cake-fresh-v7-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "cake-build/cake",
+      "cohort": "promoted-v7-csharp",
+      "operation_scope": "path-string-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-cake-build-cake-fresh-v7-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "cake-build/cake",
+      "cohort": "promoted-v7-csharp",
+      "operation_scope": "path-string-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-go-git-go-billy-fresh-v7-1",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "go-git/go-billy",
+      "cohort": "promoted-v7-go",
+      "operation_scope": "known-wrapper-call",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-go-git-go-billy-fresh-v7-2",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "tree-sitter-ast"
+      ],
+      "expected_positive": true,
+      "repository": "go-git/go-billy",
+      "cohort": "promoted-v7-go",
+      "operation_scope": "native-instance-call",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-go-git-go-billy-fresh-v7-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "go-git/go-billy",
+      "cohort": "promoted-v7-go",
+      "operation_scope": "in-memory-only",
+      "input_kind": "project",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "promoted-go-git-go-billy-fresh-v7-4",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "go-git/go-billy",
+      "cohort": "promoted-v7-go",
+      "operation_scope": "configuration-only",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "auto",
+        "status": "parsed",
+        "warnings": []
+      }
+    }
+  ],
+  "suite": {
+    "suite": "promoted-regression-v5",
+    "detector_reference_commit": "5c4c5a23270d273678665e9d9c1194fb93a5abc6",
+    "label_scope": "rule-observable operations, not malware classification",
+    "review": "labels assigned by project maintainer assistant; no independent human adjudication",
+    "policy": "46 consumed cases including four go-billy inputs used to develop Root and selected-package summaries. Primary texts/labels/modes preserved; helper source origins and hashes are explicit. Not an independent quality estimate."
+  },
+  "evaluation_mode": "regression-gate",
+  "corpus_sha256": "f9945bc4176be137c45af892fa0e05d88312cc29420b43f93f451887e2b79f4c"
+}

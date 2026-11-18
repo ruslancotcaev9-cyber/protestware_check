@@ -1,6 +1,6 @@
 # Разрешение файловых API C#
 
-Актуально для **1.8.0, unreleased**, 18.11.2026.
+Актуально для **1.9.0, unreleased**, 18.11.2026.
 [Руководство](USER_GUIDE.md) · [Проверка](VALIDATION_1_8_0.md) ·
 [Исходные пропуски v7](EVALUATION_V7_2026-11-17.md).
 
@@ -68,9 +68,24 @@ Parsed/ast.complete означает выполнение предусмотре
 Два исходных FN из Cake — _file.Delete() и _directory.Delete(recursive) —
 обнаруживаются по FileInfo/DirectoryInfo. Все четыре использованных файла Cake
 перенесены в promoted; исходные тексты, метки и режимы сохранены. Исторические
-24 входа v7 и первый JSON 1.7.0 не переписываются. Текущий retained-v7 содержит
-20 остальных случаев без Cake. Это ротация использованных данных, не новая
+24 входа v7 и первый JSON 1.7.0 не переписываются. На этапе 1.8.0 retained-v7 содержал
+20 остальных случаев без Cake; после Go-ротации 1.9.0 осталось 16 без Cake/go-billy. Это ротация использованных данных, не новая
 независимая оценка. Метки по-прежнему ожидают человеческого ревью.
+
+## Выявленная граница v8
+
+[Оценка v8](EVALUATION_V8_2026-11-18.md) на неизменном 1.9.0 выявила FN в
+AbsolutePath.MoveCopy.cs проекта NUKE: target.DeleteFile/source.DeleteDirectory
+вызывают extension methods соседнего AbsolutePath.Delete.cs, где уже есть
+File.Delete/Directory.Delete. Определение закреплено для обоснования метки,
+но каждый case подаётся отдельно, без helper-контекста.
+
+Все четыре C#-файла v8 получили parsed без предупреждений; прямой System.IO
+случай — TP, обёртка — FN, два остальных — TN. Required не гарантирует
+обнаружение неподдержанной межфайловой связи. До её реализации критичные
+пользовательские обёртки требуют ручного просмотра. Следующий этап —
+ограниченные сводки выбранных extension methods/partial classes с отрицательными
+случаями, проверяемыми типами и бюджетами. Первый результат v8 сохраняется.
 
 API: [FileInfo.Delete](https://learn.microsoft.com/en-us/dotnet/api/system.io.fileinfo.delete),
 [DirectoryInfo.Delete](https://learn.microsoft.com/en-us/dotnet/api/system.io.directoryinfo.delete).

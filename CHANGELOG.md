@@ -4,6 +4,18 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Evaluation v8 — 2026-11-18 (code remains 1.9.0, unreleased)
+
+- Freeze protocol/revisions, then 24 new whole-file inputs and pending labels
+  before measurement. Keep all detector code and earlier 48/46/56/16 inputs unchanged.
+- Add eight integrity tests; verify 581 tests without skips, benign Go import,
+  pinned repositories and secret-history checks.
+- Archive first push and repeat PR JSON bytes with verified SHA-256.
+  New results: TP11/TN12/FP0/FN1/errors0, all 24 parsed without warnings.
+  Document the C# cross-file extension-method miss and distinct SQL pattern basis.
+- Update guides, review instructions, roadmap and pinned CI examples.
+  Labels remain assistant-proposed; no independent human review or release claimed.
+
 ## [1.9.0] — unreleased (2026-11-18)
 
 - Resolve observed Go os.Root types, constructions and native deletion calls.
