@@ -1,6 +1,6 @@
 # JSON-контракты и совместимость
 
-Актуально для кода **1.7.0, unreleased**. [Указатель](README.md) ·
+Актуально для кода **1.8.0, unreleased**. [Указатель](README.md) ·
 [Руководство](USER_GUIDE.md) · [Проверка версии](VALIDATION_1_4_0.md).
 
 ## Версии форматов
@@ -145,3 +145,7 @@ CI устанавливает закреплённые зависимости, �
 Основание: [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12),
 [API jsonschema](https://python-jsonschema.readthedocs.io/en/stable/validate/),
 [локальное разрешение ссылок](https://python-jsonschema.readthedocs.io/en/stable/referencing/).
+
+С 1.8.0 C#-находки используют существующие resolved_symbol, binding_certainty,
+binding_basis=selected-file-type и dataflow; SARIF сохраняет их. Это аддитивная
+семантика schema 1, не полный вывод C#-компилятора.

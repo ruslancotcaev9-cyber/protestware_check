@@ -106,6 +106,8 @@ class TreeAnalyzer:
         self.diagnostics: set[str] = set()
         self.go_deletions = set()
         self.js_deletions = set()
+        self.cs_deletions = set()
+        self.cs_calls = {}
 
     def raw(self, node) -> str:
         return self.bytes[node.start_byte:node.end_byte].decode('utf-8', 'replace')
@@ -261,6 +263,8 @@ class TreeAnalyzer:
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             pattern = r'Deno\s*\.\s*remove'
         deletion = node.start_byte in self.go_deletions if ext == '.go' else bool(pattern and re.match(r'^(?:' + pattern + r')\s*\(', visible))
+        if ext == '.cs':
+            deletion = node.start_byte in self.cs_deletions
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             deletion = deletion or node.start_byte in self.js_deletions
         if branch and deletion:
@@ -268,6 +272,13 @@ class TreeAnalyzer:
                         trace=(('condition', int(branch), 'RU/BY geographic branch'),))
             self.emit('AST_GEO_ACTION', 'correlation', 'high', node,
                       'AST: filesystem deletion in a geographic branch; review reachability and intent', flow)
+            if ext == '.cs' and node.start_byte in self.cs_calls:
+                _, symbol, route = self.cs_calls[node.start_byte]
+                item = next((f for f in self.findings if f['rule'] == 'AST_GEO_ACTION' and f['line'] == node.start_point[0] + 1), None)
+                if item is not None:
+                    item.update(resolved_symbol=symbol, binding_basis='selected-file-type', binding_certainty='possible')
+                    item['dataflow'] = [*(hop for hop in item.get('dataflow', []) if hop['kind'] == 'condition'),
+                        *({'file': self.path, 'line': line, 'kind': kind, 'message': message} for line, kind, message in route)]
         if not NETWORK_RE.match(re.sub(r'^(?:await|return)\s+', '', text)):
             return
         args = [n for n in children(node) if 'argument' in n.type]
@@ -439,6 +450,21 @@ def scan_tree(path, content, allow, module_project=None):
                 if len(analyzer.findings) > previous:
                     analyzer.findings[-1]['resolved_symbol'] = symbol
         analyzer.index_functions(tree.root_node)
+        if ext == '.cs':
+            from csharp_bindings import resolve
+            deletions, diagnostics = resolve(content, tree.root_node)
+            analyzer.cs_deletions = set(deletions)
+            analyzer.cs_calls = deletions
+            analyzer.diagnostics.update(diagnostics)
+            for node, symbol, trace in deletions.values():
+                previous = len(analyzer.findings)
+                analyzer.emit('CS_FS_DELETE', 'filesystem', 'medium', node,
+                              f'C# AST: bound {symbol} call; review path and purpose')
+                if len(analyzer.findings) > previous:
+                    analyzer.findings[-1].update(resolved_symbol=symbol, binding_certainty='possible',
+                        binding_basis='selected-file-type', dataflow=[
+                            {'file': path, 'line': line, 'kind': kind, 'message': message}
+                            for line, kind, message in trace])
         module_calls = {}
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             from js_bindings import resolve
