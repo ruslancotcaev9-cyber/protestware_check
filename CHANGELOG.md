@@ -13,6 +13,9 @@ Changes to **protestware-check** are recorded here. Format follows
   JSON/SARIF and geographic correlations; diagnose unknown receivers/budgets.
 - Replace C# text deletion patterns when AST binding is complete; keep explicit
   partial fallback and limits for build context, other types and cross-file code.
+- Bound each C# tree pass and context lookup, index generics/namespace once;
+  retain observed calls when a budget is exceeded. Verify 541 tests without skips
+  and archive exact CI JSON/checksums for 48/42/56/20 cases.
 - Move four consumed Cake files to regression, retain 20 unchanged v7 cases;
   preserve the original 24-case dataset, first JSON and 1.7.0 input/freeze archives.
   No fresh independent quality improvement or human label approval is claimed.

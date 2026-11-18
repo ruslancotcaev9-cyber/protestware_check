@@ -83,7 +83,7 @@ OSV/OpenSSF и GitHub частично дублируют записи; един
 | Проверить предложенные метки корпуса | [Порядок ревью](docs/CORPUS_REVIEW_GUIDE.md), [таблица исходников](docs/CORPUS_LABEL_REVIEW_V6.md) |
 | Проверить формат JSON и совместимость артефактов | [JSON-контракты и миграция](docs/JSON_CONTRACTS.md) |
 | Понять правила, архитектуру и ограничения | [Технический справочник](docs/TECHNICAL_REFERENCE.md) |
-| Проверить результаты и известные пропуски | [Проверка 1.7.0](docs/VALIDATION_1_7_0.md), [методика корпусов](tests/corpus/README.md) |
+| Проверить результаты и известные пропуски | [Проверка 1.8.0](docs/VALIDATION_1_8_0.md), [методика корпусов](tests/corpus/README.md) |
 | Посмотреть изменения и направления развития | [Changelog](CHANGELOG.md), [план развития](docs/ROADMAP.md) |
 | Встроить инструмент в CI | [GitHub Code Scanning](examples/github-code-scanning.yml), [GitLab CI/CD](examples/gitlab-ci.yml), [пример политики](examples/policy.toml) |
 | Внести исправление или подготовить выпуск | [Contributing](CONTRIBUTING.md), [описание 1.8.0](docs/releases/v1.8.0.md), [release checklist](docs/RELEASE_CHECKLIST.md) |
@@ -131,7 +131,8 @@ JSON Schema и отдельный офлайн-валидатор для отч�
 затенения имён. Два прежних C# FN из Cake обнаруживаются в регрессии;
 Go-пропуски остаются. Все четыре использованных Cake-файла исключены из
 текущей внешней части v7; осталось 20 случаев. Историческая оценка 24 файлов
-сохранена. [Проверка 1.8.0](docs/VALIDATION_1_8_0.md).
+сохранена. Полный CI: **541 тест без пропусков**; регрессии 48/42 без FP/FN.
+В оставшихся 20 v7 — два Go FN; частичный анализ показан отдельно. [Проверка 1.8.0](docs/VALIDATION_1_8_0.md).
 
 ## Работа с находками
 
