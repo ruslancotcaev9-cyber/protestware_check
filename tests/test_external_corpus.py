@@ -95,9 +95,10 @@ class ExternalCorpusTests(unittest.TestCase):
         frozen = json.loads((ROOT / 'tests/corpus/detector-freeze.json').read_text())
         corpus = json.loads((ROOT / 'tests/corpus/external.json').read_text())
         self.assertEqual(frozen['detector_reference_commit'], corpus['detector_reference_commit'])
-        self.assertEqual(set(frozen['files']), set(analysis_context.RULE_FILES) | {'safe_io.py', 'requirements-ast.txt', 'requirements-resolver.txt'})
+        self.assertEqual(set(frozen['files']), (set(analysis_context.RULE_FILES) - {'csharp_project.py'}) | {'safe_io.py', 'requirements-ast.txt', 'requirements-resolver.txt'})
         current = json.loads((ROOT / 'tests/corpus/current-scanner-sha256.json').read_text())
-        self.assertEqual(set(current), set(frozen['files']) | {'scan_coverage.py', 'report_formats.py'})
+        self.assertEqual(set(current), set(analysis_context.RULE_FILES) | {'safe_io.py', 'requirements-ast.txt', 'requirements-resolver.txt',
+                                                               'scan_coverage.py', 'report_formats.py'})
         for path, digest in current.items():
             self.assertEqual(sha256((ROOT / path).read_bytes()).hexdigest(), digest, path)
 

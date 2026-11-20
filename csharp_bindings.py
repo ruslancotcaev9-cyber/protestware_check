@@ -39,6 +39,8 @@ class Resolver:
         self.calls, self.diagnostics = {}, set()
         self.usings, self.declared, self.full_types = {}, set(), set()
         self.methods = set()
+        self.class_nodes = []
+        self.local_methods = set()
         self.root = None
         self.file_namespace = ''
         self.generics = {}
@@ -103,6 +105,7 @@ class Resolver:
                 if parameters is not None:
                     self.generics[node.id] = {self.name(p.child_by_field_name('name')) for p in parameters.named_children}
             if node.type in CLASSES:
+                self.class_nodes.append(node)
                 name = self.name(node.child_by_field_name('name'))
                 self.declared.add(name)
                 enclosing, parent = [], node.parent
@@ -112,7 +115,10 @@ class Resolver:
                     parent = parent.parent
                 self.full_types.add('.'.join(filter(None, (self.namespace(node), *reversed(enclosing), name))))
             elif node.type in {'method_declaration', 'local_function_statement'}:
-                self.methods.add(self.name(node.child_by_field_name('name')))
+                name = self.name(node.child_by_field_name('name'))
+                self.methods.add(name)
+                if node.type == 'local_function_statement':
+                    self.local_methods.add(name)
             elif node.type == 'using_directive':
                 alias_node = node.child_by_field_name('name')
                 target_node = node.named_children[-1] if node.named_children else None

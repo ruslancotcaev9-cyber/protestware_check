@@ -335,7 +335,7 @@ def python_code_only_lines(content: str) -> list[str]:
 
 def scan_text(path: str, content: str, political_terms: list[str], allowed_domains: list[str],
               ast_mode: str = "auto", ast_warnings: list[str] | None = None,
-              ast_stats: dict[str, int] | None = None, context=None, module_project=None, go_project=None) -> list[dict[str, Any]]:
+              ast_stats: dict[str, int] | None = None, context=None, module_project=None, go_project=None, cs_project=None) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
     lines = content.splitlines()
     suffix = Path(path).suffix.lower()
@@ -446,6 +446,8 @@ def scan_text(path: str, content: str, political_terms: list[str], allowed_domai
             tree_options['module_project'] = module_project
         if go_project is not None:
             tree_options['go_project'] = go_project
+        if cs_project is not None and suffix == '.cs':
+            tree_options['cs_project'] = cs_project
         tree_findings, diagnostic = polyglot_ast.scan_tree(path, content, allowed_domains, **tree_options)
         parsed = diagnostic is None or diagnostic.startswith("AST partial ")
         if ast_stats is not None:
@@ -537,6 +539,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
         selected.append((path, content))
     module_project = None
     go_project = None
+    cs_project = None
     if ast_mode != 'off':
         from js_modules import Project, SUFFIXES
         if any(Path(path).suffix.lower() in SUFFIXES for path, _ in selected):
@@ -544,12 +547,15 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
         if any(Path(path).suffix.lower() == '.go' for path, _ in selected):
             from go_modules import Project as GoProject
             go_project = GoProject(selected)
+        if sum(Path(path).suffix.lower() == '.cs' for path, _ in selected) > 1:
+            from csharp_project import Project as CSharpProject
+            cs_project = CSharpProject(selected)
     for path, content in selected:
         try:
             previous_stats = ast_stats.copy()
             results.extend(scan_text(path, content, political_terms, allowed_domains,
                                      ast_mode=ast_mode, ast_warnings=ast_warnings, ast_stats=ast_stats, context=context,
-                                     module_project=module_project, go_project=go_project))
+                                     module_project=module_project, go_project=go_project, cs_project=cs_project))
         except RecursionError as error:
             raise ScanError(f"Analysis nesting limit exceeded: {path}") from error
         status = next((key for key in ("partial", "degraded", "parsed", "disabled")
