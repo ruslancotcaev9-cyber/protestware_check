@@ -1,0 +1,4 @@
+.protestware_image:
+  image:
+    name: "${PROTESTWARE_IMAGE_REPOSITORY}@sha256:73b645983e5ce70ced8f0001899ae8f3b5d2745e7cce156138763b6f63d7860f"
+    entrypoint: [""]
