@@ -76,4 +76,5 @@ def effective(report, policy, fail_on):
         return None
     return {**context, 'policy_digest': digest({'scan': policy['scan'], 'rules': policy['rules'],
                                               'suppressions': policy['suppressions'], 'fail_on': fail_on,
-                                              'require_complete': policy['gate'].get('require_complete', False)})}
+                                              'require_complete': policy['gate'].get('require_complete', False),
+                                               'min_analyzed_files': policy['gate'].get('min_analyzed_files', 0)})}

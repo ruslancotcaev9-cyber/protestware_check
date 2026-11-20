@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import codecs
 import safe_io
 import scan_policy
 import analysis_context
@@ -159,6 +160,35 @@ def is_scannable(path: str, extra_exclude: list[str], profile: str = "source") -
     return selection_reason(path, extra_exclude, profile) is None
 
 
+def decode_source(path: str, raw: bytes, warnings: list[str], coverage: Coverage | None) -> str | None:
+    """Decode selected source bytes and account for exactly one file outcome."""
+    status = "scanned"
+    text = None
+    if raw.startswith((codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE)):
+        status = "decode_error"
+    elif raw.startswith((codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)):
+        encoding = "utf-16"
+    elif b"\x00" in raw:
+        status = "binary"
+    else:
+        encoding = "utf-8-sig"
+
+    if status == "scanned":
+        try:
+            text = raw.decode(encoding)
+        except UnicodeDecodeError:
+            status = "decode_error"
+        if text is not None and "\x00" in text:
+            status, text = "binary", None
+    if status == "decode_error":
+        warnings.append(f"Cannot decode selected source as UTF-8 or BOM-marked UTF-16: {path}")
+    if coverage is not None:
+        coverage.record(path, status, size=len(raw))
+        if text is not None and coverage.enumeration == "local":
+            coverage.raw_hashes[path] = sha256(raw).hexdigest()
+    return text
+
+
 def iter_local(root: Path, max_bytes: int, exclude: list[str], warnings: list[str],
                coverage: Coverage | None = None, profile: str = "source") -> Iterable[tuple[str, str]]:
     if not root.is_dir() or root.is_symlink():
@@ -203,14 +233,9 @@ def iter_local(root: Path, max_bytes: int, exclude: list[str], warnings: list[st
                 if coverage is not None:
                     coverage.record(relative, "read_error")
                 continue
-            if b"\x00" in content:
-                if coverage is not None:
-                    coverage.record(relative, "binary", size=len(content))
-                continue
-            if coverage is not None:
-                coverage.record(relative, "scanned", size=len(content))
-                coverage.raw_hashes[relative] = sha256(content).hexdigest()
-            yield relative, content.decode("utf-8-sig", errors="replace")
+            text = decode_source(relative, content, warnings, coverage)
+            if text is not None:
+                yield relative, text
 
 
 def iter_github(repo: str, ref: str | None, max_bytes: int, exclude: list[str], warnings: list[str],
@@ -273,10 +298,9 @@ def iter_github(repo: str, ref: str | None, max_bytes: int, exclude: list[str], 
             if coverage is not None:
                 coverage.record(path, "oversized")
             continue
-        if coverage is not None:
-            coverage.record(path, "binary" if b"\x00" in raw else "scanned", size=len(raw))
-        if b"\x00" not in raw:
-            yield path, raw.decode("utf-8-sig", errors="replace")
+        text = decode_source(path, raw, warnings, coverage)
+        if text is not None:
+            yield path, text
 
 
 def domain_allowed(host: str, allowed: list[str]) -> bool:
@@ -508,7 +532,7 @@ def build_report(source: str, files: Iterable[tuple[str, str]], political_terms:
             coverage.record(path, 'scanned', size=len(content.encode('utf-8')))
         scanned += 1
         total_bytes += len(content.encode("utf-8"))
-        if scanned > max_files or total_bytes > max_total_bytes:
+        if scanned > max_files or max(total_bytes, coverage.scanned_input_bytes) > max_total_bytes:
             raise ScanError("Total source file/byte budget exceeded; scan is incomplete")
         selected.append((path, content))
     module_project = None

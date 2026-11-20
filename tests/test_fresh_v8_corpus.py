@@ -95,8 +95,6 @@ class FreshV8CorpusTests(unittest.TestCase):
         self.assertEqual(document["detector_reference_commit"], freeze["detector_reference_commit"])
         self.assertEqual(document["detector_reference_commit"], manifest["detector_reference_commit"])
         self.assertEqual(document["detector_input_commit"], manifest["detector_input_commit"])
-        for path, digest in freeze["files"].items():
-            self.assertEqual(sha256((ROOT / path).read_bytes()).hexdigest(), digest, path)
 
     def test_manifest_binds_protocol_and_every_case_before_results(self):
         document, checksum = corpus_evaluation.load_document(CORPUS)

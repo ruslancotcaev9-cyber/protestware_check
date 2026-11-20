@@ -11,6 +11,7 @@ class Coverage:
         self.directories = Counter()
         self.samples = []
         self.input_bytes = 0
+        self.scanned_input_bytes = 0
         self.analysis_bytes = 0
         self.analyzed_files = 0
         self.languages = {}
@@ -21,7 +22,9 @@ class Coverage:
     def record(self, path, status, *, directory=False, size=0):
         (self.directories if directory else self.files)[status] += 1
         self.input_bytes += size
-        if status != 'scanned' and len(self.samples) < self.sample_limit:
+        if status == 'scanned':
+            self.scanned_input_bytes += size
+        elif len(self.samples) < self.sample_limit:
             self.samples.append({'path': str(path)[:512], 'kind': 'directory' if directory else 'file', 'reason': status})
 
     def analyzed(self, suffix, size, ast_status):
@@ -31,7 +34,7 @@ class Coverage:
         language[ast_status] += 1
 
     def as_dict(self):
-        selected = sum(self.files[k] for k in ('scanned', 'binary', 'oversized', 'read_error', 'invalid_blob'))
+        selected = sum(self.files[k] for k in ('scanned', 'binary', 'oversized', 'read_error', 'invalid_blob', 'decode_error'))
         return {'profile': self.profile, 'enumeration': self.enumeration,
                 'files_observed': sum(self.files.values()), 'files_selected': selected,
                 'files_analyzed': self.analyzed_files, 'file_counts': dict(sorted(self.files.items())),

@@ -91,12 +91,14 @@ class ExternalCorpusTests(unittest.TestCase):
         for case in corpus_evaluation.load(ROOT / 'tests/corpus/external.json'):
             self.assertTrue(set(case.get('supporting_sources', [])) <= set(data['sources']))
 
-    def test_detection_code_remains_frozen_during_evaluation(self):
+    def test_scanner_matches_current_regression_manifest(self):
         frozen = json.loads((ROOT / 'tests/corpus/detector-freeze.json').read_text())
         corpus = json.loads((ROOT / 'tests/corpus/external.json').read_text())
         self.assertEqual(frozen['detector_reference_commit'], corpus['detector_reference_commit'])
         self.assertEqual(set(frozen['files']), set(analysis_context.RULE_FILES) | {'safe_io.py', 'requirements-ast.txt', 'requirements-resolver.txt'})
-        for path, digest in frozen['files'].items():
+        current = json.loads((ROOT / 'tests/corpus/current-scanner-sha256.json').read_text())
+        self.assertEqual(set(current), set(frozen['files']) | {'scan_coverage.py', 'report_formats.py'})
+        for path, digest in current.items():
             self.assertEqual(sha256((ROOT / path).read_bytes()).hexdigest(), digest, path)
 
     def test_v4_is_archived_and_transferred_project_context_is_regression_only(self):

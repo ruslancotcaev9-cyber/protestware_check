@@ -49,7 +49,10 @@ def load(path=None):
     for key in ('exclude', 'allow_domains'):
         if key in scan:
             _strings(scan[key], key)
-    _keys(gate, ('fail_on', 'only_new', 'require_complete'), 'gate')
+    _keys(gate, ('fail_on', 'only_new', 'require_complete', 'min_analyzed_files'), 'gate')
+    minimum = gate.get('min_analyzed_files', 0)
+    if type(minimum) is not int or minimum < 0:
+        raise ValueError('min_analyzed_files must be a nonnegative integer')
     if 'fail_on' in gate and gate['fail_on'] not in ('low', 'medium', 'high'):
         raise ValueError('Invalid policy fail_on')
     for key in ('only_new', 'require_complete'):
@@ -191,6 +194,9 @@ def apply(report, policy, *, baseline_values=None, only_new=False, fail_on='high
     risk = max(active, key=LEVELS.get, default='none')
     reasons = []
     require_complete = policy['gate'].get('require_complete', False)
+    minimum = policy['gate'].get('min_analyzed_files', 0)
+    if report['coverage']['files_analyzed'] < minimum:
+        reasons.append('insufficient_files_analyzed')
     if not report['scan']['complete']:
         reasons.append('source_incomplete')
     if (ast_required or require_complete) and (report['ast']['partial'] or report['ast']['degraded']):
@@ -207,6 +213,6 @@ def apply(report, policy, *, baseline_values=None, only_new=False, fail_on='high
                         'baseline_context_match': None if baseline_values is None else not bool(differences),
                         'baseline_context_changes': differences}
     report['gate'] = {'exit_code': exit_code, 'fail_on': fail_on, 'reasons': reasons,
-                      'require_complete': require_complete}
+                      'require_complete': require_complete, 'min_analyzed_files': minimum}
     report['warnings'].extend(sorted(notices))
     return report

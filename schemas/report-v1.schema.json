@@ -331,6 +331,10 @@
         },
         "require_complete": {
           "type": "boolean"
+        },
+        "min_analyzed_files": {
+          "type": "integer",
+          "minimum": 0
         }
       },
       "required": [

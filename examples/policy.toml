@@ -6,6 +6,7 @@ exclude = []
 allow_domains = [] # add only reviewed destinations
 
 [gate]
+min_analyzed_files = 1 # set to 0 for an intentionally empty scan
 fail_on = "high"
 only_new = false # requires --baseline when enabled
 require_complete = false # true blocks incomplete enabled analyses, including unresolved Go build lists
