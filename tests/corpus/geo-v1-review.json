@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "corpus_sha256": "838dc4e7e141efe89ba03cea24004ca74687b31041120a9f74ed7235f70f56af",
+  "policy": "Pending candidate labels are not independent review. Reviewer identity/independence must be established outside this file by the trusted review process.",
+  "cases": [
+    {
+      "id": "geo-1",
+      "case_sha256": "9c608e10c8a76c0781d9401d54f14843760410aea3064aed9d29b5faa44787ed",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "geo-2",
+      "case_sha256": "ed3bcee17307f4361941df38ea9a79cff584f4160a79d83d726beaa38ec84e66",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "geo-3",
+      "case_sha256": "1a967431436931976160fb3b2cf34a78d0edcfc45e44b55521d27e68cb497eac",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "geo-4",
+      "case_sha256": "7434e9f9c12c5b6c0a58efc03b2b96ef876fa361538ca7199e92e115e86011fc",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "geo-5",
+      "case_sha256": "112eff31c15ddd285605d90f8191b95de8a916b170751254bb53d9c189f3f974",
+      "proposed_positive": false,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    },
+    {
+      "id": "geo-6",
+      "case_sha256": "62bc671994fa74cad00c5a25df73a6e8880281e6f7b9b8b4fbe4df656be90384",
+      "proposed_positive": true,
+      "decision": "pending",
+      "reviewer": null,
+      "reviewer_type": null,
+      "reviewed_at": null,
+      "reason": ""
+    }
+  ]
+}
