@@ -284,9 +284,9 @@ class TreeAnalyzer:
                 _, symbol, route = self.cs_calls[node.start_byte]
                 item = next((f for f in self.findings if f['rule'] == 'AST_GEO_ACTION' and f['line'] == node.start_point[0] + 1), None)
                 if item is not None:
-                    item.update(resolved_symbol=symbol, binding_basis='selected-file-type', binding_certainty='possible')
+                    item.update(resolved_symbol=symbol, binding_basis=cs_basis(route), binding_certainty='possible')
                     item['dataflow'] = [*(hop for hop in item.get('dataflow', []) if hop['kind'] == 'condition'),
-                        *({'file': self.path, 'line': line, 'kind': kind, 'message': message} for line, kind, message in route)]
+                        *({'file': p, 'line': line, 'kind': kind, 'message': message} for p, line, kind, message in route)]
         if not NETWORK_RE.match(re.sub(r'^(?:await|return)\s+', '', text)):
             return
         args = [n for n in children(node) if 'argument' in n.type]
@@ -419,7 +419,11 @@ def _parser(language):
         raise RuntimeError(f'grammar {language}: {type(exc).__name__}: {exc}') from exc
 
 
-def scan_tree(path, content, allow, module_project=None, go_project=None):
+def cs_basis(route):
+    return 'selected-csharp-method' if any(hop[2] == 'definition' for hop in route) else 'selected-file-type'
+
+
+def scan_tree(path, content, allow, module_project=None, go_project=None, cs_project=None):
     ext = Path(path).suffix.lower()
     if ext == '.sass':
         return scan_sass(path, content, allow), None
@@ -431,6 +435,8 @@ def scan_tree(path, content, allow, module_project=None, go_project=None):
             from sql_operations import parser_source
             parser_content = parser_source(content)
         tree = go_project.tree(path) if ext == '.go' and go_project is not None else module_project.tree(path) if module_project is not None else None
+        if ext == '.cs' and cs_project is not None:
+            tree = cs_project.tree(path)
         if tree is None:
             tree = _parser(GRAMMARS[ext]).parse(parser_content.encode('utf-8'))
         if tree is None:
@@ -464,7 +470,14 @@ def scan_tree(path, content, allow, module_project=None, go_project=None):
         analyzer.index_functions(tree.root_node)
         if ext == '.cs':
             from csharp_bindings import resolve
-            deletions, diagnostics = resolve(content, tree.root_node)
+            if cs_project is None or cs_project.problem:
+                calls, diagnostics = resolve(content, tree.root_node)
+                deletions = {pos: (node, symbol, [(path, ln, kind, msg) for ln, kind, msg in route])
+                             for pos, (node, symbol, route) in calls.items()}
+                if cs_project is not None:
+                    diagnostics.add(cs_project.problem)
+            else:
+                deletions, diagnostics = cs_project.calls(path)
             analyzer.cs_deletions = set(deletions)
             analyzer.cs_calls = deletions
             analyzer.diagnostics.update(diagnostics)
@@ -474,9 +487,9 @@ def scan_tree(path, content, allow, module_project=None, go_project=None):
                               f'C# AST: bound {symbol} call; review path and purpose')
                 if len(analyzer.findings) > previous:
                     analyzer.findings[-1].update(resolved_symbol=symbol, binding_certainty='possible',
-                        binding_basis='selected-file-type', dataflow=[
-                            {'file': path, 'line': line, 'kind': kind, 'message': message}
-                            for line, kind, message in trace])
+                        binding_basis=cs_basis(trace), dataflow=[
+                            {'file': p, 'line': line, 'kind': kind, 'message': message}
+                            for p, line, kind, message in trace])
         module_calls = {}
         if ext in {'.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'}:
             from js_bindings import resolve

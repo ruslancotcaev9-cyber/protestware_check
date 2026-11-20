@@ -78,9 +78,11 @@ OSV/OpenSSF и GitHub частично дублируют записи; един
 | --- | --- |
 | Установить и запустить, выбрать параметры CLI | [Руководство пользователя](docs/USER_GUIDE.md) |
 | Настроить область проверки, политику и GitLab gate | [Покрытие, политика и CI](docs/POLICY_AND_CI.md) |
+| Запустить сканирование в закрытом контуре GitLab | [Готовый OCI-образ, проверка и перенос](docs/OFFLINE_GITLAB.md) |
 | Пересмотреть baseline или импортировать данные Go | [Baseline schema 2 и доверенный Go CI](docs/BASELINE_AND_GO_IMPORT.md) |
 | Включить advisories, пагинацию или офлайн-снимок | [Источники сведений о вредоносных пакетах](docs/MALWARE_INTELLIGENCE.md) |
 | Проверить предложенные метки корпуса | [Порядок ревью](docs/CORPUS_REVIEW_GUIDE.md), [таблица исходников](docs/CORPUS_LABEL_REVIEW_V6.md) |
+| Проверить связь географического условия с действием | [Лист независимой разметки](docs/GEO_ACTION_REVIEW.md), [протокол оценки GEO_ACTION](docs/GEO_ACTION_EVALUATION.md) |
 | Проверить формат JSON и совместимость артефактов | [JSON-контракты и миграция](docs/JSON_CONTRACTS.md) |
 | Понять правила, архитектуру и ограничения | [Технический справочник](docs/TECHNICAL_REFERENCE.md) |
 | Проверить результаты и известные пропуски | [Проверка 1.9.0](docs/VALIDATION_1_9_0.md), [методика корпусов](tests/corpus/README.md) |

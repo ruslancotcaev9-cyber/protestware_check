@@ -204,3 +204,5 @@ Python AST теперь разбирается один раз для двух �
 версии и неоднозначный JSON блокируют gate. Основной helper gate не требует
 jsonschema. Полная формальная проверка доступна через `scripts/validate_json.py`
 после установки requirements-contracts.txt. [Контракты и миграция](JSON_CONTRACTS.md).
+
+[Закрытый контур и перенос OCI-образа](OFFLINE_GITLAB.md).

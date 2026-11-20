@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "rule": "GEO_ACTION",
+  "cases": [
+    {
+      "id": "geo-1",
+      "repository": "shurshun/count-in",
+      "revision": "bd604a66b4145f07f3244ae4a31d5b8ccc49f027",
+      "path": "docs/build_site.py",
+      "git_blob_sha": "f34c6e7158ed45cb866a3f377124d0ae9a7ddc39",
+      "first": 60,
+      "last": 75,
+      "positive": false,
+      "scope": "adjacent-unconditional-write",
+      "evidence_lines": [],
+      "rationale": "Для каждого языка запись на строке 74 выполняется после выбора текста; локаль влияет на содержимое.",
+      "source_sha256": "51415014af2de049333769437bb8332ad6c601d5a73385edd1bff4b32a1d6a7d"
+    },
+    {
+      "id": "geo-2",
+      "repository": "ravindraten/Covid19WorldStats",
+      "revision": "22ead0e613c22a94c67dc1e3480a1c1c1154dc87",
+      "path": "Bot.py",
+      "git_blob_sha": "50dd276963bdcc530b8e04d42c45f281e95dee5f",
+      "first": 752,
+      "last": 1156,
+      "positive": true,
+      "scope": "conditional-network",
+      "evidence_lines": [
+        934,
+        935,
+        936,
+        947,
+        949
+      ],
+      "rationale": "Ветвь по стране на строке 931 отдельно отправляет ответ Telegram пользователю.",
+      "source_sha256": "84850079b794f01ed54122dad580509b75d66a280316257b5a30bc190ad60e38"
+    },
+    {
+      "id": "geo-3",
+      "repository": "videoreg/pi-videoreg",
+      "revision": "bb0ec6fc6a973ba019b139d2ac4026a15bd9f341",
+      "path": "sdk/i18n.py",
+      "git_blob_sha": "3b5b3051cc66348494170d1ad7bf2f8c3ed0b0eb",
+      "first": 7,
+      "last": 14,
+      "positive": false,
+      "scope": "localization",
+      "evidence_lines": [],
+      "rationale": "Функция вычисляет форму множественного числа без внешних операций.",
+      "source_sha256": "e4f43c5e40d166fb837ecc54f7cdc43ac79e16e5bf37d64531c2dac72957d04c"
+    },
+    {
+      "id": "geo-4",
+      "repository": "eugenehp/espeak-ng-rs",
+      "revision": "8d34c92dbbfcfcdffd7b56e26ab0d25a6566afef",
+      "path": "scripts/generate_dict_crates.py",
+      "git_blob_sha": "5d58c627e66904c6895f9bed589a15ad3d04f6dc",
+      "first": 287,
+      "last": 337,
+      "positive": true,
+      "scope": "conditional-file-write",
+      "evidence_lines": [
+        307,
+        308,
+        309,
+        321,
+        327
+      ],
+      "rationale": "continue на строке 301 исключает запись файлов словаря в текущей итерации для ru.",
+      "source_sha256": "49b7b78045fcf1102a152c4a03f9433cacfa60b7294232f26103b2591e650c40"
+    },
+    {
+      "id": "geo-5",
+      "repository": "mozilla/mozaic-forecasting",
+      "revision": "e97413b9034b04ae8fbe6ff3b8688c4f656f7cf3",
+      "path": "mozaic/holiday_smart.py",
+      "git_blob_sha": "e5635271c6c1f4b8316ec1c9ebda978929a15131",
+      "first": 365,
+      "last": 475,
+      "positive": false,
+      "scope": "localization",
+      "evidence_lines": [],
+      "rationale": "Выбор православного календаря влияет на набор праздничных дат в памяти.",
+      "source_sha256": "34c95be4c1d6d01c48f36991a6a8b00ebf3fd55c2287bc6097414b02fd78965e"
+    },
+    {
+      "id": "geo-6",
+      "repository": "Maximoff/Apktool-M-updates",
+      "revision": "28b30e6c76d9a8626d9ee5cb572ec985feea5191",
+      "path": "translate.py",
+      "git_blob_sha": "5879f9706a0f082d34b38a2b34218452bc41f35b",
+      "first": 1,
+      "last": 131,
+      "positive": true,
+      "scope": "conditional-network",
+      "evidence_lines": [
+        56,
+        125
+      ],
+      "rationale": "Для ru используются исходные изменения. В другой ветви вызывается translate, который может обратиться к сервису перевода. Запись JSON после ветвления общая.",
+      "source_sha256": "eb01ebd1714ccef6776f30db639f71ca0936ad3cb9b4ab316102d912db40394f"
+    }
+  ],
+  "detector_manifest_sha256": "31a857aa36c43ed6a8e3434bcd0e544a2f00bbc1163e292da9880b9fc2c1e2fb"
+}

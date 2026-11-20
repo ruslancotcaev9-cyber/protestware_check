@@ -1,0 +1,51 @@
+name: Offline GitLab acceptance
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '*.py'
+      - 'ci/offline/**'
+      - 'examples/gitlab-ci-offline.yml'
+      - 'examples/gitlab-ci-pilot.yml'
+      - 'examples/policy.toml'
+      - 'scripts/gitlab*.py'
+      - 'schemas/**'
+      - 'requirements-*.txt'
+      - '.github/workflows/offline-image.yml'
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Build the digest-pinned scanner and lock
+        run: |
+          docker buildx create --use --driver docker-container
+          bash ci/offline/build.sh "$RUNNER_TEMP/offline-bundle"
+      - name: Import exact archive and test twice with no network
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/offline-bundle"
+          (cd "$out" && sha256sum -c SHA256SUMS)
+          docker run -d --name offline-registry -p 127.0.0.1:5050:5000 registry@sha256:46faa9a1ae6813194b53921a370f2f4f8c5e1aae228a89bceafef5847a6a3278
+          for i in {1..15}; do curl -fsS http://127.0.0.1:5050/v2/ && break || sleep 1; done
+          repo=127.0.0.1:5050/scanner
+          skopeo copy --preserve-digests --dest-tls-verify=false "oci-archive:$out/scanner.oci.tar" "docker://$repo:verified"
+          ref="$repo@$(cat "$out/image-digest.txt")"
+          docker pull "$ref"
+          bash ci/offline/smoke.sh "$ref"
+      - name: Save OCI archive, checksums and GitLab configuration
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: offline-scanner-linux-amd64
+          path: ${{ runner.temp }}/offline-bundle/
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 90
+      - name: Verify repeat scans and the optional pilot on an isolated GitLab Runner
+        run: bash ci/offline/gitlab-acceptance.sh "$RUNNER_TEMP/offline-bundle" 127.0.0.1:5050/scanner

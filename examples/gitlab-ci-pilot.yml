@@ -1,0 +1,10 @@
+# Include this file in a project that already has a CI pipeline.
+protestware_pilot:
+  stage: .post
+  rules:
+    - if: '$PROTESTWARE_PILOT == "1"'
+  allow_failure: true
+  trigger:
+    include:
+      - local: '/.gitlab/protestware-offline.yml'
+    strategy: mirror
