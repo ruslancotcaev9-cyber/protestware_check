@@ -53,6 +53,26 @@ docker exec "$runner" gitlab-runner register --non-interactive --url http://gitl
   --executor docker --docker-image "$image" --docker-helper-image "$helper_image" \
   --docker-network-mode "$net" --docker-pull-policy never
 # Only the controller has access to the host daemon. The test jobs receive ordinary build volumes.
+pipeline_for_commit() {
+  local sha=$1 id i
+  for ((i=0; i<30; i++)); do
+    id=$(api "projects/$pid/pipelines?sha=$sha" | jq -r '.[0].id // empty')
+    if [[ -n $id ]]; then echo "$id"; return 0; fi
+    sleep 2
+  done
+  echo "No pipeline for commit $sha" >&2
+  return 1
+}
+pipeline_result() {
+  local id=$1 state i
+  for ((i=0; i<100; i++)); do
+    state=$(api "projects/$pid/pipelines/$id" | jq -er .status)
+    case "$state" in success|failed|canceled|skipped|manual) echo "$state"; return 0 ;; esac
+    sleep 3
+  done
+  echo "Pipeline $id timed out with status $state" >&2
+  return 1
+}
 commit=$(jq -n --arg branch "$branch" --rawfile ci "$out/gitlab-ci-offline.yml" --rawfile img "$out/protestware-image.yml" \
   '{branch:$branch,commit_message:"Scan an inert fixture",actions:[
     {action:"create",file_path:".gitlab-ci.yml",content:$ci},
@@ -62,21 +82,11 @@ commit=$(jq -n --arg branch "$branch" --rawfile ci "$out/gitlab-ci-offline.yml" 
   api "projects/$pid/repository/commits" -X POST -H 'Content-Type: application/json' --data-binary @- | jq -er .id)
 for iteration in 1 2; do
   if [[ $iteration == 1 ]]; then
-    pipeline=''
-    for ((i=0; i<30; i++)); do
-      pipeline=$(api "projects/$pid/pipelines?sha=$commit" | jq -r '.[0].id // empty')
-      [[ -z $pipeline ]] || break
-      sleep 2
-    done
-    test -n "$pipeline"
+    pipeline=$(pipeline_for_commit "$commit")
   else
     pipeline=$(api "projects/$pid/pipeline" -X POST --data-urlencode "ref=$branch" | jq -er .id)
   fi
-  for ((i=0; i<100; i++)); do
-    status=$(api "projects/$pid/pipelines/$pipeline" | jq -er .status)
-    case "$status" in success|failed|canceled|skipped|manual) break ;; esac
-    sleep 3
-  done
+  status=$(pipeline_result "$pipeline")
   jobs=$(api "projects/$pid/pipelines/$pipeline/jobs")
   jq -c '[.[]|{name,status,failure_reason}]' <<<"$jobs"
   if [[ $status != success ]]; then
@@ -96,3 +106,37 @@ for iteration in 1 2; do
 done
 cmp "$dir/run-1.json" "$dir/run-2.json"
 echo 'GITLAB_OFFLINE_REPEAT=identical findings, coverage and gate on a fresh registered runner'
+
+# The pilot runs beside an ordinary project job. A truncated UTF-16 fixture
+# gives the strict child gate code 2 while keeping the parent pipeline usable.
+cat > "$dir/parent.yml" <<'YAML'
+include:
+  - local: '/.gitlab/protestware-pilot.yml'
+application_test:
+  stage: test
+  script: ["echo fixture"]
+YAML
+pilot_template="$(dirname "$0")/../../examples/gitlab-ci-pilot.yml"
+commit=$(jq -n --arg branch "$branch" --rawfile ci "$dir/parent.yml" --rawfile pilot "$pilot_template" \
+  --rawfile offline "$out/gitlab-ci-offline.yml" \
+  '{branch:$branch,commit_message:"Exercise the optional scanner in an existing pipeline",actions:[
+    {action:"update",file_path:".gitlab-ci.yml",content:$ci},
+    {action:"create",file_path:".gitlab/protestware-pilot.yml",content:$pilot},
+    {action:"create",file_path:".gitlab/protestware-offline.yml",content:$offline},
+    {action:"create",file_path:"pilot-invalid.sql",encoding:"base64",content:"//54"}]}' |
+  api "projects/$pid/repository/commits" -X POST -H 'Content-Type: application/json' --data-binary @- | jq -er .id)
+ordinary=$(pipeline_for_commit "$commit")
+test "$(pipeline_result "$ordinary")" = success
+api "projects/$pid/pipelines/$ordinary/bridges" | jq -e 'length==0' >/dev/null
+api "projects/$pid/variables" -X POST --data key=PROTESTWARE_PILOT --data value=1 >/dev/null
+parent=$(api "projects/$pid/pipeline" -X POST --data-urlencode "ref=$branch" | jq -er .id)
+test "$(pipeline_result "$parent")" = success
+child=$(api "projects/$pid/pipelines/$parent/bridges" | jq -er \
+  '.[] | select(.name=="protestware_pilot" and .allow_failure==true and .status=="failed") | .downstream_pipeline.id')
+test "$(pipeline_result "$child")" = failed
+jobs=$(api "projects/$pid/pipelines/$child/jobs")
+scan=$(jq -er '.[] | select(.name=="protestware_scan" and .status=="success") | .id' <<<"$jobs")
+jq -e '.[] | select(.name=="protestware_gate" and .status=="failed")' <<<"$jobs" >/dev/null
+api "projects/$pid/jobs/$scan/artifacts/.protestware-reports/report.json" |
+  jq -e '.scan.complete==false and .coverage.file_counts.decode_error==1 and .gate.exit_code==2' >/dev/null
+echo "GITLAB_PILOT=opt-out:$ordinary parent:$parent:success child:$child:failed artifact_gate:2"

@@ -6,6 +6,7 @@ on:
       - '*.py'
       - 'ci/offline/**'
       - 'examples/gitlab-ci-offline.yml'
+      - 'examples/gitlab-ci-pilot.yml'
       - 'examples/policy.toml'
       - 'scripts/gitlab*.py'
       - 'schemas/**'
@@ -46,5 +47,5 @@ jobs:
           compression-level: 0
           if-no-files-found: error
           retention-days: 90
-      - name: Run two real GitLab pipelines inside an internal network
+      - name: Verify repeat scans and the optional pilot on an isolated GitLab Runner
         run: bash ci/offline/gitlab-acceptance.sh "$RUNNER_TEMP/offline-bundle" 127.0.0.1:5050/scanner
