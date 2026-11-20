@@ -202,6 +202,14 @@ def sarif(report: dict[str, Any], *, gitlab: bool = False) -> dict[str, Any]:
                 "dependencies": dependencies.get("summary", {}).get("complete", False) if dependencies.get("mode", "off") != "off" else None,
                 "malware_intel": bool(intelligence.get("complete") and intelligence.get("inventory_complete"))
                                  if intelligence.get("mode", "off") != "off" else None}
+    gate = report.get("gate", {})
+    coverage_warnings = []
+    if gate.get("min_analyzed_files", 0):
+        analyzed = report["coverage"]["files_analyzed"]
+        minimum = gate["min_analyzed_files"]
+        coverage["minimumFilesAnalyzed"] = analyzed >= minimum
+        if analyzed < minimum:
+            coverage_warnings.append(f"insufficient_files_analyzed: analyzed {analyzed}, required {minimum}")
     return {"$schema": SARIF_SCHEMA, "version": "2.1.0",
             "runs": [{"tool": {"driver": {"name": report["tool"], "version": report["version"],
                                         "informationUri": "https://github.com/ruslancotcaev9-cyber/protestware_check",
@@ -213,6 +221,6 @@ def sarif(report: dict[str, Any], *, gitlab: bool = False) -> dict[str, Any]:
                                                       **({'goModuleAnalysis':report['ast']['go_modules']} if report.get('ast',{}).get('go_modules') else {})},
                                        "toolExecutionNotifications": [
                                            {"level": "warning", "message": {"text": str(warning)}}
-                                           for warning in report.get("warnings", []) +
+                                           for warning in coverage_warnings + report.get("warnings", []) +
                                            report.get("dependencies", {}).get("summary", {}).get("warnings", [])]}],
                       "results": results}]}

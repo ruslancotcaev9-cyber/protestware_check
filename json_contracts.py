@@ -111,7 +111,13 @@ def report_semantics(document):
             raise ValueError('Invalid report gate reasons')
         if not document['scan']['complete'] and 'source_incomplete' not in reasons:
             raise ValueError('Incomplete source must block the gate')
-        if document['files_scanned'] != document['coverage']['files_analyzed']:
+        analyzed = document['coverage']['files_analyzed']
+        minimum = gate.get('min_analyzed_files', 0)  # Earlier schema-1 reports had no minimum.
+        if type(analyzed) is not int or analyzed < 0 or type(minimum) is not int or minimum < 0:
+            raise ValueError('Invalid file coverage counts')
+        if (analyzed < minimum) != ('insufficient_files_analyzed' in reasons):
+            raise ValueError('Report gate differs from minimum file coverage')
+        if document['files_scanned'] != analyzed:
             raise ValueError('Report file counts disagree')
         expected = 2 if reasons else int(LEVELS.get(policy_risk, 0) >= LEVELS[gate['fail_on']])
         if gate['exit_code'] != expected:
