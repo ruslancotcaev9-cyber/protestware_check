@@ -100,6 +100,10 @@ class GitLabTests(unittest.TestCase):
         commit = data['variables']['PROTESTWARE_SCANNER_COMMIT']
         self.assertIsNotNone(re.fullmatch(r'[a-f0-9]{40}', commit))
         self.assertNotEqual(commit, '0' * 40)
+        scan = next(command for command in data['protestware_scan']['script'] if 'scripts/gitlab_scan.py' in command)
+        self.assertIn('--policy .protestware-scanner/examples/policy.toml', scan.split(' -- ', 1)[1])
+        import scan_policy
+        self.assertEqual(scan_policy.load(ROOT / 'examples/policy.toml')['gate']['min_analyzed_files'], 1)
         self.assertNotIn('allow_failure', data['protestware_gate'])
         self.assertEqual(data['protestware_gate']['needs'], [{'job': 'protestware_scan', 'artifacts': 'true'}])
         self.assertEqual(data['protestware_scan']['artifacts']['when'], 'always')
