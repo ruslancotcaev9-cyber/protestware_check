@@ -1,0 +1,86 @@
+{
+  "purpose": "Post-measurement diagnostics only; excluded from geo-v1 metrics.",
+  "cases": [
+    {
+      "id": "direct-country",
+      "source": "if country == 'ru':\n    marker.write_text('sample')\n",
+      "lines": {
+        "GEO_TARGET": [
+          1
+        ],
+        "GEO_ACTION": [
+          2
+        ],
+        "FS_WRITE": [
+          2
+        ]
+      }
+    },
+    {
+      "id": "direct-lang",
+      "source": "if lang == 'ru':\n    marker.write_text('sample')\n",
+      "lines": {
+        "GEO_TARGET": [],
+        "GEO_ACTION": [],
+        "FS_WRITE": [
+          2
+        ]
+      }
+    },
+    {
+      "id": "continue",
+      "source": "for country in countries:\n    if country == 'ru':\n        continue\n    marker.write_text('sample')\n",
+      "lines": {
+        "GEO_TARGET": [
+          2
+        ],
+        "GEO_ACTION": [],
+        "FS_WRITE": [
+          4
+        ]
+      }
+    },
+    {
+      "id": "local-wrapper",
+      "source": "def write_marker(marker):\n    marker.write_text('sample')\nif country == 'ru':\n    write_marker(marker)\n",
+      "lines": {
+        "GEO_TARGET": [
+          3
+        ],
+        "GEO_ACTION": [],
+        "FS_WRITE": [
+          2
+        ]
+      }
+    },
+    {
+      "id": "sibling-elif",
+      "source": "if country == 'ru':\n    pass\nelif country == 'it':\n    marker.write_text('sample')\n",
+      "lines": {
+        "GEO_TARGET": [
+          1,
+          3
+        ],
+        "GEO_ACTION": [
+          4
+        ],
+        "FS_WRITE": [
+          4
+        ]
+      }
+    },
+    {
+      "id": "unconditional-write",
+      "source": "if country == 'ru':\n    label = 'one'\nelse:\n    label = 'other'\nmarker.write_text(label)\n",
+      "lines": {
+        "GEO_TARGET": [
+          1
+        ],
+        "GEO_ACTION": [],
+        "FS_WRITE": [
+          5
+        ]
+      }
+    }
+  ]
+}

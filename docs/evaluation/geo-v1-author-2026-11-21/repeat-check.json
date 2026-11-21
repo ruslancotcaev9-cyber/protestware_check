@@ -1,0 +1,7 @@
+{
+  "first_sha256": "e4da92490e244eb49ecd2b26a465ca19885102fca0312b4be2c944e0ae6f6008",
+  "repeat_sha256": "fdac64c42437056cb5a065b76f2275871454cd5af4164f05f3655ae75d41e31a",
+  "all_non_timing_fields_identical": true,
+  "compared_cases": 6,
+  "cohort": "author-geo-v1"
+}

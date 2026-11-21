@@ -1,0 +1,346 @@
+{
+  "schema": 1,
+  "tool_version": "1.9.0",
+  "cases": 6,
+  "source_groups": 6,
+  "whole_file_cases": 0,
+  "repositories": 6,
+  "metrics_valid": true,
+  "overall": {
+    "tp": 0,
+    "fp": 0,
+    "tn": 3,
+    "fn": 3,
+    "errors": 0,
+    "precision": null,
+    "recall": 0.0,
+    "false_positive_rate": 0.0
+  },
+  "by_language_and_rule": [
+    {
+      "language": "Python",
+      "rule": "GEO_ACTION",
+      "tp": 0,
+      "fp": 0,
+      "tn": 3,
+      "fn": 3,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_repository": [
+    {
+      "repository": "Maximoff/Apktool-M-updates",
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    {
+      "repository": "eugenehp/espeak-ng-rs",
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    {
+      "repository": "mozilla/mozaic-forecasting",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "ravindraten/Covid19WorldStats",
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    {
+      "repository": "shurshun/count-in",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "videoreg/pi-videoreg",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_cohort": [
+    {
+      "cohort": "author-geo-v1",
+      "tp": 0,
+      "fp": 0,
+      "tn": 3,
+      "fn": 3,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_operation_scope": [
+    {
+      "scope": "adjacent-unconditional-write",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "conditional-file-write",
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "conditional-network",
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 2,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "localization",
+      "tp": 0,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_mode": [
+    {
+      "mode": "required",
+      "tp": 0,
+      "fp": 0,
+      "tn": 3,
+      "fn": 3,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_status": [
+    {
+      "status": "parsed",
+      "tp": 0,
+      "fp": 0,
+      "tn": 3,
+      "fn": 3,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "analysis": {
+    "by_status": {
+      "parsed": 6
+    },
+    "complete": true,
+    "successful_fraction": 1.0,
+    "partial_cases": 0
+  },
+  "performance": {
+    "measured": false,
+    "elapsed_seconds": 0.04750873499983754,
+    "median_case_seconds": 0.00328830249998191,
+    "peak_traced_python_bytes": null
+  },
+  "results": [
+    {
+      "id": "geo-1",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "shurshun/count-in",
+      "cohort": "author-geo-v1",
+      "operation_scope": "adjacent-unconditional-write",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-2",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "ravindraten/Covid19WorldStats",
+      "cohort": "author-geo-v1",
+      "operation_scope": "conditional-network",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "videoreg/pi-videoreg",
+      "cohort": "author-geo-v1",
+      "operation_scope": "localization",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-4",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "eugenehp/espeak-ng-rs",
+      "cohort": "author-geo-v1",
+      "operation_scope": "conditional-file-write",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "mozilla/mozaic-forecasting",
+      "cohort": "author-geo-v1",
+      "operation_scope": "localization",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-6",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "Maximoff/Apktool-M-updates",
+      "cohort": "author-geo-v1",
+      "operation_scope": "conditional-network",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    }
+  ],
+  "manifest_sha256": "838dc4e7e141efe89ba03cea24004ca74687b31041120a9f74ed7235f70f56af",
+  "detector_manifest_sha256": "31a857aa36c43ed6a8e3434bcd0e544a2f00bbc1163e292da9880b9fc2c1e2fb",
+  "original_source_lines": {
+    "geo-1": {
+      "reported": [],
+      "outside_reviewed_evidence": []
+    },
+    "geo-2": {
+      "reported": [
+        1056,
+        1133
+      ],
+      "outside_reviewed_evidence": [
+        1056,
+        1133
+      ]
+    },
+    "geo-3": {
+      "reported": [],
+      "outside_reviewed_evidence": []
+    },
+    "geo-4": {
+      "reported": [],
+      "outside_reviewed_evidence": []
+    },
+    "geo-5": {
+      "reported": [],
+      "outside_reviewed_evidence": []
+    },
+    "geo-6": {
+      "reported": [],
+      "outside_reviewed_evidence": []
+    }
+  },
+  "evaluation_mode": "author-regression",
+  "review": {
+    "schema": 1,
+    "evaluation_mode": "author-regression",
+    "manifest_sha256": "838dc4e7e141efe89ba03cea24004ca74687b31041120a9f74ed7235f70f56af",
+    "reviewer": "ruslancotcaev9-cyber",
+    "reviewer_role": "cohort-contributor",
+    "label_decision": "accepted-as-proposed",
+    "independent_review": false,
+    "eligible_for_first_blind_evaluation": false,
+    "decision_date": "2026-11-21",
+    "review_reference": "https://github.com/ruslancotcaev9-cyber/protestware_check/pull/17#issuecomment-7065471960",
+    "basis": "The public comment records review without objections. In the project conversation the owner reported participating in selection or initial labeling and chose to use these six cases for private author evaluation."
+  }
+}

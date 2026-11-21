@@ -16,6 +16,7 @@ import safe_io
 
 MANIFEST = ROOT / 'tests/corpus/geo-v1.json'
 REVIEW = ROOT / 'tests/corpus/geo-v1-review.json'
+AUTHOR_DECISION = ROOT / 'tests/corpus/geo-v1-author-decision.json'
 LIMIT = 1_000_000
 
 
@@ -44,9 +45,20 @@ def prepare(cases, directory):
             stream.write(raw)
 
 
-def evaluate(document, sources, review, checksum):
-    if review['status'] != 'claimed-complete':
-        raise ValueError('Independent review pending or disputed; no detector run')
+def read_author_decision():
+    decision = json_contracts.loads(safe_io.read_regular(AUTHOR_DECISION, 20_000))
+    if (not isinstance(decision, dict) or type(decision.get('schema')) is not int or decision['schema'] != 1
+            or decision.get('evaluation_mode') != 'author-regression'
+            or decision.get('reviewer_role') != 'cohort-contributor'
+            or decision.get('label_decision') != 'accepted-as-proposed'
+            or decision.get('independent_review') is not False
+            or decision.get('eligible_for_first_blind_evaluation') is not False
+            or not isinstance(decision.get('manifest_sha256'), str)):
+        raise ValueError('Invalid author assessment decision')
+    return decision
+
+
+def score_cases(document, sources, checksum, cohort):
     current = (ROOT / 'tests/corpus/current-scanner-sha256.json').read_bytes()
     if sha256(current).hexdigest() != document['detector_manifest_sha256']:
         raise ValueError('Use the scanner revision frozen for this cohort')
@@ -65,7 +77,7 @@ def evaluate(document, sources, review, checksum):
         by_path[path] = entry
         cases.append({**entry, 'path': path, 'code': ''.join(lines[start-1:stop]),
                       'language': 'Python', 'rule': 'GEO_ACTION', 'ast_mode': 'required',
-                      'operation_scope': entry['scope'], 'cohort': 'external-geo-v1',
+                      'operation_scope': entry['scope'], 'cohort': cohort,
                       'provenance': {'repository': entry['repository'], 'path': entry['path']}})
 
     locations = {}
@@ -81,13 +93,32 @@ def evaluate(document, sources, review, checksum):
 
     report = corpus_evaluation.evaluate(cases, scan=score)
     report.update(manifest_sha256=checksum, detector_manifest_sha256=document['detector_manifest_sha256'],
-                  review=review, original_source_lines=locations)
+                  original_source_lines=locations)
+    return report
+
+
+def evaluate(document, sources, review, checksum):
+    if review['status'] != 'claimed-complete':
+        raise ValueError('Independent review pending or disputed; no detector run')
+    if read_author_decision()['manifest_sha256'] == checksum:
+        raise ValueError('Cohort designated for author regression; use fresh cases for a first blind measurement')
+    report = score_cases(document, sources, checksum, 'external-geo-v1')
+    report['review'] = review
+    return report
+
+
+def evaluate_author(document, sources, checksum):
+    decision = read_author_decision()
+    if decision['manifest_sha256'] != checksum:
+        raise ValueError('Author assessment decision does not cover this manifest')
+    report = score_cases(document, sources, checksum, 'author-geo-v1')
+    report.update(evaluation_mode='author-regression', review=decision)
     return report
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('prepare', 'review', 'evaluate'))
+    parser.add_argument('action', choices=('prepare', 'review', 'evaluate', 'evaluate-author'))
     parser.add_argument('--sources', type=Path)
     parser.add_argument('--output', type=Path)
     args = parser.parse_args(argv)
@@ -99,13 +130,15 @@ def main(argv=None):
                 parser.error('prepare requires --sources DIRECTORY')
             prepare(doc['cases'], args.sources)
             return 0
-        summary = corpus_review.load(REVIEW, doc['cases'], checksum)
         if args.action == 'review':
-            print(json.dumps(summary, ensure_ascii=False))
+            print(json.dumps(corpus_review.load(REVIEW, doc['cases'], checksum), ensure_ascii=False))
             return 0
         if not args.sources or not args.output:
-            parser.error('evaluate requires --sources and a new --output file')
-        report = evaluate(doc, args.sources, summary, checksum)
+            parser.error(f'{args.action} requires --sources and a new --output file')
+        if args.action == 'evaluate-author':
+            report = evaluate_author(doc, args.sources, checksum)
+        else:
+            report = evaluate(doc, args.sources, corpus_review.load(REVIEW, doc['cases'], checksum), checksum)
         with args.output.open('x', encoding='utf-8') as stream:
             json.dump(report, stream, indent=2)
             stream.write('\n')

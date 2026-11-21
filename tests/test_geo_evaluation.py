@@ -38,6 +38,20 @@ class GeoEvaluationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'checksum'):
                 geo.prepare([case], Path(temp))
 
+    def test_author_decision_is_scoped_and_cannot_be_used_for_a_first_blind_measurement(self):
+        decision = dict(geo.read_author_decision(), manifest_sha256='synthetic-fixture')
+        with patch.object(geo, 'read_author_decision', return_value=decision), \
+                patch.object(geo, 'score_cases', return_value={}) as scorer:
+            with self.assertRaisesRegex(ValueError, 'does not cover'):
+                geo.evaluate_author({}, None, 'another-fixture')
+            with self.assertRaisesRegex(ValueError, 'first blind'):
+                geo.evaluate({}, None, {'status': 'claimed-complete'}, 'synthetic-fixture')
+            scorer.assert_not_called()
+            result = geo.evaluate_author({}, None, 'synthetic-fixture')
+            scorer.assert_called_once_with({}, None, 'synthetic-fixture', 'author-geo-v1')
+            self.assertEqual(result['evaluation_mode'], 'author-regression')
+            self.assertIs(result['review']['independent_review'], False)
+
     def test_case_and_location_scoring_on_unrelated_inert_inputs(self):
         raw = b"# header\nx = 1\ny = 2\n"
         blob = sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
