@@ -4,6 +4,23 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.9.0 development updates — 2026-11-21 (unreleased)
+
+- Add `evaluate-author` to score the six pinned Python GEO_ACTION fragments
+  against their original evidence lines. Record the maintainer’s acceptance of
+  the proposed labels and reserve fresh inputs for the next blind evaluation.
+- Publish the first and repeat author reports, hashes and diagnostic cases.
+  All six parsed. Three positive cases were missed and all three negative cases
+  were classified correctly. Two findings in geo-2 fell outside its evidence lines.
+  [Results and reproduction](docs/GEO_ACTION_EVALUATION.md).
+- Accept UTF-16 LE/BE sources with a BOM and expose the `min_analyzed_files`
+  coverage gate. [Coverage and policy](docs/POLICY_AND_CI.md).
+- Resolve bounded C# extension and partial-class deletion wrappers across selected
+  files in one directory. The two-file NUKE regression preserves the call routes
+  in JSON and SARIF. [C# scope](docs/CSHARP_BINDING_ANALYSIS.md).
+- Verify a digest-pinned offline scanner image on GitLab Runner and provide an
+  opt-in child pipeline for existing projects. [Offline GitLab](docs/OFFLINE_GITLAB.md).
+
 ## Evaluation v8 — 2026-11-18 (code remains 1.9.0, unreleased)
 
 - Freeze protocol/revisions, then 24 new whole-file inputs and pending labels

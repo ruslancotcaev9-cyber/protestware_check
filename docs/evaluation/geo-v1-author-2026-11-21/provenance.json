@@ -1,0 +1,16 @@
+{
+  "recorded_before_owner_run": "2026-11-21T16:24:17+00:00",
+  "scanner_commit": "2e941387c89da71f24f4895c6b0452c10a585daa",
+  "python": "3.12.14",
+  "frozen_detector_files": 29,
+  "detector_manifest_sha256": "31a857aa36c43ed6a8e3434bcd0e544a2f00bbc1163e292da9880b9fc2c1e2fb",
+  "manifest_sha256": "838dc4e7e141efe89ba03cea24004ca74687b31041120a9f74ed7235f70f56af",
+  "author_decision_sha256": "92a8ccba9e110eef7b4adf7d8741e260e366474e48d5ffd549974e60fc53be01",
+  "scoring_script_sha256": "eebbb9eec6a800eb49dddcf3c78c679ecfaa2e437ab7e03ee41c4bd396473049",
+  "verified_source_files": 6,
+  "scope": "author-regression",
+  "independent_review": false,
+  "eligible_for_first_blind_evaluation": false,
+  "source_data_executed": false,
+  "identifier": "geo-v1"
+}

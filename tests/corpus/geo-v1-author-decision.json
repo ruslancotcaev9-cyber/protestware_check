@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "evaluation_mode": "author-regression",
+  "manifest_sha256": "838dc4e7e141efe89ba03cea24004ca74687b31041120a9f74ed7235f70f56af",
+  "reviewer": "ruslancotcaev9-cyber",
+  "reviewer_role": "cohort-contributor",
+  "label_decision": "accepted-as-proposed",
+  "independent_review": false,
+  "eligible_for_first_blind_evaluation": false,
+  "decision_date": "2026-11-21",
+  "review_reference": "https://github.com/ruslancotcaev9-cyber/protestware_check/pull/17#issuecomment-7065471960",
+  "basis": "The public comment records review without objections. In the project conversation the owner reported participating in selection or initial labeling and chose to use these six cases for private author evaluation."
+}
