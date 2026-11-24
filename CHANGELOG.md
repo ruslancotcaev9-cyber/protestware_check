@@ -6,10 +6,16 @@ Changes to **protestware-check** are recorded here. Format follows
 
 ## 1.9.0 development updates — 2026-11-24 (unreleased)
 
+- Scope Python GEO_ACTION to the corresponding selector arm and follow stable
+  local functions to imported network calls. JSON and SARIF show the guard,
+  call sites and network operation. The six pinned fragments now give two true
+  positives, one miss and three true negatives. The separate full-file check
+  resolves two calls in geo-2 and records the partial Python taint analysis.
+  [Measured results and limits](docs/GEO_ACTION_EVALUATION.md).
 - Track recognized Python language checks that skip a loop iteration with
   `continue`. JSON and SARIF show the guard and the affected operation. The
   six-case author regression now detects geo-4 at original lines 321 and 327.
-  Two positive cases remain missed and all three negative cases remain clear.
+  At this stage two positive cases were missed and all three negative cases were clear.
 - Add `evaluate_geo.py compare` to reproduce the original and current results
   with source and detector hashes, per-case AST status and original line numbers.
   [Comparison and reproduction](docs/GEO_ACTION_EVALUATION.md).

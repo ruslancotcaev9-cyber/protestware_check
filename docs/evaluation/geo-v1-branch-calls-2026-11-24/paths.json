@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "scope": "author-regression-diagnostics",
+  "checkout_commit": "d44c9995cd2c6420deaf14e0eb9eb7491d5ead83",
+  "worktree_status": "clean",
+  "detector_manifest_sha256": "d96e6076df6b979aa1913fe54af587e12dfea69cceabf7ccdd64b11950e15012",
+  "inputs": {
+    "geo-2": {
+      "source_sha256": "84850079b794f01ed54122dad580509b75d66a280316257b5a30bc190ad60e38",
+      "input_lines": [
+        752,
+        1156
+      ],
+      "reported_interval": [
+        752,
+        1156
+      ],
+      "ast": {
+        "mode": "required",
+        "parsed": 1,
+        "partial": 0,
+        "degraded": 0,
+        "disabled": 0,
+        "complete": true
+      },
+      "warnings": [],
+      "actions": [],
+      "network_lines": [
+        763,
+        1056,
+        1133
+      ]
+    },
+    "geo-2-full-file": {
+      "source_sha256": "84850079b794f01ed54122dad580509b75d66a280316257b5a30bc190ad60e38",
+      "input_lines": [
+        1,
+        2302
+      ],
+      "reported_interval": [
+        752,
+        1156
+      ],
+      "ast": {
+        "mode": "auto",
+        "parsed": 0,
+        "partial": 1,
+        "degraded": 0,
+        "disabled": 0,
+        "complete": false
+      },
+      "warnings": [
+        "AST partial analysis: Bot.py: Python taint invocation budget reached"
+      ],
+      "actions": [
+        {
+          "site": 934,
+          "path": [
+            {
+              "file": "Bot.py",
+              "line": 931,
+              "kind": "guard",
+              "message": "условие на строке 931 истинно"
+            },
+            {
+              "file": "Bot.py",
+              "line": 934,
+              "kind": "call",
+              "message": "countryWiseStatsCollect"
+            },
+            {
+              "file": "Bot.py",
+              "line": 460,
+              "kind": "call",
+              "message": "apiWorld"
+            },
+            {
+              "file": "Bot.py",
+              "line": 63,
+              "kind": "sink",
+              "message": "requests.get"
+            }
+          ]
+        },
+        {
+          "site": 949,
+          "path": [
+            {
+              "file": "Bot.py",
+              "line": 931,
+              "kind": "guard",
+              "message": "условие на строке 931 истинно"
+            },
+            {
+              "file": "Bot.py",
+              "line": 949,
+              "kind": "call",
+              "message": "getLocationRU"
+            },
+            {
+              "file": "Bot.py",
+              "line": 1658,
+              "kind": "call",
+              "message": "apiRequestRU"
+            },
+            {
+              "file": "Bot.py",
+              "line": 123,
+              "kind": "sink",
+              "message": "requests.get"
+            }
+          ]
+        }
+      ],
+      "network_lines": [
+        763,
+        1056,
+        1133
+      ]
+    },
+    "geo-6": {
+      "source_sha256": "eb01ebd1714ccef6776f30db639f71ca0936ad3cb9b4ab316102d912db40394f",
+      "input_lines": [
+        1,
+        131
+      ],
+      "reported_interval": [
+        1,
+        131
+      ],
+      "ast": {
+        "mode": "required",
+        "parsed": 1,
+        "partial": 0,
+        "degraded": 0,
+        "disabled": 0,
+        "complete": true
+      },
+      "warnings": [],
+      "actions": [
+        {
+          "site": 125,
+          "path": [
+            {
+              "file": "translate.py",
+              "line": 121,
+              "kind": "guard",
+              "message": "условие на строке 121 ложно"
+            },
+            {
+              "file": "translate.py",
+              "line": 125,
+              "kind": "call",
+              "message": "translate"
+            },
+            {
+              "file": "translate.py",
+              "line": 56,
+              "kind": "sink",
+              "message": "urllib.request.urlopen"
+            }
+          ]
+        }
+      ],
+      "network_lines": [
+        45,
+        56
+      ]
+    }
+  }
+}

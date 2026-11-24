@@ -1,6 +1,6 @@
 {
-  "analysis_context.py": "a1d250feb1c0b27f532f36d6ed228552040cf7d0154824ce53afbe56ff76bed4",
-  "ast_analysis.py": "2ef3d45ea2297dc69d198c5392c37bac54f0df237bd95945d27abbfe850213c8",
+  "analysis_context.py": "e59c7ae46150dbec54f708f663b4ee80378effe702c636bdae12b94dafddfb8c",
+  "ast_analysis.py": "77c0d62563e0a19ecba6f77ef90b088c75bf8bfb2cd5c78056293b93778ab15e",
   "cpp_ast.py": "4b4ee17d408bbae5b84f929ab250a3bb8f8b7dfb561a02bdae54ce14f00d7f10",
   "csharp_bindings.py": "77609f7dda3646796553faf6af553ae5f4b2e30ef479b9b08db39f6f9a553a6c",
   "csharp_project.py": "fc40bc584c850e8606e4d4fdc4ebe588dc2ebdf9d457c45ae466af876a77d235",
@@ -19,6 +19,7 @@
   "package_identity.py": "eab3f69b7f88918a91f35629ebe3d2a8f3bd399b28896c3de45c2cdc86a4b555",
   "polyglot_ast.py": "8833fa02122c9db8e9709d59df4c8d77dcd3edd20020f2eb6c49501e5edf2f2c",
   "protestware_check.py": "b6575778d39131de0f3574fe8031891e3e53f76117a33b5fd9d4ed16ee4c2c3a",
+  "python_geo.py": "7dff27b55b5b36035ccbd52cd854b15b77964ea84619213949f3725541dddc23",
   "python_taint.py": "b2816973567706a7c6ea16cd6fd2313d26fc0da616ca0ebfdc301bac6a2f38d3",
   "report_formats.py": "2dcd6580407e83de17df17694dd685e736f3840a992b278f4778c333f27d96ac",
   "requirements-ast.txt": "dba6de3a62bd955385e5d52517b8aba3b54cf9297548164cda0ee038b71093ef",

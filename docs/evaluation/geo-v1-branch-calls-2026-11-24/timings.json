@@ -1,0 +1,31 @@
+{
+  "scope": "six pinned geo-v1 fragments",
+  "method": "Sum of per-case scan and scoring durations from performance.elapsed_seconds. Two resident interpreters on one host. One warm-up per revision, then five alternating pairs; previous first in odd-numbered pairs. Excludes source preparation, report serialization and Git metadata.",
+  "python": "3.12.14",
+  "platform": "Linux x86_64",
+  "same_logical_cpu": true,
+  "corpus_sha256": "838dc4e7e141efe89ba03cea24004ca74687b31041120a9f74ed7235f70f56af",
+  "previous": {
+    "commit": "9be6be1b8700d1cb3e1feed8cc1e81e844b687ca",
+    "seconds": [
+      0.0462434549997397,
+      0.04723426800001107,
+      0.04294378700024026,
+      0.03968393499985723,
+      0.0421509409995906
+    ],
+    "median_seconds": 0.04294378700024026
+  },
+  "current": {
+    "commit": "d44c9995cd2c6420deaf14e0eb9eb7491d5ead83",
+    "seconds": [
+      0.04441769599998224,
+      0.05397172400012096,
+      0.04092258100058643,
+      0.04201135600010275,
+      0.04277525499992407
+    ],
+    "median_seconds": 0.04277525499992407
+  },
+  "median_change_percent": -0.39244792341031065
+}
