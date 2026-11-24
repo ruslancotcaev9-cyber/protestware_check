@@ -1,0 +1,30 @@
+{
+  "scope": "Six pinned geo-v1 fragments",
+  "method": "Sum of scan and scoring times; two resident interpreters pinned to one logical CPU, one warm-up per revision, five alternating pairs starting with the previous revision. Excludes preparation and report serialization.",
+  "python": "3.12.14",
+  "platform": "Linux x86_64",
+  "corpus_sha256": "838dc4e7e141efe89ba03cea24004ca74687b31041120a9f74ed7235f70f56af",
+  "previous": {
+    "commit": "c6d9560f461fc5b16d173f2f3073878440662e9b",
+    "seconds": [
+      0.04296995599975162,
+      0.04360350799970547,
+      0.04298959999982799,
+      0.04225572500013186,
+      0.043475270000044475
+    ],
+    "median_seconds": 0.04298959999982799
+  },
+  "current": {
+    "commit": "413f3c5d9127563c485278001e95c579fce2948e",
+    "seconds": [
+      0.04256473199984612,
+      0.04239276799989966,
+      0.042534602000159794,
+      0.0486364560003949,
+      0.04271586399977423
+    ],
+    "median_seconds": 0.04256473199984612
+  },
+  "median_change_percent": -0.9883041479417543
+}

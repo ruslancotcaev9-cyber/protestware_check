@@ -1,0 +1,283 @@
+{
+  "schema": 1,
+  "scope": "author-regression-diagnostics",
+  "checkout_commit": "413f3c5d9127563c485278001e95c579fce2948e",
+  "worktree_status": "clean",
+  "detector_manifest_sha256": "d1da0b1d2be2a3a0086e6abb670225676e30192484ddc7ca2a224d923013fc04",
+  "inputs": {
+    "geo-2": {
+      "source_sha256": "84850079b794f01ed54122dad580509b75d66a280316257b5a30bc190ad60e38",
+      "input_lines": [
+        752,
+        1156
+      ],
+      "reported_interval": [
+        752,
+        1156
+      ],
+      "ast": {
+        "mode": "required",
+        "parsed": 1,
+        "partial": 0,
+        "degraded": 0,
+        "disabled": 0,
+        "complete": true
+      },
+      "warnings": [],
+      "actions": [],
+      "network_lines": [
+        763,
+        1056,
+        1133
+      ]
+    },
+    "geo-2-full-file": {
+      "source_sha256": "84850079b794f01ed54122dad580509b75d66a280316257b5a30bc190ad60e38",
+      "input_lines": [
+        1,
+        2302
+      ],
+      "reported_interval": [
+        752,
+        1156
+      ],
+      "ast": {
+        "mode": "auto",
+        "parsed": 0,
+        "partial": 1,
+        "degraded": 0,
+        "disabled": 0,
+        "complete": false
+      },
+      "warnings": [
+        "AST partial analysis: Bot.py: Python taint invocation budget reached"
+      ],
+      "actions": [
+        {
+          "site": 934,
+          "path": [
+            {
+              "file": "Bot.py",
+              "line": 931,
+              "kind": "guard",
+              "message": "условие на строке 931 истинно"
+            },
+            {
+              "file": "Bot.py",
+              "line": 934,
+              "kind": "call",
+              "message": "countryWiseStatsCollect"
+            },
+            {
+              "file": "Bot.py",
+              "line": 460,
+              "kind": "call",
+              "message": "apiWorld"
+            },
+            {
+              "file": "Bot.py",
+              "line": 63,
+              "kind": "sink",
+              "message": "requests.get"
+            }
+          ]
+        },
+        {
+          "site": 935,
+          "resolved_symbol": "telegram.Bot.send_chat_action",
+          "binding_basis": "telegram-handler-registration",
+          "binding_certainty": "possible",
+          "path": [
+            {
+              "file": "Bot.py",
+              "kind": "constructor",
+              "line": 2259,
+              "message": "telegram.ext.Updater(use_context=True)"
+            },
+            {
+              "file": "Bot.py",
+              "kind": "assignment",
+              "line": 2262,
+              "message": "updater.dispatcher"
+            },
+            {
+              "file": "Bot.py",
+              "kind": "registration",
+              "line": 2296,
+              "message": "Dispatcher.add_handler(MessageHandler(getLocation))"
+            },
+            {
+              "file": "Bot.py",
+              "line": 931,
+              "kind": "guard",
+              "message": "условие на строке 931 истинно"
+            },
+            {
+              "file": "Bot.py",
+              "line": 935,
+              "kind": "sink",
+              "message": "telegram.Bot.send_chat_action"
+            }
+          ]
+        },
+        {
+          "site": 936,
+          "resolved_symbol": "telegram.Bot.send_message",
+          "binding_basis": "telegram-handler-registration",
+          "binding_certainty": "possible",
+          "path": [
+            {
+              "file": "Bot.py",
+              "kind": "constructor",
+              "line": 2259,
+              "message": "telegram.ext.Updater(use_context=True)"
+            },
+            {
+              "file": "Bot.py",
+              "kind": "assignment",
+              "line": 2262,
+              "message": "updater.dispatcher"
+            },
+            {
+              "file": "Bot.py",
+              "kind": "registration",
+              "line": 2296,
+              "message": "Dispatcher.add_handler(MessageHandler(getLocation))"
+            },
+            {
+              "file": "Bot.py",
+              "line": 931,
+              "kind": "guard",
+              "message": "условие на строке 931 истинно"
+            },
+            {
+              "file": "Bot.py",
+              "line": 936,
+              "kind": "sink",
+              "message": "telegram.Bot.send_message"
+            }
+          ]
+        },
+        {
+          "site": 949,
+          "path": [
+            {
+              "file": "Bot.py",
+              "line": 931,
+              "kind": "guard",
+              "message": "условие на строке 931 истинно"
+            },
+            {
+              "file": "Bot.py",
+              "line": 949,
+              "kind": "call",
+              "message": "getLocationRU"
+            },
+            {
+              "file": "Bot.py",
+              "line": 1658,
+              "kind": "call",
+              "message": "apiRequestRU"
+            },
+            {
+              "file": "Bot.py",
+              "line": 123,
+              "kind": "sink",
+              "message": "requests.get"
+            }
+          ]
+        }
+      ],
+      "network_lines": [
+        763,
+        793,
+        794,
+        809,
+        810,
+        836,
+        837,
+        852,
+        853,
+        872,
+        873,
+        891,
+        892,
+        909,
+        910,
+        935,
+        936,
+        956,
+        957,
+        976,
+        977,
+        997,
+        998,
+        1019,
+        1020,
+        1038,
+        1039,
+        1056,
+        1059,
+        1060,
+        1081,
+        1082,
+        1103,
+        1104,
+        1120,
+        1121,
+        1133,
+        1140,
+        1141
+      ]
+    },
+    "geo-6": {
+      "source_sha256": "eb01ebd1714ccef6776f30db639f71ca0936ad3cb9b4ab316102d912db40394f",
+      "input_lines": [
+        1,
+        131
+      ],
+      "reported_interval": [
+        1,
+        131
+      ],
+      "ast": {
+        "mode": "required",
+        "parsed": 1,
+        "partial": 0,
+        "degraded": 0,
+        "disabled": 0,
+        "complete": true
+      },
+      "warnings": [],
+      "actions": [
+        {
+          "site": 125,
+          "path": [
+            {
+              "file": "translate.py",
+              "line": 121,
+              "kind": "guard",
+              "message": "условие на строке 121 ложно"
+            },
+            {
+              "file": "translate.py",
+              "line": 125,
+              "kind": "call",
+              "message": "translate"
+            },
+            {
+              "file": "translate.py",
+              "line": 56,
+              "kind": "sink",
+              "message": "urllib.request.urlopen"
+            }
+          ]
+        }
+      ],
+      "network_lines": [
+        45,
+        56
+      ]
+    }
+  }
+}

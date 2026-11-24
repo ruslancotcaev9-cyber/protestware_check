@@ -6,6 +6,12 @@ Changes to **protestware-check** are recorded here. Format follows
 
 ## 1.9.0 development updates — 2026-11-24 (unreleased)
 
+- Trace synchronous Telegram bot messages and chat actions from an imported
+  `CallbackContext` annotation or an explicit `Updater` / `MessageHandler`
+  registration. In the full geo-2 file, JSON and SARIF now identify the two
+  operations on lines 935 and 936. The isolated fragment still lacks receiver
+  provenance. The six-fragment author regression remains TP 2, TN 3, FP 0, FN 1.
+  [Results, controls and reproduction](docs/GEO_ACTION_EVALUATION.md).
 - Scope Python GEO_ACTION to the corresponding selector arm and follow stable
   local functions to imported network calls. JSON and SARIF show the guard,
   call sites and network operation. The six pinned fragments now give two true
