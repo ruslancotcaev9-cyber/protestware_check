@@ -4,8 +4,15 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.9.0 development updates — 2026-11-21 (unreleased)
+## 1.9.0 development updates — 2026-11-24 (unreleased)
 
+- Track recognized Python language checks that skip a loop iteration with
+  `continue`. JSON and SARIF show the guard and the affected operation. The
+  six-case author regression now detects geo-4 at original lines 321 and 327.
+  Two positive cases remain missed and all three negative cases remain clear.
+- Add `evaluate_geo.py compare` to reproduce the original and current results
+  with source and detector hashes, per-case AST status and original line numbers.
+  [Comparison and reproduction](docs/GEO_ACTION_EVALUATION.md).
 - Add `evaluate-author` to score the six pinned Python GEO_ACTION fragments
   against their original evidence lines. Record the maintainer’s acceptance of
   the proposed labels and reserve fresh inputs for the next blind evaluation.
