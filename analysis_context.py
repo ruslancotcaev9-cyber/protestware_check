@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import sys
 
-RULE_FILES = ('protestware_check.py', 'ast_analysis.py', 'python_taint.py', 'polyglot_ast.py',
+RULE_FILES = ('protestware_check.py', 'ast_analysis.py', 'python_taint.py', 'python_geo.py', 'polyglot_ast.py',
               'cpp_ast.py', 'js_behavior.py', 'language_analysis.py', 'dependency_analysis.py',
               'package_identity.py', 'threat_intel.py', 'malware_intel.py', 'scan_policy.py',
               'analysis_context.py', 'go_build_info.py', 'go_bindings.py', 'sql_operations.py', 'js_bindings.py',

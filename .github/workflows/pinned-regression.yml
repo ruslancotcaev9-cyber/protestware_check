@@ -67,6 +67,8 @@ jobs:
           python -I reference-scanner/scripts/evaluate_geo.py compare --sources "$RUNNER_TEMP/geo-sources" --output "$RUNNER_TEMP/geo-reference.json"
           python -I scripts/evaluate_geo.py compare --sources "$RUNNER_TEMP/geo-sources" --output "$RUNNER_TEMP/geo-comparison.json"
           python -I scripts/evaluate_geo.py compare --sources "$RUNNER_TEMP/geo-sources" --output "$RUNNER_TEMP/geo-repeat.json"
+      - name: Verify Python call paths on the fragments and the separate whole file
+        run: python -I tests/pinned_python_geo.py --sources "$RUNNER_TEMP/geo-sources" --output "$RUNNER_TEMP/geo-paths.json"
       - name: Check locations and repeatability
         working-directory: ${{ runner.temp }}
         run: |
@@ -91,8 +93,10 @@ jobs:
           if first != repeat:
               raise SystemExit('The two runs differ outside the timing fields')
           cases = {c['id']: c for c in first['comparison']['cases']}
-          if not first['analysis']['complete'] or first['overall']['fp'] or cases['geo-4']['after']['outcome'] != 'tp':
-              raise SystemExit('Incomplete analysis, false positive or missing reviewed action in geo-4')
+          if (not first['analysis']['complete'] or first['overall']['fp']
+                  or any(cases[name]['after']['outcome'] != 'tp' for name in ('geo-4', 'geo-6'))
+                  or {1056, 1133}.intersection(cases['geo-2']['after']['reported'])):
+              raise SystemExit('Incomplete analysis, false positive, sibling-arm finding or missing reviewed action')
           print('GEO_REPORT_SHA256=' + sha256(raw).hexdigest())
           encoded = base64.b64encode(raw).decode('ascii')
           for offset in range(0, len(encoded), 2048):
@@ -107,5 +111,6 @@ jobs:
             ${{ runner.temp }}/geo-reference.json
             ${{ runner.temp }}/geo-comparison.json
             ${{ runner.temp }}/geo-repeat.json
+            ${{ runner.temp }}/geo-paths.json
           if-no-files-found: warn
           retention-days: 14

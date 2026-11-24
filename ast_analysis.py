@@ -5,6 +5,7 @@ import ast
 from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import urlparse
+from python_geo import LocalNetworkCalls
 
 GEO_COUNTRIES = {"RU", "RUS", "BY", "BLR", "RUSSIA", "BELARUS", "РОССИЯ", "РОССИИ", "БЕЛАРУСЬ"}
 GEO_WORDS = ("country", "region", "geoip", "geolocation", "locale", "location", "ipapi", "ipinfo")
@@ -18,7 +19,7 @@ WRITE_CALLS = {"os.rename", "os.replace", "shutil.move", "shutil.copy", "shutil.
 
 class GeoCondition(NamedTuple):
     line: int
-    continuation: str = ""
+    description: str
 
 
 def dotted(node: ast.AST) -> str:
@@ -55,6 +56,24 @@ def language_code(node: ast.AST) -> bool:
     return (literal(node) or "").lower() in {"ru", "be"}
 
 
+def dispatch_selector(test: ast.AST) -> str | None:
+    """Identify a string-valued selector in an explicit if/elif dispatch."""
+    if not isinstance(test, ast.Compare) or len(test.ops) != 1:
+        return None
+    left, right = test.left, test.comparators[0]
+    if isinstance(test.ops[0], (ast.Eq, ast.NotEq)):
+        if literal(left) is not None:
+            left, right = right, left
+        if literal(right) is None:
+            return None
+    elif isinstance(test.ops[0], (ast.In, ast.NotIn)):
+        if not isinstance(right, (ast.Tuple, ast.List, ast.Set)) or not all(literal(n) is not None for n in right.elts):
+            return None
+    else:
+        return None
+    return ast.dump(left)
+
+
 class Analyzer(ast.NodeVisitor):
     def __init__(self, path: str, content: str, allowed_domains: list[str]):
         self.path = path
@@ -67,6 +86,15 @@ class Analyzer(ast.NodeVisitor):
         self.geo_conditions: list[GeoCondition] = []
         self.findings: list[dict] = []
         self._seen: set[tuple[str, int]] = set()
+        self.scope = None
+        self.local_names = set()
+        self.calls = []
+
+    def visit_Module(self, node: ast.Module):
+        self.scope = node
+        self.local_names = {fn.name for fn in node.body if isinstance(fn, ast.FunctionDef) and not fn.decorator_list}
+        self.visit_suite(node.body)
+        self.resolve_geo_calls(node)
 
     def add(self, rule: str, category: str, severity: str, node: ast.AST, message: str, *, dataflow=None):
         line = getattr(node, "lineno", 1)
@@ -92,20 +120,28 @@ class Analyzer(ast.NodeVisitor):
     def visit_FunctionDef(self, node: ast.FunctionDef):
         # Local Boolean aliases/imports must not contaminate unrelated functions.
         aliases, flags, constants, conditions = self.aliases, self.geo_flags, self.constants, self.geo_conditions
+        scope, self.scope = self.scope, None
         self.aliases, self.geo_flags, self.constants, self.geo_conditions = aliases.copy(), set(), {}, []
         try:
-            self.generic_visit(node)
+            for child in ast.iter_child_nodes(node):
+                if not isinstance(child, ast.stmt):
+                    self.visit(child)
+            self.scope = node
+            self.visit_suite(node.body)
         finally:
+            self.scope = scope
             self.aliases, self.geo_flags, self.constants, self.geo_conditions = aliases, flags, constants, conditions
 
     visit_AsyncFunctionDef = visit_FunctionDef
 
     def visit_deferred(self, nodes):
+        scope, self.scope = self.scope, None
         conditions, self.geo_conditions = self.geo_conditions, []
         try:
             for node in nodes:
                 self.visit(node)
         finally:
+            self.scope = scope
             self.geo_conditions = conditions
 
     def visit_Lambda(self, node: ast.Lambda):
@@ -118,11 +154,13 @@ class Analyzer(ast.NodeVisitor):
         self.visit_deferred([first.target, *first.ifs, *rest, node.elt])
 
     def visit_ClassDef(self, node: ast.ClassDef):
+        scope, self.scope = self.scope, None
         aliases, flags, constants, conditions = self.aliases, self.geo_flags, self.constants, self.geo_conditions
         self.aliases, self.geo_flags, self.constants, self.geo_conditions = aliases.copy(), set(), {}, []
         try:
             self.generic_visit(node)
         finally:
+            self.scope = scope
             self.aliases, self.geo_flags, self.constants, self.geo_conditions = aliases, flags, constants, conditions
 
     def visit_Import(self, node: ast.Import):
@@ -283,19 +321,36 @@ class Analyzer(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call):
         classified = self.classify(node)
+        guard = self.geo_conditions[-1] if self.geo_conditions else None
+        network = classified is not None and classified[0] in {"NET_EXTERNAL", "NET_DYNAMIC", "NET_GEO_API"}
+        if self.scope is not None and self.local_names:
+            if network or (isinstance(node.func, ast.Name) and node.func.id in self.local_names):
+                self.calls.append((self.scope, node, guard, network))
         if classified:
             self.add(*classified[:3], node, classified[3])
-            if self.geo_conditions and classified[0] in {"FS_DELETE", "FS_WRITE", "NET_EXTERNAL", "NET_DYNAMIC", "NET_GEO_API"}:
+            if guard and (network or classified[0] in {"FS_DELETE", "FS_WRITE"}):
                 severity = "high" if classified[0] == "FS_DELETE" else "medium"
-                guard = self.geo_conditions[-1]
-                message = f"AST: {classified[0]} находится в ветви географического условия (строка {guard.line})"
-                trace = None
-                if guard.continuation:
-                    message = f"AST: {classified[0]} достижима, когда {guard.continuation}"
-                    trace = [{"file": self.path, "line": guard.line, "kind": "guard", "message": guard.continuation},
-                             {"file": self.path, "line": node.lineno, "kind": "sink", "message": classified[0]}]
-                self.add("GEO_ACTION", "correlation", severity, node, message, dataflow=trace)
+                self.add_geo_action(node, guard, severity, [(node.lineno, classified[0])])
         self.generic_visit(node)
+
+    def add_geo_action(self, node, guard, severity, steps):
+        trace = [{"file": self.path, "line": guard.line, "kind": "guard", "message": guard.description}]
+        for line, name in steps[:-1]:
+            trace.append({"file": self.path, "line": line, "kind": "call", "message": name})
+        line, name = steps[-1]
+        trace.append({"file": self.path, "line": line, "kind": "sink", "message": name})
+        self.add("GEO_ACTION", "correlation", severity, node,
+                 f"AST: возможна операция {name}, когда {guard.description}", dataflow=trace)
+
+    def resolve_geo_calls(self, tree):
+        if not any(guard and isinstance(call.func, ast.Name) and call.func.id in self.local_names
+                   for _, call, guard, _ in self.calls):
+            return
+        bindings = LocalNetworkCalls(tree)
+        for observation in self.calls:
+            bindings.observe(*observation)
+        for site, guard, steps in bindings.paths():
+            self.add_geo_action(site, guard, "medium", steps)
 
     def visit_suite(self, statements):
         """Visit reachable siblings. A guard applies until the end of this suite."""
@@ -328,6 +383,45 @@ class Analyzer(ast.NodeVisitor):
         if not (isinstance(node.test, ast.Constant) and node.test.value):
             self.visit_suite(node.orelse)
 
+    def visit_BoolOp(self, node):
+        stop = isinstance(node.op, ast.Or)
+        for value in node.values:
+            self.visit(value)
+            if self.truth(value) is stop:
+                break
+
+    def visit_IfExp(self, node):
+        self.visit(node.test)
+        known = self.truth(node.test)
+        if known is not False:
+            self.visit(node.body)
+        if known is not True:
+            self.visit(node.orelse)
+
+    def visit_With(self, node):
+        for item in node.items:
+            self.visit(item)
+        exit_node = self.visit_suite(node.body)
+        if isinstance(exit_node, (ast.Break, ast.Continue, ast.Return)):
+            return exit_node
+
+    visit_AsyncWith = visit_With
+
+    def visit_Try(self, node):
+        exit_node = self.visit_suite(node.body)
+        exits = [exit_node if exit_node is not None else self.visit_suite(node.orelse)]
+        for handler in node.handlers:
+            if handler.type is not None:
+                self.visit(handler.type)
+            exits.append(self.visit_suite(handler.body))
+        final_exit = self.visit_suite(node.finalbody)
+        if final_exit is not None:
+            return final_exit
+        if all(exit_node is not None for exit_node in exits):
+            return node
+
+    visit_TryStar = visit_Try
+
     def visit_If(self, node: ast.If):
         self.visit(node.test)
         known = self.truth(node.test)
@@ -340,15 +434,23 @@ class Analyzer(ast.NodeVisitor):
         original = self.aliases.copy(), self.geo_flags.copy(), self.constants.copy()
         branches = []
         exits = []
-        for suite in (node.body, node.orelse):
+        for positive, suite in ((True, node.body), (False, node.orelse)):
             self.aliases, self.geo_flags, self.constants = (value.copy() for value in original)
-            if geographic:
-                self.geo_conditions.append(GeoCondition(node.lineno))
+            guarded = geographic
+            if guarded and not positive and len(suite) == 1 and isinstance(suite[0], ast.If):
+                # A same-indent elif selecting another arm owns its own operations.
+                selector = dispatch_selector(node.test)
+                if (suite[0].col_offset == node.col_offset and selector is not None
+                        and dispatch_selector(suite[0].test) == selector):
+                    guarded = False
+            if guarded:
+                value = "истинно" if positive else "ложно"
+                self.geo_conditions.append(GeoCondition(node.lineno, f"условие на строке {node.lineno} {value}"))
             try:
                 exits.append(self.visit_suite(suite))
                 branches.append((self.aliases, self.geo_flags, self.constants))
             finally:
-                if geographic:
+                if guarded:
                     self.geo_conditions.pop()
         left, right = branches
         taken, other = exits
