@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import ast
+from collections import defaultdict
 from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import urlparse
 from python_geo import LocalNetworkCalls
+import python_telegram
 
 GEO_COUNTRIES = {"RU", "RUS", "BY", "BLR", "RUSSIA", "BELARUS", "РОССИЯ", "РОССИИ", "БЕЛАРУСЬ"}
 GEO_WORDS = ("country", "region", "geoip", "geolocation", "locale", "location", "ipapi", "ipinfo")
@@ -89,14 +91,18 @@ class Analyzer(ast.NodeVisitor):
         self.scope = None
         self.local_names = set()
         self.calls = []
+        self.telegram = False
+        self.telegram_calls = []
+        self.telegram_setups = defaultdict(set)
 
     def visit_Module(self, node: ast.Module):
         self.scope = node
+        self.telegram = python_telegram.has_telegram_import(node)
         self.local_names = {fn.name for fn in node.body if isinstance(fn, ast.FunctionDef) and not fn.decorator_list}
         self.visit_suite(node.body)
         self.resolve_geo_calls(node)
 
-    def add(self, rule: str, category: str, severity: str, node: ast.AST, message: str, *, dataflow=None):
+    def add(self, rule: str, category: str, severity: str, node: ast.AST, message: str, *, dataflow=None, **details):
         line = getattr(node, "lineno", 1)
         key = (rule, line)
         if key in self._seen:
@@ -106,7 +112,7 @@ class Analyzer(ast.NodeVisitor):
         evidence = (excerpt or (self.lines[line - 1] if 0 < line <= len(self.lines) else "")).strip()
         finding = {"rule": rule, "category": category, "severity": severity,
                    "file": self.path, "line": line, "evidence": evidence[:240],
-                   "message": message, "analysis": "ast"}
+                   "message": message, "analysis": "ast", **details}
         if dataflow:
             finding["dataflow"] = dataflow
         self.findings.append(finding)
@@ -326,6 +332,12 @@ class Analyzer(ast.NodeVisitor):
         if self.scope is not None and self.local_names:
             if network or (isinstance(node.func, ast.Name) and node.func.id in self.local_names):
                 self.calls.append((self.scope, node, guard, network))
+        if self.telegram and self.scope is not None and isinstance(node.func, ast.Attribute):
+            if (node.func.attr in python_telegram.METHODS and isinstance(node.func.value, ast.Attribute)
+                    and node.func.value.attr == "bot" and isinstance(node.func.value.value, ast.Name)):
+                self.telegram_calls.append((self.scope, node, guard))
+            elif node.func.attr == "add_handler":
+                self.telegram_setups[self.scope].add(node)
         if classified:
             self.add(*classified[:3], node, classified[3])
             if guard and (network or classified[0] in {"FS_DELETE", "FS_WRITE"}):
@@ -333,24 +345,34 @@ class Analyzer(ast.NodeVisitor):
                 self.add_geo_action(node, guard, severity, [(node.lineno, classified[0])])
         self.generic_visit(node)
 
-    def add_geo_action(self, node, guard, severity, steps):
-        trace = [{"file": self.path, "line": guard.line, "kind": "guard", "message": guard.description}]
+    def add_geo_action(self, node, guard, severity, steps, *, prefix=(), **details):
+        trace = [*prefix, {"file": self.path, "line": guard.line, "kind": "guard", "message": guard.description}]
         for line, name in steps[:-1]:
             trace.append({"file": self.path, "line": line, "kind": "call", "message": name})
         line, name = steps[-1]
         trace.append({"file": self.path, "line": line, "kind": "sink", "message": name})
         self.add("GEO_ACTION", "correlation", severity, node,
-                 f"AST: возможна операция {name}, когда {guard.description}", dataflow=trace)
+                 f"AST: возможна операция {name}, когда {guard.description}", dataflow=trace, **details)
 
     def resolve_geo_calls(self, tree):
-        if not any(guard and isinstance(call.func, ast.Name) and call.func.id in self.local_names
-                   for _, call, guard, _ in self.calls):
+        guarded_local = any(guard and isinstance(call.func, ast.Name) and call.func.id in self.local_names
+                            for _, call, guard, _ in self.calls)
+        if not self.telegram_calls and not guarded_local:
             return
         bindings = LocalNetworkCalls(tree)
         for observation in self.calls:
             bindings.observe(*observation)
         for site, guard, steps in bindings.paths():
             self.add_geo_action(site, guard, "medium", steps)
+        if not self.telegram_calls:
+            return
+        for site, guard, symbol, basis, steps in python_telegram.operations(bindings, self.telegram_calls, self.telegram_setups):
+            proof = [{"file": self.path, "kind": kind, "line": line, "message": message} for kind, line, message in steps]
+            details = {"resolved_symbol": symbol, "binding_basis": basis, "binding_certainty": "possible"}
+            self.add("NET_DYNAMIC", "network", "low", site, f"Возможна сетевая операция {symbol}",
+                     dataflow=[*proof, {"file": self.path, "kind": "sink", "line": site.lineno, "message": symbol}], **details)
+            if guard:
+                self.add_geo_action(site, guard, "medium", [(site.lineno, symbol)], prefix=proof, **details)
 
     def visit_suite(self, statements):
         """Visit reachable siblings. A guard applies until the end of this suite."""

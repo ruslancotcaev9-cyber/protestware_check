@@ -139,21 +139,27 @@ class LocalNetworkCalls:
                 except ValueError:
                     pass  # ast.parse also accepts some invalid parameter lists.
 
-    def observe(self, scope, call, guard, network):
+    def resolve_ref(self, scope, ref, site):
+        """Resolve a plain name/attribute chain against unique, visible module bindings."""
         if scope is not self.module and scope not in self.functions:
             return
-        ref = dotted_reference(call.func)
         if not ref or ref[0] not in self.symbols or ref[0] in self.locals.get(scope, ()):
             return
         origin = self.symbols[ref[0]]
-        declared = self.declared[ref[0]]
-        if scope is self.module and (call.lineno, call.col_offset) <= declared:
+        if scope is self.module and (site.lineno, site.col_offset) <= self.declared[ref[0]]:
             return
         if isinstance(origin, str):
-            target = ".".join((origin, *ref[1:]))
-            if network and scope in self.functions and target in NETWORK_APIS:
-                self.direct.setdefault(scope, Route(((call.lineno, target),), declared))
-        elif len(ref) == 1 and origin in self.functions and origin is not scope:
+            return ".".join((origin, *ref[1:]))
+        if len(ref) == 1:
+            return origin
+
+    def observe(self, scope, call, guard, network):
+        ref = dotted_reference(call.func)
+        origin = self.resolve_ref(scope, ref, call)
+        if isinstance(origin, str):
+            if network and scope in self.functions and origin in NETWORK_APIS:
+                self.direct.setdefault(scope, Route(((call.lineno, origin),), self.declared[ref[0]]))
+        elif origin in self.functions and origin is not scope:
             keywords = {kw.arg: None for kw in call.keywords}
             if (None in keywords or len(keywords) != len(call.keywords)
                     or any(isinstance(a, ast.Starred) for a in call.args)):
