@@ -2,11 +2,13 @@
 import json
 from pathlib import Path
 import tempfile
+from textwrap import dedent
 import unittest
 from unittest.mock import patch
 
 import ast_analysis
 import protestware_check as scanner
+import report_formats
 import threat_intel
 
 
@@ -61,6 +63,86 @@ class ASTTests(unittest.TestCase):
                      'if country == "US":\n    os.unlink(path)'):
             with self.subTest(code=code):
                 self.assertNotIn("GEO_ACTION", {f["rule"] for f in self.rules(code)})
+
+
+    def test_continue_trace_in_normal_report_and_sarif(self):
+        code = dedent("""\
+            for lang in languages:
+                if lang == "ru":
+                    continue
+                for marker in outputs:
+                    marker.write_text("sample")
+            else:
+                marker.write_text("loop finished")
+            marker.write_text("unconditional")
+        """)
+        report = scanner.build_report("sample", [("pkg.py", code)], [], [], [],
+                                      dependency_mode="off", ast_mode="required")
+        self.assertEqual(report["ast"]["parsed"], 1)
+        actions = [f for f in report["findings"] if f["rule"] == "GEO_ACTION"]
+        self.assertEqual([f["line"] for f in actions], [5])
+        self.assertIn("ложно", actions[0]["message"])
+        self.assertIn("continue на строке 3", actions[0]["message"])
+        self.assertEqual([(h["kind"], h["line"]) for h in actions[0]["dataflow"]],
+                         [("guard", 2), ("sink", 5)])
+        action = next(r for r in report_formats.sarif(report)["runs"][0]["results"]
+                      if r["ruleId"] == "GEO_ACTION")
+        hops = action["codeFlows"][0]["threadFlows"][0]["locations"]
+        self.assertEqual([(h["location"]["physicalLocation"]["artifactLocation"]["uri"],
+                           h["location"]["physicalLocation"]["region"]["startLine"]) for h in hops],
+                         [("pkg.py", 2), ("pkg.py", 5)])
+
+    def test_else_continue_inside_async_for_only_controls_its_iteration(self):
+        code = dedent("""\
+            async def collect():
+                while running:
+                    async for item in items:
+                        keep = item.language.casefold() in ("be", "ru")
+                        if keep:
+                            pass
+                        else:
+                            continue
+                        marker.write_text("selected")
+                    marker.write_text("outer")
+        """)
+        actions = [f for f in self.rules(code) if f["rule"] == "GEO_ACTION"]
+        self.assertEqual([f["line"] for f in actions], [9])
+        self.assertIn("истинно", actions[0]["message"])
+        self.assertIn("continue на строке 8", actions[0]["message"])
+
+    def test_while_continue_requires_a_recognized_language_comparison(self):
+        for condition, expected in (
+                ('"be" == options["locale"]', True), ('lang_code.upper() not in {"RU", "BE"}', True),
+                ('slang == "ru"', False), ('country == "BE"', False), ('lang == "fr"', False),
+                ('lang < "ru"', False), ('True or lang == "ru"', False)):
+            with self.subTest(condition=condition):
+                code = ('while running:\n    if ' + condition + ':\n        continue\n'
+                        '    marker.write_text("iteration")\nelse:\n    marker.write_text("done")\n')
+                actions = [f["line"] for f in self.rules(code) if f["rule"] == "GEO_ACTION"]
+                self.assertEqual(actions, [4] if expected else [])
+
+    def test_conditional_or_deferred_continue_does_not_guard_unrelated_writes(self):
+        code = dedent("""\
+            for lang in languages:
+                if enabled:
+                    if lang == "ru":
+                        continue
+                marker.write_text("common path")
+                if lang == "be":
+                    continue
+                def later():
+                    marker.write_text("function")
+                callback = lambda: marker.write_text("lambda")
+                stream = (marker.write_text("generator") for value in values)
+                eager = [marker.write_text("list") for value in values]
+                if flag:
+                    continue
+                else:
+                    break
+                marker.write_text("unreachable")
+        """)
+        actions = [f["line"] for f in self.rules(code) if f["rule"] == "GEO_ACTION"]
+        self.assertEqual(actions, [12])
 
 
 SAMPLE_JSON = json.dumps([

@@ -3,15 +3,22 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
+from typing import NamedTuple
 from urllib.parse import urlparse
 
 GEO_COUNTRIES = {"RU", "RUS", "BY", "BLR", "RUSSIA", "BELARUS", "РОССИЯ", "РОССИИ", "БЕЛАРУСЬ"}
 GEO_WORDS = ("country", "region", "geoip", "geolocation", "locale", "location", "ipapi", "ipinfo")
+LANGUAGE_NAMES = {"lang", "language", "lang_code", "language_code", "locale", "locale_code"}
 GEO_HOSTS = {"ip-api.com", "ipapi.co", "ipinfo.io", "ipwho.is", "ipgeolocation.io", "freegeoip.app"}
 NETWORK_FUNCTIONS = {"get", "post", "put", "delete", "patch", "request", "head", "urlopen"}
 DELETE_CALLS = {"os.remove", "os.unlink", "shutil.rmtree", "pathlib.Path.unlink", "pathlib.Path.rmdir"}
 WRITE_CALLS = {"os.rename", "os.replace", "shutil.move", "shutil.copy", "shutil.copyfile",
                "pathlib.Path.write_text", "pathlib.Path.write_bytes", "pathlib.Path.rename", "pathlib.Path.replace"}
+
+
+class GeoCondition(NamedTuple):
+    line: int
+    continuation: str = ""
 
 
 def dotted(node: ast.AST) -> str:
@@ -33,6 +40,21 @@ def literal(node: ast.AST | None) -> str | None:
     return None
 
 
+def language_selector(node: ast.AST) -> bool:
+    if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+            and node.func.attr in {"lower", "upper", "casefold"} and not node.args and not node.keywords):
+        node = node.func.value
+    if isinstance(node, ast.Name):
+        return node.id.lower() in LANGUAGE_NAMES
+    if isinstance(node, ast.Attribute):
+        return node.attr.lower() in LANGUAGE_NAMES
+    return isinstance(node, ast.Subscript) and (literal(node.slice) or "").lower() in LANGUAGE_NAMES
+
+
+def language_code(node: ast.AST) -> bool:
+    return (literal(node) or "").lower() in {"ru", "be"}
+
+
 class Analyzer(ast.NodeVisitor):
     def __init__(self, path: str, content: str, allowed_domains: list[str]):
         self.path = path
@@ -42,11 +64,11 @@ class Analyzer(ast.NodeVisitor):
         self.aliases: dict[str, str] = {}
         self.geo_flags: set[str] = set()
         self.constants: dict[str, bool] = {}
-        self.geo_conditions: list[int] = []
+        self.geo_conditions: list[GeoCondition] = []
         self.findings: list[dict] = []
         self._seen: set[tuple[str, int]] = set()
 
-    def add(self, rule: str, category: str, severity: str, node: ast.AST, message: str):
+    def add(self, rule: str, category: str, severity: str, node: ast.AST, message: str, *, dataflow=None):
         line = getattr(node, "lineno", 1)
         key = (rule, line)
         if key in self._seen:
@@ -54,9 +76,12 @@ class Analyzer(ast.NodeVisitor):
         self._seen.add(key)
         excerpt = ast.get_source_segment(self.content, node)
         evidence = (excerpt or (self.lines[line - 1] if 0 < line <= len(self.lines) else "")).strip()
-        self.findings.append({"rule": rule, "category": category, "severity": severity,
-                              "file": self.path, "line": line, "evidence": evidence[:240],
-                              "message": message, "analysis": "ast"})
+        finding = {"rule": rule, "category": category, "severity": severity,
+                   "file": self.path, "line": line, "evidence": evidence[:240],
+                   "message": message, "analysis": "ast"}
+        if dataflow:
+            finding["dataflow"] = dataflow
+        self.findings.append(finding)
 
     def resolve(self, name: str) -> str:
         parts = name.split(".")
@@ -74,6 +99,23 @@ class Analyzer(ast.NodeVisitor):
             self.aliases, self.geo_flags, self.constants, self.geo_conditions = aliases, flags, constants, conditions
 
     visit_AsyncFunctionDef = visit_FunctionDef
+
+    def visit_deferred(self, nodes):
+        conditions, self.geo_conditions = self.geo_conditions, []
+        try:
+            for node in nodes:
+                self.visit(node)
+        finally:
+            self.geo_conditions = conditions
+
+    def visit_Lambda(self, node: ast.Lambda):
+        self.visit(node.args)
+        self.visit_deferred([node.body])
+
+    def visit_GeneratorExp(self, node: ast.GeneratorExp):
+        first, *rest = node.generators
+        self.visit(first.iter)  # Only the outer iterator is evaluated at construction.
+        self.visit_deferred([first.target, *first.ifs, *rest, node.elt])
 
     def visit_ClassDef(self, node: ast.ClassDef):
         aliases, flags, constants, conditions = self.aliases, self.geo_flags, self.constants, self.geo_conditions
@@ -173,6 +215,13 @@ class Analyzer(ast.NodeVisitor):
         if not isinstance(test, ast.Compare):
             return False
         nodes = [test.left, *test.comparators]
+        for left, op, right in zip(nodes, test.ops, test.comparators):
+            if isinstance(op, (ast.Eq, ast.NotEq)):
+                if (language_selector(left) and language_code(right)) or (language_selector(right) and language_code(left)):
+                    return True
+            if (isinstance(op, (ast.In, ast.NotIn)) and language_selector(left)
+                    and isinstance(right, (ast.List, ast.Tuple, ast.Set)) and any(map(language_code, right.elts))):
+                return True
         country_present = any(isinstance(x, ast.Constant) and isinstance(x.value, str) and
                               x.value.upper() in GEO_COUNTRIES for n in nodes for x in ast.walk(n))
         if not country_present:
@@ -238,35 +287,81 @@ class Analyzer(ast.NodeVisitor):
             self.add(*classified[:3], node, classified[3])
             if self.geo_conditions and classified[0] in {"FS_DELETE", "FS_WRITE", "NET_EXTERNAL", "NET_DYNAMIC", "NET_GEO_API"}:
                 severity = "high" if classified[0] == "FS_DELETE" else "medium"
-                self.add("GEO_ACTION", "correlation", severity, node,
-                         f"AST: {classified[0]} находится в ветви географического условия (строка {self.geo_conditions[-1]})")
+                guard = self.geo_conditions[-1]
+                message = f"AST: {classified[0]} находится в ветви географического условия (строка {guard.line})"
+                trace = None
+                if guard.continuation:
+                    message = f"AST: {classified[0]} достижима, когда {guard.continuation}"
+                    trace = [{"file": self.path, "line": guard.line, "kind": "guard", "message": guard.continuation},
+                             {"file": self.path, "line": node.lineno, "kind": "sink", "message": classified[0]}]
+                self.add("GEO_ACTION", "correlation", severity, node, message, dataflow=trace)
         self.generic_visit(node)
+
+    def visit_suite(self, statements):
+        """Visit reachable siblings. A guard applies until the end of this suite."""
+        depth = len(self.geo_conditions)
+        try:
+            for statement in statements:
+                flow = self.visit(statement)
+                if isinstance(statement, (ast.Continue, ast.Break, ast.Return, ast.Raise)):
+                    return statement
+                if isinstance(flow, ast.stmt):
+                    return flow  # Neither branch reaches the next sibling.
+                if isinstance(flow, GeoCondition):
+                    self.geo_conditions.append(flow)
+        finally:
+            del self.geo_conditions[depth:]
+
+    def visit_For(self, node):
+        self.visit(node.iter)
+        self.visit(node.target)
+        self.assign([node.target], None)
+        self.visit_suite(node.body)
+        self.visit_suite(node.orelse)
+
+    visit_AsyncFor = visit_For
+
+    def visit_While(self, node: ast.While):
+        self.visit(node.test)
+        if self.truth(node.test) is not False:
+            self.visit_suite(node.body)
+        if not (isinstance(node.test, ast.Constant) and node.test.value):
+            self.visit_suite(node.orelse)
 
     def visit_If(self, node: ast.If):
         self.visit(node.test)
         known = self.truth(node.test)
         if known is not None:
-            for statement in node.body if known else node.orelse:
-                self.visit(statement)
-            return
+            return self.visit_suite(node.body if known else node.orelse)
         geographic = self.is_geo_condition(node.test)
         if geographic:
             self.add("GEO_TARGET", "geolocation", "medium", node,
                      "AST: условное ветвление по географическому признаку RU/BY")
         original = self.aliases.copy(), self.geo_flags.copy(), self.constants.copy()
         branches = []
+        exits = []
         for suite in (node.body, node.orelse):
             self.aliases, self.geo_flags, self.constants = (value.copy() for value in original)
             if geographic:
-                self.geo_conditions.append(node.lineno)
+                self.geo_conditions.append(GeoCondition(node.lineno))
             try:
-                for statement in suite:
-                    self.visit(statement)
+                exits.append(self.visit_suite(suite))
                 branches.append((self.aliases, self.geo_flags, self.constants))
             finally:
                 if geographic:
                     self.geo_conditions.pop()
         left, right = branches
+        taken, other = exits
+        if taken is not None and other is not None:
+            return node
+        if taken is not None or other is not None:
+            self.aliases, self.geo_flags, self.constants = right if taken is not None else left
+            transfer = taken if taken is not None else other
+            if geographic and isinstance(transfer, ast.Continue):
+                value = "ложно" if taken is not None else "истинно"
+                return GeoCondition(node.lineno, f"условие на строке {node.lineno} {value} "
+                                                 f"(другая ветвь пропускает итерацию, continue на строке {transfer.lineno})")
+            return
         self.aliases = {key: value for key, value in left[0].items() if right[0].get(key) == value}
         self.geo_flags = left[1] | right[1]
         self.constants = {key: value for key, value in left[2].items() if key in right[2] and right[2][key] == value}

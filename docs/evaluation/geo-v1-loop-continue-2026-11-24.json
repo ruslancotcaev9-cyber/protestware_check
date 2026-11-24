@@ -1,0 +1,532 @@
+{
+  "schema": 1,
+  "tool_version": "1.9.0",
+  "cases": 6,
+  "source_groups": 6,
+  "whole_file_cases": 0,
+  "repositories": 6,
+  "metrics_valid": true,
+  "overall": {
+    "tp": 1,
+    "fp": 0,
+    "tn": 3,
+    "fn": 2,
+    "errors": 0,
+    "precision": 1.0,
+    "recall": 0.3333333333333333,
+    "false_positive_rate": 0.0
+  },
+  "by_language_and_rule": [
+    {
+      "language": "Python",
+      "rule": "GEO_ACTION",
+      "tp": 1,
+      "fp": 0,
+      "tn": 3,
+      "fn": 2,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_repository": [
+    {
+      "repository": "Maximoff/Apktool-M-updates",
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    {
+      "repository": "eugenehp/espeak-ng-rs",
+      "tp": 1,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "repository": "mozilla/mozaic-forecasting",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "ravindraten/Covid19WorldStats",
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 1,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    {
+      "repository": "shurshun/count-in",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "repository": "videoreg/pi-videoreg",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_cohort": [
+    {
+      "cohort": "author-geo-v1",
+      "tp": 1,
+      "fp": 0,
+      "tn": 3,
+      "fn": 2,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_operation_scope": [
+    {
+      "scope": "adjacent-unconditional-write",
+      "tp": 0,
+      "fp": 0,
+      "tn": 1,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    },
+    {
+      "scope": "conditional-file-write",
+      "tp": 1,
+      "fp": 0,
+      "tn": 0,
+      "fn": 0,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "conditional-network",
+      "tp": 0,
+      "fp": 0,
+      "tn": 0,
+      "fn": 2,
+      "errors": 0,
+      "precision": null,
+      "recall": 0.0,
+      "false_positive_rate": null
+    },
+    {
+      "scope": "localization",
+      "tp": 0,
+      "fp": 0,
+      "tn": 2,
+      "fn": 0,
+      "errors": 0,
+      "precision": null,
+      "recall": null,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_mode": [
+    {
+      "mode": "required",
+      "tp": 1,
+      "fp": 0,
+      "tn": 3,
+      "fn": 2,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "by_ast_status": [
+    {
+      "status": "parsed",
+      "tp": 1,
+      "fp": 0,
+      "tn": 3,
+      "fn": 2,
+      "errors": 0,
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "false_positive_rate": 0.0
+    }
+  ],
+  "analysis": {
+    "by_status": {
+      "parsed": 6
+    },
+    "complete": true,
+    "successful_fraction": 1.0,
+    "partial_cases": 0
+  },
+  "performance": {
+    "measured": false,
+    "elapsed_seconds": 0.05958767200007742,
+    "median_case_seconds": 0.003974013000004106,
+    "peak_traced_python_bytes": null
+  },
+  "results": [
+    {
+      "id": "geo-1",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "shurshun/count-in",
+      "cohort": "author-geo-v1",
+      "operation_scope": "adjacent-unconditional-write",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-2",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "ravindraten/Covid19WorldStats",
+      "cohort": "author-geo-v1",
+      "operation_scope": "conditional-network",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-3",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "videoreg/pi-videoreg",
+      "cohort": "author-geo-v1",
+      "operation_scope": "localization",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-4",
+      "outcome": "tp",
+      "detected": true,
+      "matching_analyses": [
+        "ast"
+      ],
+      "expected_positive": true,
+      "repository": "eugenehp/espeak-ng-rs",
+      "cohort": "author-geo-v1",
+      "operation_scope": "conditional-file-write",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-5",
+      "outcome": "tn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": false,
+      "repository": "mozilla/mozaic-forecasting",
+      "cohort": "author-geo-v1",
+      "operation_scope": "localization",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    },
+    {
+      "id": "geo-6",
+      "outcome": "fn",
+      "detected": false,
+      "matching_analyses": [],
+      "expected_positive": true,
+      "repository": "Maximoff/Apktool-M-updates",
+      "cohort": "author-geo-v1",
+      "operation_scope": "conditional-network",
+      "input_kind": "single-file",
+      "ast": {
+        "mode": "required",
+        "status": "parsed",
+        "warnings": []
+      }
+    }
+  ],
+  "manifest_sha256": "838dc4e7e141efe89ba03cea24004ca74687b31041120a9f74ed7235f70f56af",
+  "detector_manifest_sha256": "d1cb143ac67c9014f32fa9634d3ef39040377970aeb1e9933ab8e9778c049d3a",
+  "original_source_lines": {
+    "geo-1": {
+      "reported": [],
+      "outside_reviewed_evidence": []
+    },
+    "geo-2": {
+      "reported": [
+        1056,
+        1133
+      ],
+      "outside_reviewed_evidence": [
+        1056,
+        1133
+      ]
+    },
+    "geo-3": {
+      "reported": [],
+      "outside_reviewed_evidence": []
+    },
+    "geo-4": {
+      "reported": [
+        321,
+        327
+      ],
+      "outside_reviewed_evidence": []
+    },
+    "geo-5": {
+      "reported": [],
+      "outside_reviewed_evidence": []
+    },
+    "geo-6": {
+      "reported": [],
+      "outside_reviewed_evidence": []
+    }
+  },
+  "evaluation_mode": "author-regression",
+  "review": {
+    "schema": 1,
+    "evaluation_mode": "author-regression",
+    "manifest_sha256": "838dc4e7e141efe89ba03cea24004ca74687b31041120a9f74ed7235f70f56af",
+    "reviewer": "ruslancotcaev9-cyber",
+    "reviewer_role": "cohort-contributor",
+    "label_decision": "accepted-as-proposed",
+    "independent_review": false,
+    "eligible_for_first_blind_evaluation": false,
+    "decision_date": "2026-11-21",
+    "review_reference": "https://github.com/ruslancotcaev9-cyber/protestware_check/pull/17#issuecomment-7065471960",
+    "basis": "The public comment records review without objections. In the project conversation the owner reported participating in selection or initial labeling and chose to use these six cases for private author evaluation."
+  },
+  "comparison": {
+    "reference": {
+      "report_sha256": "e4da92490e244eb49ecd2b26a465ca19885102fca0312b4be2c944e0ae6f6008",
+      "scanner_commit": "2e941387c89da71f24f4895c6b0452c10a585daa",
+      "detector_manifest_sha256": "31a857aa36c43ed6a8e3434bcd0e544a2f00bbc1163e292da9880b9fc2c1e2fb",
+      "overall": {
+        "tp": 0,
+        "fp": 0,
+        "tn": 3,
+        "fn": 3,
+        "errors": 0,
+        "precision": null,
+        "recall": 0.0,
+        "false_positive_rate": 0.0
+      },
+      "analysis": {
+        "by_status": {
+          "parsed": 6
+        },
+        "complete": true,
+        "successful_fraction": 1.0,
+        "partial_cases": 0
+      }
+    },
+    "candidate": {
+      "checkout_commit": "089f28408983a0dbe7a5244e93b563df0a59bc3d",
+      "worktree_status": "clean",
+      "python": "3.11.18",
+      "detector_files": {
+        "analysis_context.py": "a1d250feb1c0b27f532f36d6ed228552040cf7d0154824ce53afbe56ff76bed4",
+        "ast_analysis.py": "2ef3d45ea2297dc69d198c5392c37bac54f0df237bd95945d27abbfe850213c8",
+        "cpp_ast.py": "4b4ee17d408bbae5b84f929ab250a3bb8f8b7dfb561a02bdae54ce14f00d7f10",
+        "csharp_bindings.py": "77609f7dda3646796553faf6af553ae5f4b2e30ef479b9b08db39f6f9a553a6c",
+        "csharp_project.py": "fc40bc584c850e8606e4d4fdc4ebe588dc2ebdf9d457c45ae466af876a77d235",
+        "dependency_analysis.py": "0830552c6952ee502eac2c31c1b06aaccf2a2c4b1d6b679ae7a7fedda275e736",
+        "go_bindings.py": "6e2e1f15e6eb908251f20a8c3f2a1ace449b612fd66f11f73bf19276a3075023",
+        "go_build_info.py": "a68c1672b821d451abeb5c5e5ec853c5fad2cab19253dd5db684121a3d042a0e",
+        "go_modules.py": "f3d9ba83e47622f027595655e3ce3e148806c81de9e47a8e2b383a79aaaa24b6",
+        "js_behavior.py": "1945de68f34c63fed10871875af926dbab701de3c4eca519f4d62ab9d113618d",
+        "js_bindings.py": "ac6c25887c2f832eb10f7418300db46f2a7ecf21a2a41e636c4c76fb79a24d97",
+        "js_modules.py": "3446341ede6288052efe33d0dacb2f2f1b95b022a156c683f28a6fd86684be06",
+        "js_package_models.py": "f06bbdfc6e0a523d69a4cccc0922a59eb3932ce31d9274ecd0881a4d1040801a",
+        "js_packages.py": "ce2e6264ff862f2361987615b101a9a4c4e95eab3f7b6c5b1ea011d5eac7c433",
+        "json_contracts.py": "1eda9118ee3e6c8d539630227957e9b23d0b9b176e1175a626196fe2595138c1",
+        "language_analysis.py": "2b25b40c27d5e293fab5c118b8ea02b3756cdda97b9c1598303ffd0cb432cf8f",
+        "malware_intel.py": "dcbea8e12e3d32dc3bc43c4e53d8289860bcf53854523b5854d4a48f077748ee",
+        "package_identity.py": "eab3f69b7f88918a91f35629ebe3d2a8f3bd399b28896c3de45c2cdc86a4b555",
+        "polyglot_ast.py": "8833fa02122c9db8e9709d59df4c8d77dcd3edd20020f2eb6c49501e5edf2f2c",
+        "protestware_check.py": "b6575778d39131de0f3574fe8031891e3e53f76117a33b5fd9d4ed16ee4c2c3a",
+        "python_taint.py": "b2816973567706a7c6ea16cd6fd2313d26fc0da616ca0ebfdc301bac6a2f38d3",
+        "report_formats.py": "2dcd6580407e83de17df17694dd685e736f3840a992b278f4778c333f27d96ac",
+        "requirements-ast.txt": "dba6de3a62bd955385e5d52517b8aba3b54cf9297548164cda0ee038b71093ef",
+        "requirements-resolver.txt": "9e65d9e5efe24209e9740e2d762d3e051456dab3cd4eb9574db55e75abbeb159",
+        "safe_io.py": "1f56e89417768bc2bab061b8d37d2a9fd75a0e0304bcf99d729dab257a1cd8e3",
+        "scan_coverage.py": "57e7372c9d65c0c0a762ba454849895abfcbf5f441ef5b21c125f0b829ac73ab",
+        "scan_policy.py": "fea27d4d31b8fb45752ad21b7e166859acf57660820b98f9c204410c5332bfbf",
+        "sql_operations.py": "16f32836b05ed3fd83ce35171daf015e9828748deae56a926b3ea9ca840aa597",
+        "threat_intel.py": "7adf94738aeb1aebd93538bb90dac4e1e3ca88e695c2d59bb617b68145d9bf56"
+      },
+      "scoring_files": {
+        "scripts/evaluate_geo.py": "db7569c8355501ebece9fcb1c95e60ae69ac6031b92286ac5e3c45fbcaf1aba0",
+        "corpus_evaluation.py": "b0d0d2c89c64be405e3524e62ee52fc8501e6f2e59129195e244078d390d5293"
+      }
+    },
+    "cases": [
+      {
+        "id": "geo-1",
+        "source_sha256": "51415014af2de049333769437bb8332ad6c601d5a73385edd1bff4b32a1d6a7d",
+        "expected_lines": [],
+        "before": {
+          "outcome": "tn",
+          "ast_status": "parsed",
+          "reported": []
+        },
+        "after": {
+          "outcome": "tn",
+          "ast_status": "parsed",
+          "reported": []
+        }
+      },
+      {
+        "id": "geo-2",
+        "source_sha256": "84850079b794f01ed54122dad580509b75d66a280316257b5a30bc190ad60e38",
+        "expected_lines": [
+          934,
+          935,
+          936,
+          947,
+          949
+        ],
+        "before": {
+          "outcome": "fn",
+          "ast_status": "parsed",
+          "reported": [
+            1056,
+            1133
+          ]
+        },
+        "after": {
+          "outcome": "fn",
+          "ast_status": "parsed",
+          "reported": [
+            1056,
+            1133
+          ]
+        }
+      },
+      {
+        "id": "geo-3",
+        "source_sha256": "e4f43c5e40d166fb837ecc54f7cdc43ac79e16e5bf37d64531c2dac72957d04c",
+        "expected_lines": [],
+        "before": {
+          "outcome": "tn",
+          "ast_status": "parsed",
+          "reported": []
+        },
+        "after": {
+          "outcome": "tn",
+          "ast_status": "parsed",
+          "reported": []
+        }
+      },
+      {
+        "id": "geo-4",
+        "source_sha256": "49b7b78045fcf1102a152c4a03f9433cacfa60b7294232f26103b2591e650c40",
+        "expected_lines": [
+          307,
+          308,
+          309,
+          321,
+          327
+        ],
+        "before": {
+          "outcome": "fn",
+          "ast_status": "parsed",
+          "reported": []
+        },
+        "after": {
+          "outcome": "tp",
+          "ast_status": "parsed",
+          "reported": [
+            321,
+            327
+          ]
+        }
+      },
+      {
+        "id": "geo-5",
+        "source_sha256": "34c95be4c1d6d01c48f36991a6a8b00ebf3fd55c2287bc6097414b02fd78965e",
+        "expected_lines": [],
+        "before": {
+          "outcome": "tn",
+          "ast_status": "parsed",
+          "reported": []
+        },
+        "after": {
+          "outcome": "tn",
+          "ast_status": "parsed",
+          "reported": []
+        }
+      },
+      {
+        "id": "geo-6",
+        "source_sha256": "eb01ebd1714ccef6776f30db639f71ca0936ad3cb9b4ab316102d912db40394f",
+        "expected_lines": [
+          56,
+          125
+        ],
+        "before": {
+          "outcome": "fn",
+          "ast_status": "parsed",
+          "reported": []
+        },
+        "after": {
+          "outcome": "fn",
+          "ast_status": "parsed",
+          "reported": []
+        }
+      }
+    ]
+  }
+}

@@ -1,13 +1,16 @@
-"""Prepare pinned external inputs, validate review, or score the reviewed GEO_ACTION cohort."""
+"""Prepare, reproduce or compare the six pinned GEO_ACTION cases without executing them."""
 import argparse
 import base64
 from hashlib import sha1, sha256
 import json
+import os
 from pathlib import Path
+import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+import analysis_context
 import corpus_evaluation
 import corpus_review
 import json_contracts
@@ -17,6 +20,9 @@ import safe_io
 MANIFEST = ROOT / 'tests/corpus/geo-v1.json'
 REVIEW = ROOT / 'tests/corpus/geo-v1-review.json'
 AUTHOR_DECISION = ROOT / 'tests/corpus/geo-v1-author-decision.json'
+FROZEN_SCANNER = ROOT / 'tests/corpus/geo-v1-scanner-sha256.json'
+CURRENT_SCANNER = ROOT / 'tests/corpus/current-scanner-sha256.json'
+REFERENCE = ROOT / 'docs/evaluation/geo-v1-author-2026-11-21'
 LIMIT = 1_000_000
 
 
@@ -35,7 +41,7 @@ def prepare(cases, directory):
             verified(safe_io.read_regular(target, LIMIT), case)
             continue
         url = f"https://api.github.com/repos/{case['repository']}/git/blobs/{case['git_blob_sha']}"
-        blob = scanner.api_json(url, None)
+        blob = scanner.api_json(url, os.environ.get('GITHUB_TOKEN'))
         if blob.get('encoding') != 'base64' or blob.get('size', LIMIT + 1) > LIMIT:
             raise ValueError(f"Unexpected upstream blob: {case['id']}")
         raw = verified(base64.b64decode(''.join(blob['content'].split()), validate=True), case)
@@ -58,13 +64,20 @@ def read_author_decision():
     return decision
 
 
-def score_cases(document, sources, checksum, cohort):
-    current = (ROOT / 'tests/corpus/current-scanner-sha256.json').read_bytes()
-    if sha256(current).hexdigest() != document['detector_manifest_sha256']:
+def score_cases(document, sources, checksum, cohort, *, detector_manifest=FROZEN_SCANNER):
+    manifest_bytes = detector_manifest.read_bytes()
+    detector_digest = sha256(manifest_bytes).hexdigest()
+    if detector_manifest == FROZEN_SCANNER and detector_digest != document['detector_manifest_sha256']:
         raise ValueError('Use the scanner revision frozen for this cohort')
-    for filename, digest in json.loads(current).items():
+    files = json_contracts.loads(manifest_bytes)
+    if detector_manifest == CURRENT_SCANNER:
+        expected = set(analysis_context.RULE_FILES) | {
+            'safe_io.py', 'requirements-ast.txt', 'requirements-resolver.txt', 'scan_coverage.py', 'report_formats.py'}
+        if set(files) != expected:
+            raise ValueError('Current detector manifest does not cover the scanner files')
+    for filename, digest in files.items():
         if sha256((ROOT / filename).read_bytes()).hexdigest() != digest:
-            raise ValueError('Scanner files differ from the frozen manifest')
+            raise ValueError(f'Scanner file differs from {detector_manifest.name}: {filename}')
     cases = []
     by_path = {}
     for entry in document['cases']:
@@ -92,7 +105,7 @@ def score_cases(document, sources, checksum, cohort):
         return findings
 
     report = corpus_evaluation.evaluate(cases, scan=score)
-    report.update(manifest_sha256=checksum, detector_manifest_sha256=document['detector_manifest_sha256'],
+    report.update(manifest_sha256=checksum, detector_manifest_sha256=detector_digest,
                   original_source_lines=locations)
     return report
 
@@ -107,18 +120,76 @@ def evaluate(document, sources, review, checksum):
     return report
 
 
-def evaluate_author(document, sources, checksum):
+def evaluate_author(document, sources, checksum, *, detector_manifest=FROZEN_SCANNER):
     decision = read_author_decision()
     if decision['manifest_sha256'] != checksum:
         raise ValueError('Author assessment decision does not cover this manifest')
-    report = score_cases(document, sources, checksum, 'author-geo-v1')
+    report = score_cases(document, sources, checksum, 'author-geo-v1', detector_manifest=detector_manifest)
     report.update(evaluation_mode='author-regression', review=decision)
+    return report
+
+
+def checkout_state(paths):
+    """Identify the trusted scanner checkout, including uncommitted evaluation inputs."""
+    def git(*args):
+        return subprocess.check_output(['git', *args], cwd=ROOT, timeout=10,
+                                       stderr=subprocess.DEVNULL, text=True)
+
+    try:
+        top, commit = git('rev-parse', '--show-toplevel', 'HEAD').splitlines()
+        if Path(top).resolve() == ROOT:
+            changed = git('status', '--porcelain', '--untracked-files=all', '--', *paths)
+            return {'checkout_commit': commit, 'worktree_status': 'modified' if changed else 'clean'}
+    except (OSError, subprocess.SubprocessError, ValueError):
+        pass
+    return {'checkout_commit': None, 'worktree_status': 'unavailable'}
+
+
+def compare(document, sources, checksum):
+    original_bytes = (REFERENCE / 'geo-author-first.json').read_bytes()
+    original_sha = sha256(original_bytes).hexdigest()
+    checks = json_contracts.loads((REFERENCE / 'repeat-check.json').read_bytes())
+    baseline = json_contracts.loads(original_bytes)
+    provenance = json_contracts.loads((REFERENCE / 'provenance.json').read_bytes())
+    if (original_sha != checks['first_sha256'] or baseline['manifest_sha256'] != checksum
+            or provenance['manifest_sha256'] != checksum
+            or baseline['detector_manifest_sha256'] != document['detector_manifest_sha256']
+            or provenance['detector_manifest_sha256'] != baseline['detector_manifest_sha256']):
+        raise ValueError('Reference report does not match the pinned author evaluation')
+
+    report = evaluate_author(document, sources, checksum, detector_manifest=CURRENT_SCANNER)
+    before = {item['id']: item for item in baseline['results']}
+    after = {item['id']: item for item in report['results']}
+    cases = []
+    for entry in document['cases']:
+        case_id = entry['id']
+        cases.append({
+            'id': case_id, 'source_sha256': entry['source_sha256'], 'expected_lines': entry['evidence_lines'],
+            'before': {'outcome': before[case_id]['outcome'], 'ast_status': before[case_id]['ast']['status'],
+                       'reported': baseline['original_source_lines'][case_id]['reported']},
+            'after': {'outcome': after[case_id]['outcome'], 'ast_status': after[case_id]['ast']['status'],
+                      'reported': report['original_source_lines'].get(case_id, {}).get('reported')},
+        })
+    manifest_bytes = CURRENT_SCANNER.read_bytes()
+    if sha256(manifest_bytes).hexdigest() != report['detector_manifest_sha256']:
+        raise ValueError('Detector manifest changed during evaluation')
+    rules = json_contracts.loads(manifest_bytes)
+    scoring_files = ['scripts/evaluate_geo.py', 'corpus_evaluation.py']
+    tracked = [*rules, *scoring_files, CURRENT_SCANNER, MANIFEST, AUTHOR_DECISION, REFERENCE]
+    report['comparison'] = {
+        'reference': {'report_sha256': original_sha, 'scanner_commit': provenance['scanner_commit'],
+                      'detector_manifest_sha256': baseline['detector_manifest_sha256'],
+                      'overall': baseline['overall'], 'analysis': baseline['analysis']},
+        'candidate': {**checkout_state(tracked), 'python': sys.version.split()[0], 'detector_files': rules,
+                      'scoring_files': {name: sha256((ROOT / name).read_bytes()).hexdigest() for name in scoring_files}},
+        'cases': cases,
+    }
     return report
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('prepare', 'review', 'evaluate', 'evaluate-author'))
+    parser.add_argument('action', choices=('prepare', 'review', 'evaluate', 'evaluate-author', 'compare'))
     parser.add_argument('--sources', type=Path)
     parser.add_argument('--output', type=Path)
     args = parser.parse_args(argv)
@@ -135,7 +206,9 @@ def main(argv=None):
             return 0
         if not args.sources or not args.output:
             parser.error(f'{args.action} requires --sources and a new --output file')
-        if args.action == 'evaluate-author':
+        if args.action == 'compare':
+            report = compare(doc, args.sources, checksum)
+        elif args.action == 'evaluate-author':
             report = evaluate_author(doc, args.sources, checksum)
         else:
             report = evaluate(doc, args.sources, corpus_review.load(REVIEW, doc['cases'], checksum), checksum)
