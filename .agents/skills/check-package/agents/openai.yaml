@@ -1,0 +1,14 @@
+interface:
+  display_name: Проверка зависимостей до установки
+  short_description: Проверка библиотек на protestware и риски цепочки поставок
+  default_prompt: Примени $check-package к выбранной версии библиотеки перед её добавлением
+    в проект.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

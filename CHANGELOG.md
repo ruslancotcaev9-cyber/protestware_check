@@ -4,8 +4,12 @@ Changes to **protestware-check** are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.9.0 development updates — 2026-11-24 (unreleased)
+## 1.9.0 development updates — 2026-11-25 (unreleased)
 
+- Add the [check-package skill](.agents/skills/check-package) for reviewing a
+  dependency before installation. It stages hash-verified archives for static
+  analysis and reports the evidence, coverage and decision for a specific release.
+  [Setup and usage](docs/CHECK_PACKAGE.md).
 - Trace synchronous Telegram bot messages and chat actions from an imported
   `CallbackContext` annotation or an explicit `Updater` / `MessageHandler`
   registration. In the full geo-2 file, JSON and SARIF now identify the two
